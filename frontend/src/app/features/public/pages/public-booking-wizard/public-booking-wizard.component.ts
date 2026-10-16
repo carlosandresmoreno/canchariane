@@ -34,24 +34,24 @@ interface DayOption {
   imports: [CommonModule, FormsModule, RouterLink, CourtMapComponent, CountdownTimerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="relative min-h-screen bg-[#faf9f5] text-stone-800 flex flex-col justify-between selection:bg-stone-900 selection:text-stone-50 overflow-x-hidden font-sans">
-      <!-- Luminous Architectural Sunlit Diffuse Overlay -->
+    <div class="relative min-h-screen bg-white text-slate-900 flex flex-col justify-between selection:bg-[#0056FB] selection:text-white overflow-x-hidden font-sans">
+      <!-- Clean Luminous Ambient Glow -->
       <div class="ambient-lighting"></div>
 
       <!-- Top Quiet Luxury Header -->
-      <header class="relative z-30 border-b border-stone-200/70 bg-[#faf9f5]/80 backdrop-blur-xl sticky top-0">
+      <header class="relative z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl sticky top-0">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <div class="w-10 h-10 rounded-2xl bg-white border border-stone-200 flex items-center justify-center font-serif italic text-lg text-stone-900 shadow-sm">
+            <div class="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center font-serif italic text-lg text-[#0056FB] shadow-xs">
               C
             </div>
             <div>
               <div class="flex items-center gap-2">
-                <span class="font-mono text-[10px] tracking-[0.25em] text-stone-500 uppercase">Club</span>
-                <span class="w-1.5 h-1.5 rounded-full bg-stone-400"></span>
-                <span class="text-xs text-stone-500">{{ club()?.timezone || 'America/Bogota' }}</span>
+                <span class="font-mono text-[10px] tracking-[0.25em] text-slate-500 uppercase">Club</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-[#0056FB]"></span>
+                <span class="text-xs text-slate-500">{{ club()?.timezone || 'America/Bogota' }}</span>
               </div>
-              <h1 class="font-serif italic text-xl sm:text-2xl text-stone-900 tracking-tight leading-none mt-0.5">
+              <h1 class="font-serif italic text-xl sm:text-2xl text-slate-900 tracking-tight leading-none mt-0.5">
                 {{ club()?.name || 'Club Deportivo' }}
               </h1>
             </div>
@@ -60,7 +60,7 @@ interface DayOption {
           <div class="flex items-center gap-3">
             <a
               routerLink="/lookup"
-              class="text-xs font-mono uppercase tracking-wider text-stone-700 hover:text-stone-950 px-4 py-2 rounded-xl bg-white border border-stone-200/80 hover:border-stone-400 transition-all shadow-sm"
+              class="text-xs font-mono uppercase tracking-wider text-slate-600 hover:text-slate-950 px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-slate-400 transition-all shadow-xs"
             >
               Consultar Reserva
             </a>
@@ -72,19 +72,19 @@ interface DayOption {
       <main class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-8 w-full flex-1">
         <!-- Minimalist Step Indicator -->
         <nav aria-label="Progreso" class="mb-10">
-          <div class="flex items-center justify-between max-w-md mx-auto border-b border-stone-200/80 pb-3 text-xs">
-            <div class="flex items-center gap-2" [class.text-stone-900]="currentStep() >= 1" [class.text-stone-400]="currentStep() < 1">
-              <span class="font-mono text-[11px] font-semibold">01</span>
+          <div class="flex items-center justify-between max-w-md mx-auto border-b border-slate-200 pb-3 text-xs">
+            <div class="flex items-center gap-2" [class.text-slate-900]="currentStep() >= 1" [class.text-slate-400]="currentStep() < 1">
+              <span class="font-mono text-[11px] font-semibold" [class.text-[#0056FB]]="currentStep() >= 1">01</span>
               <span class="tracking-wider uppercase text-[10px]">Cancha & Hora</span>
             </div>
-            <span class="text-stone-300">/</span>
-            <div class="flex items-center gap-2" [class.text-stone-900]="currentStep() >= 2" [class.text-stone-400]="currentStep() < 2">
-              <span class="font-mono text-[11px] font-semibold">02</span>
+            <span class="text-slate-300">/</span>
+            <div class="flex items-center gap-2" [class.text-slate-900]="currentStep() >= 2" [class.text-slate-400]="currentStep() < 2">
+              <span class="font-mono text-[11px] font-semibold" [class.text-[#0056FB]]="currentStep() >= 2">02</span>
               <span class="tracking-wider uppercase text-[10px]">Tus Datos</span>
             </div>
-            <span class="text-stone-300">/</span>
-            <div class="flex items-center gap-2" [class.text-stone-900]="currentStep() >= 3" [class.text-stone-400]="currentStep() < 3">
-              <span class="font-mono text-[11px] font-semibold">03</span>
+            <span class="text-slate-300">/</span>
+            <div class="flex items-center gap-2" [class.text-slate-900]="currentStep() >= 3" [class.text-slate-400]="currentStep() < 3">
+              <span class="font-mono text-[11px] font-semibold" [class.text-[#0056FB]]="currentStep() >= 3">03</span>
               <span class="tracking-wider uppercase text-[10px]">Confirmación</span>
             </div>
           </div>
@@ -98,8 +98,8 @@ interface DayOption {
             <!-- Date Carousel Selector -->
             <div>
               <div class="flex items-center justify-between mb-3">
-                <span class="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-medium">1. Fecha de Juego</span>
-                <span class="text-xs text-stone-500 font-mono">{{ selectedDate() }}</span>
+                <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">1. Fecha de Juego</span>
+                <span class="text-xs text-slate-500 font-mono">{{ selectedDate() }}</span>
               </div>
 
               <div class="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none">
@@ -109,8 +109,8 @@ interface DayOption {
                     (click)="selectDate(day.dateStr)"
                     class="px-5 py-3 rounded-2xl border text-left shrink-0 transition-all duration-300"
                     [ngClass]="selectedDate() === day.dateStr 
-                      ? 'bg-stone-900 border-stone-900 text-stone-50 shadow-md' 
-                      : 'bg-white border-stone-200/80 text-stone-600 hover:border-stone-400 hover:text-stone-900 shadow-sm'"
+                      ? 'bg-[#0056FB] border-[#0056FB] text-white shadow-md' 
+                      : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/70 shadow-xs'"
                   >
                     <div class="text-[10px] font-mono uppercase tracking-wider opacity-80">{{ day.label }}</div>
                     <div class="text-sm font-semibold mt-0.5 tracking-tight">{{ day.fullLabel }}</div>
@@ -122,14 +122,14 @@ interface DayOption {
             <!-- Hour Selector -->
             <div>
               <div class="flex items-center justify-between mb-3">
-                <span class="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-medium">2. Franja Horaria</span>
-                <span class="font-mono text-xs text-stone-500">
+                <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">2. Franja Horaria</span>
+                <span class="font-mono text-xs text-slate-500">
                   {{ distinctHours().length }} horarios disponibles
                 </span>
               </div>
 
               @if (distinctHours().length === 0 && !isLoadingSlots()) {
-                <div class="p-8 rounded-3xl bg-white border border-stone-200/80 text-center text-stone-500 font-light text-sm shadow-sm">
+                <div class="p-8 rounded-3xl bg-slate-50 border border-slate-200 text-center text-slate-500 font-light text-sm shadow-xs">
                   No hay horarios programados para esta fecha. Selecciona otro día.
                 </div>
               } @else {
@@ -140,8 +140,8 @@ interface DayOption {
                       (click)="selectHour(hour)"
                       class="px-4 py-2.5 rounded-xl border font-mono text-xs shrink-0 transition-all duration-300"
                       [ngClass]="selectedHour() === hour 
-                        ? 'bg-stone-900 text-white font-bold border-stone-900 shadow-sm' 
-                        : 'bg-white border-stone-200/80 text-stone-600 hover:border-stone-400 hover:text-stone-900 shadow-sm'"
+                        ? 'bg-[#0056FB] text-white font-bold border-[#0056FB] shadow-md' 
+                        : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/70 shadow-xs'"
                     >
                       {{ hour }}
                     </button>
@@ -153,13 +153,13 @@ interface DayOption {
             <!-- View Switcher & Court Selector -->
             <div>
               <div class="flex items-center justify-between mb-4">
-                <span class="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-medium">3. Selección de Cancha</span>
-                <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-stone-200/80 text-xs shadow-sm">
+                <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">3. Selección de Cancha</span>
+                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs shadow-inner">
                   <button
                     type="button"
                     (click)="activeView.set('map')"
                     class="px-3 py-1 rounded-lg transition-all"
-                    [ngClass]="activeView() === 'map' ? 'bg-stone-900 text-white font-medium' : 'text-stone-500 hover:text-stone-800'"
+                    [ngClass]="activeView() === 'map' ? 'bg-white text-slate-900 font-medium shadow-xs' : 'text-slate-500 hover:text-slate-900'"
                   >
                     Plano SVG
                   </button>
@@ -167,7 +167,7 @@ interface DayOption {
                     type="button"
                     (click)="activeView.set('list')"
                     class="px-3 py-1 rounded-lg transition-all"
-                    [ngClass]="activeView() === 'list' ? 'bg-stone-900 text-white font-medium' : 'text-stone-500 hover:text-stone-800'"
+                    [ngClass]="activeView() === 'list' ? 'bg-white text-slate-900 font-medium shadow-xs' : 'text-slate-500 hover:text-slate-900'"
                   >
                     Lista
                   </button>
@@ -192,27 +192,27 @@ interface DayOption {
                     @let isAvailable = !!(slot && slot.is_available);
                     @let isSelected = selectedCourtId() === court.id;
                     <div
-                      class="p-5 rounded-2xl border transition-all duration-300 cursor-pointer shadow-sm"
+                      class="p-5 rounded-2xl border transition-all duration-300 cursor-pointer shadow-xs"
                       [ngClass]="isSelected 
-                        ? 'bg-white border-stone-900 ring-2 ring-stone-900/10 shadow-md' 
+                        ? 'bg-white border-[#0056FB] ring-2 ring-[#0056FB]/20 shadow-md' 
                         : isAvailable 
-                          ? 'bg-white border-stone-200/80 hover:border-stone-400' 
-                          : 'bg-stone-100/60 border-stone-200/40 opacity-40 cursor-not-allowed'"
+                          ? 'bg-white border-slate-200 hover:border-slate-400 shadow-xs' 
+                          : 'bg-slate-50/70 border-slate-200/60 opacity-40 cursor-not-allowed'"
                       (click)="isAvailable && onCourtSelect(court.id)"
                     >
                       <div class="flex items-start justify-between">
                         <div>
-                          <div class="text-[10px] font-mono uppercase tracking-widest text-stone-400">{{ court.sport }}</div>
-                          <h3 class="font-semibold text-stone-900 text-base mt-0.5">{{ court.name }}</h3>
-                          <p class="text-xs text-stone-500 mt-1 capitalize">{{ court.surface }} • {{ court.player_format }}</p>
+                          <div class="text-[10px] font-mono uppercase tracking-widest text-slate-400">{{ court.sport }}</div>
+                          <h3 class="font-semibold text-slate-900 text-base mt-0.5">{{ court.name }}</h3>
+                          <p class="text-xs text-slate-500 mt-1 capitalize">{{ court.surface }} • {{ court.player_format }}</p>
                         </div>
                         <div>
                           @if (isAvailable && slot) {
-                            <span class="font-mono text-xs font-semibold text-stone-800 bg-[#edf1ea] px-2.5 py-1 rounded-full border border-[#5a6856]/40">
+                            <span class="font-mono text-xs font-semibold text-[#0056FB] bg-[#EFF6FF] px-2.5 py-1 rounded-full border border-[#0056FB]/30">
                               {{ formatCents(slot.price_cents) }}
                             </span>
                           } @else {
-                            <span class="text-[10px] font-mono uppercase tracking-wider text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full border border-stone-200">
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
                               Ocupada
                             </span>
                           }
@@ -226,24 +226,24 @@ interface DayOption {
 
             <!-- Sticky Bottom Selection Action Drawer -->
             @if (selectedCourtId() && selectedSlot()) {
-              <div class="sticky bottom-4 z-30 p-4 sm:p-5 rounded-3xl bg-white/95 backdrop-blur-2xl border border-stone-200/90 shadow-[0_15px_40px_rgba(0,0,0,0.06)] flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-bottom-4 duration-300">
+              <div class="sticky bottom-4 z-30 p-4 sm:p-5 rounded-3xl bg-white/95 backdrop-blur-2xl border border-slate-200 shadow-[0_15px_40px_rgba(0,0,0,0.08)] flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-bottom-4 duration-300">
                 <div class="flex items-center gap-4 text-left w-full sm:w-auto">
-                  <div class="w-12 h-12 rounded-2xl bg-stone-100 border border-stone-200 flex items-center justify-center font-serif italic text-xl text-stone-900">
+                  <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center font-serif italic text-xl text-[#0056FB] shadow-xs">
                     ✓
                   </div>
                   <div>
-                    <div class="text-[10px] font-mono uppercase tracking-widest text-stone-400">Selección Actual</div>
-                    <div class="font-semibold text-stone-900 text-base leading-tight">{{ selectedSlot()?.court_name }}</div>
-                    <div class="text-xs text-stone-500 font-mono mt-0.5">
+                    <div class="text-[10px] font-mono uppercase tracking-widest text-slate-400">Selección Actual</div>
+                    <div class="font-semibold text-slate-900 text-base leading-tight">{{ selectedSlot()?.court_name }}</div>
+                    <div class="text-xs text-slate-500 font-mono mt-0.5">
                       {{ selectedDate() }} • {{ selectedSlot()?.local_start_time }} - {{ selectedSlot()?.local_end_time }}
                     </div>
                   </div>
                 </div>
 
-                <div class="flex items-center justify-between sm:justify-end gap-5 w-full sm:w-auto border-t sm:border-t-0 border-stone-200/60 pt-3 sm:pt-0">
+                <div class="flex items-center justify-between sm:justify-end gap-5 w-full sm:w-auto border-t sm:border-t-0 border-slate-100 pt-3 sm:pt-0">
                   <div class="text-left sm:text-right">
-                    <div class="text-[10px] uppercase font-mono tracking-wider text-stone-400">Tarifa Total</div>
-                    <div class="font-serif italic text-2xl text-stone-900 leading-none">
+                    <div class="text-[10px] uppercase font-mono tracking-wider text-slate-400">Tarifa Total</div>
+                    <div class="font-serif italic text-2xl text-slate-900 leading-none">
                       {{ formatCents(selectedSlot()?.price_cents) }}
                     </div>
                   </div>
@@ -252,10 +252,10 @@ interface DayOption {
                     type="button"
                     [disabled]="isHolding()"
                     (click)="proceedToHold()"
-                    class="py-3 px-6 rounded-2xl bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-stone-50 font-medium text-xs tracking-wider uppercase font-mono transition-all shadow-md flex items-center gap-2 active:scale-95"
+                    class="py-3 px-6 rounded-2xl bg-[#0056FB] hover:bg-[#0048d6] disabled:opacity-50 text-white font-medium text-xs tracking-wider uppercase font-mono transition-all shadow-md hover:shadow-lg flex items-center gap-2 active:scale-95"
                   >
                     @if (isHolding()) {
-                      <span class="w-3.5 h-3.5 border-2 border-stone-50 border-t-transparent rounded-full animate-spin"></span>
+                      <span class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                       <span>Bloqueando...</span>
                     } @else {
                       <span>Reservar Ahora</span>
@@ -274,10 +274,10 @@ interface DayOption {
         @if (currentStep() === 2 && hold()) {
           <div class="max-w-xl mx-auto space-y-6 animate-in fade-in duration-500">
             <!-- Hold Status Banner -->
-            <div class="flex items-center justify-between p-4 rounded-3xl bg-white/95 backdrop-blur-2xl border border-stone-200/80 shadow-sm">
+            <div class="flex items-center justify-between p-4 rounded-3xl bg-white/95 backdrop-blur-2xl border border-slate-200 shadow-sm">
               <div>
-                <span class="text-[10px] font-mono uppercase tracking-widest text-stone-400 block">Cancha Bloqueada</span>
-                <span class="font-semibold text-stone-900 text-sm">{{ selectedSlot()?.court_name }}</span>
+                <span class="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">Cancha Bloqueada</span>
+                <span class="font-semibold text-slate-900 text-sm">{{ selectedSlot()?.court_name }}</span>
               </div>
               <app-countdown-timer
                 [expiresAt]="hold()?.expires_at || null"
@@ -286,14 +286,14 @@ interface DayOption {
             </div>
 
             <!-- Guest Form Card -->
-            <form (ngSubmit)="confirmBooking()" class="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200/80 shadow-[0_15px_45px_rgba(0,0,0,0.04)] space-y-5">
-              <div class="border-b border-stone-200/60 pb-4">
-                <h2 class="font-serif italic text-2xl text-stone-900">Detalles del Titular</h2>
-                <p class="text-xs text-stone-500 mt-1">Ingresa tus datos para vincular el código de reserva.</p>
+            <form (ngSubmit)="confirmBooking()" class="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 shadow-[0_15px_45px_rgba(0,0,0,0.05)] space-y-5">
+              <div class="border-b border-slate-100 pb-4">
+                <h2 class="font-serif italic text-2xl text-slate-900">Detalles del Titular</h2>
+                <p class="text-xs text-slate-500 mt-1">Ingresa tus datos para vincular el código de reserva.</p>
               </div>
 
               <div>
-                <label for="name" class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">
+                <label for="name" class="block text-[11px] font-mono uppercase tracking-wider text-slate-600 mb-1.5">
                   Nombre Completo
                 </label>
                 <input
@@ -303,12 +303,12 @@ interface DayOption {
                   [(ngModel)]="customerName"
                   name="customerName"
                   placeholder="Ej: Carlos Moreno"
-                  class="w-full px-4 py-3 rounded-2xl bg-stone-50/70 border border-stone-200 text-stone-900 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-stone-600 text-sm transition-colors"
+                  class="w-full px-4 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-[#0056FB] focus:outline-none focus:ring-1 focus:ring-[#0056FB]/30 text-sm transition-colors"
                 />
               </div>
 
               <div>
-                <label for="phone" class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">
+                <label for="phone" class="block text-[11px] font-mono uppercase tracking-wider text-slate-600 mb-1.5">
                   Teléfono Móvil
                 </label>
                 <input
@@ -318,12 +318,12 @@ interface DayOption {
                   [(ngModel)]="customerPhone"
                   name="customerPhone"
                   placeholder="Ej: +57 300 123 4567"
-                  class="w-full px-4 py-3 rounded-2xl bg-stone-50/70 border border-stone-200 text-stone-900 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-stone-600 text-sm transition-colors font-mono"
+                  class="w-full px-4 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-[#0056FB] focus:outline-none focus:ring-1 focus:ring-[#0056FB]/30 text-sm transition-colors font-mono"
                 />
               </div>
 
               <div>
-                <label for="email" class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">
+                <label for="email" class="block text-[11px] font-mono uppercase tracking-wider text-slate-600 mb-1.5">
                   Correo Electrónico
                 </label>
                 <input
@@ -333,14 +333,14 @@ interface DayOption {
                   [(ngModel)]="customerEmail"
                   name="customerEmail"
                   placeholder="carlos@example.com"
-                  class="w-full px-4 py-3 rounded-2xl bg-stone-50/70 border border-stone-200 text-stone-900 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-stone-600 text-sm transition-colors"
+                  class="w-full px-4 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-[#0056FB] focus:outline-none focus:ring-1 focus:ring-[#0056FB]/30 text-sm transition-colors"
                 />
               </div>
 
               <!-- Price Summary -->
-              <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-center justify-between">
-                <span class="text-xs text-stone-600 font-mono">Total a Pagar en Sitio:</span>
-                <span class="font-serif italic text-2xl text-stone-900">{{ formatCents(hold()?.price_cents) }}</span>
+              <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                <span class="text-xs text-slate-600 font-mono">Total a Pagar en Sitio:</span>
+                <span class="font-serif italic text-2xl text-slate-900">{{ formatCents(hold()?.price_cents) }}</span>
               </div>
 
               <!-- Action Buttons -->
@@ -348,17 +348,17 @@ interface DayOption {
                 <button
                   type="button"
                   (click)="cancelHoldAndGoBack()"
-                  class="py-3 px-5 rounded-2xl border border-stone-200 text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-mono uppercase tracking-wider transition-all"
+                  class="py-3 px-5 rounded-2xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-mono uppercase tracking-wider transition-all"
                 >
                   Regresar
                 </button>
                 <button
                   type="submit"
                   [disabled]="isConfirming() || !customerName || !customerPhone || !customerEmail"
-                  class="flex-1 py-3 px-6 rounded-2xl bg-stone-900 hover:bg-stone-800 disabled:opacity-40 text-stone-50 font-medium text-xs font-mono uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 active:scale-95"
+                  class="flex-1 py-3 px-6 rounded-2xl bg-[#0056FB] hover:bg-[#0048d6] disabled:opacity-40 text-white font-medium text-xs font-mono uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 active:scale-95"
                 >
                   @if (isConfirming()) {
-                    <span class="w-3.5 h-3.5 border-2 border-stone-50 border-t-transparent rounded-full animate-spin"></span>
+                    <span class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                     <span>Confirmando...</span>
                   } @else {
                     <span>Confirmar Reserva</span>
@@ -374,59 +374,59 @@ interface DayOption {
         <!-- ============================================================= -->
         @if (currentStep() === 3 && confirmedBooking()) {
           <div class="max-w-xl mx-auto space-y-8 text-center animate-in zoom-in-95 duration-500">
-            <div class="w-16 h-16 rounded-3xl bg-stone-100 border border-stone-200 flex items-center justify-center mx-auto text-stone-900 shadow-sm">
-              <svg class="w-8 h-8 text-stone-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="w-16 h-16 rounded-3xl bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto text-[#0056FB] shadow-xs">
+              <svg class="w-8 h-8 text-[#0056FB]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
             </div>
 
             <div>
-              <h2 class="font-serif italic text-3xl sm:text-4xl text-stone-900">Reserva Confirmada</h2>
-              <p class="text-stone-500 text-xs mt-1">Hemos asegurado tu turno en las instalaciones del club.</p>
+              <h2 class="font-serif italic text-3xl sm:text-4xl text-slate-900">Reserva Confirmada</h2>
+              <p class="text-slate-500 text-xs mt-1">Hemos asegurado tu turno en las instalaciones del club.</p>
             </div>
 
             <!-- Architectural Receipt Card -->
-            <div class="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.06)] text-left space-y-6">
-              <div class="text-center py-4 border-y border-stone-200/70">
-                <div class="font-mono text-[10px] uppercase tracking-[0.3em] text-stone-400 mb-1">Código de Acceso</div>
-                <div class="font-mono text-3xl sm:text-4xl font-extrabold text-stone-900 tracking-widest select-all">
+            <div class="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.06)] text-left space-y-6">
+              <div class="text-center py-4 border-y border-slate-100">
+                <div class="font-mono text-[10px] uppercase tracking-[0.3em] text-slate-400 mb-1">Código de Acceso</div>
+                <div class="font-mono text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-widest select-all">
                   {{ confirmedBooking()?.code }}
                 </div>
-                <div class="text-[11px] text-stone-400 mt-1 font-mono">Presenta este código al ingresar a la pista</div>
+                <div class="text-[11px] text-slate-400 mt-1 font-mono">Presenta este código al ingresar a la pista</div>
               </div>
 
               <div class="grid grid-cols-2 gap-4 text-xs font-sans">
                 <div>
-                  <span class="text-stone-400 uppercase font-mono text-[10px] block">Cancha</span>
-                  <span class="font-semibold text-stone-900 text-sm">{{ confirmedBooking()?.court_name }}</span>
+                  <span class="text-slate-400 uppercase font-mono text-[10px] block">Cancha</span>
+                  <span class="font-semibold text-slate-900 text-sm">{{ confirmedBooking()?.court_name }}</span>
                 </div>
                 <div>
-                  <span class="text-stone-400 uppercase font-mono text-[10px] block">Titular</span>
-                  <span class="font-semibold text-stone-900 text-sm">{{ confirmedBooking()?.customer_name }}</span>
+                  <span class="text-slate-400 uppercase font-mono text-[10px] block">Titular</span>
+                  <span class="font-semibold text-slate-900 text-sm">{{ confirmedBooking()?.customer_name }}</span>
                 </div>
                 <div>
-                  <span class="text-stone-400 uppercase font-mono text-[10px] block">Importe</span>
-                  <span class="font-serif italic text-xl text-stone-900">{{ formatCents(confirmedBooking()?.price_cents) }}</span>
+                  <span class="text-slate-400 uppercase font-mono text-[10px] block">Importe</span>
+                  <span class="font-serif italic text-xl text-slate-900">{{ formatCents(confirmedBooking()?.price_cents) }}</span>
                 </div>
                 <div>
-                  <span class="text-stone-400 uppercase font-mono text-[10px] block">Liquidación</span>
-                  <span class="font-mono text-[11px] text-stone-700 uppercase bg-stone-100 px-2 py-0.5 rounded border border-stone-200 inline-block">{{ confirmedBooking()?.payment_status }}</span>
+                  <span class="text-slate-400 uppercase font-mono text-[10px] block">Liquidación</span>
+                  <span class="font-mono text-[11px] text-[#0056FB] uppercase bg-[#EFF6FF] px-2 py-0.5 rounded border border-[#0056FB]/30 inline-block">{{ confirmedBooking()?.payment_status }}</span>
                 </div>
               </div>
 
-              <div class="pt-4 border-t border-stone-200/70 flex flex-col sm:flex-row gap-3">
+              <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
                 <a
                   [href]="getWhatsAppShareUrl()"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="flex-1 py-3 px-4 rounded-xl bg-stone-100 hover:bg-stone-200/80 border border-stone-200 text-stone-900 font-mono uppercase tracking-wider text-xs text-center transition-all flex items-center justify-center gap-2"
+                  class="flex-1 py-3 px-4 rounded-xl bg-[#0056FB] hover:bg-[#0048d6] text-white font-mono uppercase tracking-wider text-xs text-center transition-all flex items-center justify-center gap-2 shadow-xs"
                 >
                   <span>Compartir en WhatsApp</span>
                 </a>
                 <button
                   type="button"
                   (click)="downloadIcs()"
-                  class="py-3 px-4 rounded-xl border border-stone-200 text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-mono uppercase tracking-wider transition-all"
+                  class="py-3 px-4 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-mono uppercase tracking-wider transition-all"
                 >
                   Guardar (.ics)
                 </button>
@@ -437,7 +437,7 @@ interface DayOption {
               <button
                 type="button"
                 (click)="resetWizard()"
-                class="text-xs text-stone-400 hover:text-stone-800 transition-colors uppercase tracking-widest font-mono"
+                class="text-xs text-slate-500 hover:text-slate-900 transition-colors uppercase tracking-widest font-mono"
               >
                 ← Realizar otra reserva
               </button>
@@ -447,7 +447,7 @@ interface DayOption {
       </main>
 
       <!-- Minimalist Editorial Footer -->
-      <footer class="relative z-10 border-t border-stone-200/60 py-8 text-center text-xs text-stone-400 font-mono tracking-widest">
+      <footer class="relative z-10 border-t border-slate-200 py-8 text-center text-xs text-slate-400 font-mono tracking-widest">
         CANCHARIANE &copy; 2026 • ARIANEDEVS
       </footer>
     </div>

@@ -6,84 +6,88 @@
   --font-serif: 'Instrument Serif', Georgia, serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Architectural Boutique Palette: Warm Alabaster, Warm Sand, Graphite Slate, Muted Olive, Soft Terracotta */
-  --color-canvas-50: #faf9f5;
-  --color-canvas-100: #f5f4ee;
-  --color-canvas-200: #ebe9e1;
-  --color-canvas-300: #dedad0;
+  /* Clean Luminous Palette */
+  --color-canvas-white: #ffffff;
+  --color-canvas-50: #f8fafc;
+  --color-canvas-100: #f1f5f9;
+  --color-canvas-200: #e2e8f0;
 
-  --color-graphite-900: #1c1917;
-  --color-graphite-800: #292524;
-  --color-graphite-700: #44403c;
-  --color-graphite-600: #57534e;
-  --color-graphite-400: #78716c;
+  /* Crisp Typography */
+  --color-text-primary: #0f172a; /* Slate 900 */
+  --color-text-secondary: #64748b; /* Slate 500 */
+  --color-text-muted: #94a3b8; /* Slate 400 */
 
-  --color-olive-700: #3f4738;
-  --color-olive-600: #4e5a46;
-  --color-olive-500: #627258;
-  --color-olive-100: #edf1ea;
-
-  --color-terracotta-700: #8c422d;
-  --color-terracotta-600: #a7533b;
-  --color-terracotta-500: #c26950;
-  --color-terracotta-100: #faede9;
+  /* Electric Blue Accent & Action */
+  --color-electric: #0056FB;
+  --color-electric-hover: #0048d6;
+  --color-electric-glow: rgba(0, 86, 251, 0.25);
 }
 
 /* Base Body Ambient Atmosphere */
 html {
-  background-color: #faf9f5;
-  color: #1c1917;
+  background-color: #ffffff;
+  color: #0f172a;
   scroll-behavior: smooth;
 }
 
-/* Luminous Architectural Sunlit Diffuse Overlay */
+/* Clean Ambient Glow */
 .ambient-lighting {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(circle at 50% -10%, rgba(220, 205, 180, 0.20) 0%, transparent 65%),
-    radial-gradient(circle at 90% 15%, rgba(185, 200, 180, 0.12) 0%, transparent 50%),
-    radial-gradient(circle at 10% 80%, rgba(230, 220, 205, 0.15) 0%, transparent 50%);
+    radial-gradient(circle at 50% -10%, rgba(0, 86, 251, 0.04) 0%, transparent 60%),
+    radial-gradient(circle at 90% 20%, rgba(241, 245, 249, 0.6) 0%, transparent 50%),
+    radial-gradient(circle at 10% 80%, rgba(0, 86, 251, 0.02) 0%, transparent 50%);
 }
 
-/* Luminous Architectural Glassmorphism Container */
+/* Clean White Luxury Glassmorphism Container */
 .luxury-glass {
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(228, 224, 214, 0.8);
-  box-shadow: 0 20px 40px -15px rgba(28, 25, 23, 0.04), 0 2px 6px -1px rgba(28, 25, 23, 0.02);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
 }
 
 .luxury-glass-interactive {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .luxury-glass-interactive:hover {
   background: #ffffff;
-  border-color: rgba(200, 195, 182, 0.9);
+  border-color: rgba(0, 86, 251, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 30px 60px -15px rgba(28, 25, 23, 0.08), 0 4px 12px -2px rgba(28, 25, 23, 0.03);
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.08), 0 0 20px rgba(0, 86, 251, 0.1);
+}
+
+/* Electric CTA Glow */
+.electric-glow {
+  box-shadow: 0 4px 20px rgba(0, 86, 251, 0.35);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.electric-glow:hover {
+  box-shadow: 0 6px 25px rgba(0, 86, 251, 0.5);
 }
 
 /* Architectural Hairline Divider */
 .hairline {
-  border-color: rgba(228, 224, 214, 0.8);
+  border-color: rgba(226, 232, 240, 0.8);
 }
 
 .hairline-hover:hover {
-  border-color: rgba(180, 175, 162, 0.9);
+  border-color: rgba(203, 213, 225, 0.9);
 }
 
-/* Shimmer Loading Skeleton (Light Alabaster) */
+/* Shimmer Loading Skeleton */
 .skeleton-shimmer {
   background: linear-gradient(
     90deg,
-    rgba(235, 233, 225, 0.5) 0%,
-    rgba(255, 255, 255, 0.85) 50%,
-    rgba(235, 233, 225, 0.5) 100%
+    rgba(241, 245, 249, 0.7) 0%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(241, 245, 249, 0.7) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 2s infinite ease-in-out;
@@ -102,26 +106,27 @@ html {
 .blocked-stripes {
   background: repeating-linear-gradient(
     -45deg,
-    rgba(28, 25, 23, 0.03),
-    rgba(28, 25, 23, 0.03) 8px,
-    rgba(28, 25, 23, 0.06) 8px,
-    rgba(28, 25, 23, 0.06) 16px
+    rgba(15, 23, 42, 0.02),
+    rgba(15, 23, 42, 0.02) 8px,
+    rgba(15, 23, 42, 0.05) 8px,
+    rgba(15, 23, 42, 0.05) 16px
   );
 }
 
-/* Minimalist Warm Scrollbars */
+/* Minimalist Clean Light Scrollbars */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #faf9f5;
+  background: #ffffff;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(120, 113, 108, 0.2);
+  background: rgba(148, 163, 184, 0.3);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(120, 113, 108, 0.4);
+  background: rgba(0, 86, 251, 0.6);
 }
+
 

@@ -17,27 +17,27 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
-      class="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/95 backdrop-blur-xl border transition-all duration-300 shadow-sm"
+      class="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white border transition-all duration-300 shadow-xs"
       [ngClass]="containerBorderClass()"
     >
       <div class="relative flex items-center justify-center">
         <span
           class="w-2 h-2 rounded-full"
-          [ngClass]="isUrgent() ? 'bg-rose-500 animate-ping' : 'bg-olive-600'"
+          [ngClass]="isUrgent() ? 'bg-rose-500 animate-ping' : 'bg-[#0056FB] animate-pulse'"
         ></span>
         <span
           class="absolute w-2 h-2 rounded-full"
-          [ngClass]="isUrgent() ? 'bg-rose-600' : 'bg-stone-800'"
+          [ngClass]="isUrgent() ? 'bg-rose-500' : 'bg-[#0056FB]'"
         ></span>
       </div>
 
       <div class="flex items-baseline gap-2">
-        <span class="text-[10px] uppercase font-mono tracking-widest text-stone-500 font-medium">Hold Activo:</span>
-        <span class="font-mono font-medium text-sm tracking-wider" [ngClass]="textClass()">{{ formattedTime() }}</span>
+        <span class="text-[10px] uppercase font-mono tracking-widest text-slate-500 font-medium">Hold Activo:</span>
+        <span class="font-mono font-semibold text-sm tracking-wider" [ngClass]="textClass()">{{ formattedTime() }}</span>
       </div>
 
       <!-- Linear Micro Progress Bar -->
-      <div class="w-12 h-1 rounded-full bg-stone-100 overflow-hidden ml-1">
+      <div class="w-12 h-1 rounded-full bg-slate-100 overflow-hidden ml-1">
         <div
           class="h-full rounded-full transition-all duration-1000 ease-linear"
           [style.width.%]="progressPercent()"
@@ -73,19 +73,19 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
   readonly containerBorderClass = computed(() => {
     if (this.isUrgent()) return 'border-rose-300 shadow-rose-100';
     if (this.isWarning()) return 'border-amber-300 shadow-amber-100';
-    return 'border-stone-200/80 shadow-stone-100';
+    return 'border-slate-200 shadow-slate-100';
   });
 
   readonly textClass = computed(() => {
     if (this.isUrgent()) return 'text-rose-600';
-    if (this.isWarning()) return 'text-amber-800';
-    return 'text-stone-900';
+    if (this.isWarning()) return 'text-amber-700';
+    return 'text-slate-900';
   });
 
   readonly progressClass = computed(() => {
     if (this.isUrgent()) return 'bg-rose-500';
-    if (this.isWarning()) return 'bg-amber-600';
-    return 'bg-stone-800';
+    if (this.isWarning()) return 'bg-amber-500';
+    return 'bg-[#0056FB]';
   });
 
   ngOnInit(): void {

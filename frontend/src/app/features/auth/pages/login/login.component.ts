@@ -12,29 +12,29 @@ import { AuthStore } from '../../../../core/state/auth.store';
   imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-[#faf9f5] text-stone-800 flex items-center justify-center p-4 selection:bg-stone-900 selection:text-stone-50 relative overflow-hidden font-sans">
-      <!-- Luminous Architectural Sunlit Diffuse Overlay -->
+    <div class="min-h-screen bg-[#0A1832] text-[#e2e8f4] flex items-center justify-center p-4 selection:bg-[#0056FB] selection:text-white relative overflow-hidden font-sans">
+      <!-- Organic Deep Marine Ambient Glow -->
       <div class="ambient-lighting"></div>
 
-      <div class="w-full max-w-md space-y-8 p-8 sm:p-10 rounded-3xl bg-white border border-stone-200/90 shadow-[0_20px_60px_rgba(0,0,0,0.06)] relative z-10">
+      <div class="w-full max-w-md space-y-8 p-8 sm:p-10 rounded-3xl bg-[#0e2042]/90 backdrop-blur-2xl border border-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.6)] relative z-10">
         <!-- Logo -->
         <div class="text-center space-y-2">
-          <div class="w-12 h-12 rounded-2xl bg-stone-100 border border-stone-200 flex items-center justify-center mx-auto text-stone-900 font-serif italic text-2xl shadow-sm">
+          <div class="w-12 h-12 rounded-2xl bg-[#132a54] border border-[#0056FB]/40 flex items-center justify-center mx-auto text-[#0056FB] font-serif italic text-2xl shadow-[0_0_20px_rgba(0,86,251,0.3)]">
             C
           </div>
-          <h1 class="text-3xl font-serif italic text-stone-900 tracking-tight">Acceso Administrativo</h1>
-          <p class="text-xs text-stone-500 font-sans">Ingresa tus credenciales para operar el panel del club</p>
+          <h1 class="text-3xl font-serif italic text-white tracking-tight">Acceso Administrativo</h1>
+          <p class="text-xs text-[#8fa3c7] font-sans">Ingresa tus credenciales para operar el panel del club</p>
         </div>
 
         @if (errorMessage()) {
-          <div class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs text-center font-sans animate-in fade-in">
+          <div class="p-3.5 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs text-center font-sans animate-in fade-in">
             {{ errorMessage() }}
           </div>
         }
 
         <form (ngSubmit)="onLogin()" class="space-y-4">
           <div>
-            <label for="email" class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">Correo Electrónico</label>
+            <label for="email" class="block text-[11px] font-mono uppercase tracking-wider text-[#8fa3c7] mb-1.5">Correo Electrónico</label>
             <input
               id="email"
               type="email"
@@ -42,12 +42,12 @@ import { AuthStore } from '../../../../core/state/auth.store';
               [(ngModel)]="email"
               name="email"
               placeholder="admin@canchariane.com"
-              class="w-full px-4 py-3 rounded-xl bg-stone-50/70 border border-stone-200 text-stone-900 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-stone-600 text-sm transition-colors"
+              class="w-full px-4 py-3 rounded-xl bg-[#071328]/80 border border-white/[0.1] text-white placeholder-[#556b8e] focus:bg-[#081734] focus:outline-none focus:border-[#0056FB] focus:ring-1 focus:ring-[#0056FB]/40 text-sm transition-colors font-mono"
             />
           </div>
 
           <div>
-            <label for="password" class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">Contraseña</label>
+            <label for="password" class="block text-[11px] font-mono uppercase tracking-wider text-[#8fa3c7] mb-1.5">Contraseña</label>
             <input
               id="password"
               type="password"
@@ -55,17 +55,17 @@ import { AuthStore } from '../../../../core/state/auth.store';
               [(ngModel)]="password"
               name="password"
               placeholder="••••••••••••"
-              class="w-full px-4 py-3 rounded-xl bg-stone-50/70 border border-stone-200 text-stone-900 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-stone-600 text-sm transition-colors font-mono"
+              class="w-full px-4 py-3 rounded-xl bg-[#071328]/80 border border-white/[0.1] text-white placeholder-[#556b8e] focus:bg-[#081734] focus:outline-none focus:border-[#0056FB] focus:ring-1 focus:ring-[#0056FB]/40 text-sm transition-colors font-mono"
             />
           </div>
 
           <button
             type="submit"
             [disabled]="isLoading() || !email || !password"
-            class="w-full py-3.5 px-4 rounded-xl bg-stone-900 hover:bg-stone-800 disabled:opacity-40 text-stone-50 font-medium text-xs font-mono uppercase tracking-wider transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 mt-6"
+            class="w-full py-3.5 px-4 rounded-xl bg-[#0056FB] hover:bg-[#0048d6] disabled:opacity-40 text-white font-medium text-xs font-mono uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(0,86,251,0.4)] active:scale-[0.98] flex items-center justify-center gap-2 mt-6"
           >
             @if (isLoading()) {
-              <span class="w-3.5 h-3.5 border-2 border-stone-50 border-t-transparent rounded-full animate-spin"></span>
+              <span class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               <span>Iniciando sesión...</span>
             } @else {
               <span>Ingresar al Panel</span>
@@ -74,30 +74,30 @@ import { AuthStore } from '../../../../core/state/auth.store';
         </form>
 
         <!-- Quick Demo Credentials Box -->
-        <div class="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 text-xs space-y-2.5">
-          <div class="text-stone-500 font-mono text-[10px] uppercase tracking-wider flex items-center justify-between">
+        <div class="p-3.5 rounded-2xl bg-[#071328]/80 border border-white/[0.08] text-xs space-y-2.5">
+          <div class="text-[#8fa3c7] font-mono text-[10px] uppercase tracking-wider flex items-center justify-between">
             <span>Credenciales Demo:</span>
-            <span class="text-stone-400">1-Clic</span>
+            <span class="text-[#0056FB] font-semibold">1-Clic</span>
           </div>
           <div class="flex gap-2">
             <button
               type="button"
               (click)="fillCredentials('admin@canchariane.com', 'AdminPassword123!')"
-              class="flex-1 py-2 px-2.5 rounded-xl bg-white hover:bg-stone-100 text-stone-800 border border-stone-200 text-xs font-mono tracking-wider transition-colors shadow-sm"
+              class="flex-1 py-2 px-2.5 rounded-xl bg-[#0e2042] hover:bg-[#132a54] text-[#e2e8f4] border border-white/[0.08] hover:border-[#0056FB]/40 text-xs font-mono tracking-wider transition-colors shadow-sm"
             >
               Administrador
             </button>
             <button
               type="button"
               (click)="fillCredentials('staff@canchariane.com', 'StaffPassword123!')"
-              class="flex-1 py-2 px-2.5 rounded-xl bg-white hover:bg-stone-100 text-stone-800 border border-stone-200 text-xs font-mono tracking-wider transition-colors shadow-sm"
+              class="flex-1 py-2 px-2.5 rounded-xl bg-[#0e2042] hover:bg-[#132a54] text-[#e2e8f4] border border-white/[0.08] hover:border-[#0056FB]/40 text-xs font-mono tracking-wider transition-colors shadow-sm"
             >
               Recepcionista
             </button>
           </div>
         </div>
 
-        <div class="pt-4 border-t border-stone-100 text-center text-xs text-stone-400 font-sans">
+        <div class="pt-4 border-t border-white/[0.08] text-center text-xs text-[#556b8e] font-sans">
           ¿No tienes acceso? Contacta al superadministrador de tu club.
         </div>
       </div>

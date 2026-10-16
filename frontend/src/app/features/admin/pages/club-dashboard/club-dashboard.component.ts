@@ -25,36 +25,36 @@ interface TimelineRow {
   imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-[#faf9f5] text-stone-800 flex flex-col selection:bg-stone-900 selection:text-stone-50 relative overflow-hidden font-sans">
-      <!-- Luminous Architectural Sunlit Diffuse Overlay -->
+    <div class="min-h-screen bg-[#0A1832] text-[#e2e8f4] flex flex-col selection:bg-[#0056FB] selection:text-white relative overflow-hidden font-sans">
+      <!-- Organic Deep Marine Ambient Glow -->
       <div class="ambient-lighting"></div>
 
       <!-- Top Architectural Navbar -->
-      <header class="border-b border-stone-200/70 bg-[#faf9f5]/85 backdrop-blur-xl sticky top-0 z-30">
+      <header class="border-b border-white/[0.08] bg-[#0A1832]/85 backdrop-blur-xl sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <div class="w-10 h-10 rounded-2xl bg-white border border-stone-200 flex items-center justify-center font-serif italic text-sm text-stone-900 shadow-sm">
+            <div class="w-10 h-10 rounded-2xl bg-[#0e2042] border border-white/[0.08] flex items-center justify-center font-serif italic text-sm text-[#0056FB] shadow-[0_0_15px_rgba(0,86,251,0.25)]">
               C
             </div>
             <div>
               <div class="flex items-center gap-2.5">
-                <h1 class="font-display font-semibold text-stone-900 text-sm sm:text-base tracking-wide">Panel de Operaciones</h1>
-                <span class="px-2.5 py-0.5 rounded-full bg-[#edf1ea] text-[#3f4738] border border-[#5a6856]/30 text-[10px] font-mono tracking-wider uppercase flex items-center gap-1.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-[#5a6856] animate-pulse"></span>
+                <h1 class="font-display font-semibold text-white text-sm sm:text-base tracking-wide">Panel de Operaciones</h1>
+                <span class="px-2.5 py-0.5 rounded-full bg-[#0056FB]/20 text-[#99beff] border border-[#0056FB]/40 text-[10px] font-mono tracking-wider uppercase flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#0056FB] animate-pulse"></span>
                   SSE Sincronizado
                 </span>
               </div>
-              <p class="text-[11px] text-stone-400 font-mono tracking-wider uppercase">Recepción & Gestión de Pistas</p>
+              <p class="text-[11px] text-[#8fa3c7] font-mono tracking-wider uppercase">Recepción & Gestión de Pistas</p>
             </div>
           </div>
 
           <!-- User controls & Date navigation -->
           <div class="flex items-center gap-4">
-            <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-stone-200 text-xs font-mono shadow-sm">
+            <div class="flex items-center gap-1 bg-[#0e2042] p-1 rounded-xl border border-white/[0.08] text-xs font-mono shadow-sm">
               <button
                 type="button"
                 (click)="navigateDay(-1)"
-                class="p-2 hover:bg-stone-100 rounded-lg text-stone-500 hover:text-stone-900 transition-colors"
+                class="p-2 hover:bg-[#132a54] rounded-lg text-[#8fa3c7] hover:text-white transition-colors"
                 title="Día anterior"
               >
                 ◀
@@ -62,14 +62,14 @@ interface TimelineRow {
               <button
                 type="button"
                 (click)="goToToday()"
-                class="px-3.5 py-1.5 hover:bg-stone-100 rounded-lg text-stone-800 hover:text-stone-950 transition-colors tracking-wider uppercase text-[11px]"
+                class="px-3.5 py-1.5 hover:bg-[#132a54] rounded-lg text-[#e2e8f4] hover:text-white transition-colors tracking-wider uppercase text-[11px]"
               >
                 {{ formattedDateDisplay() }}
               </button>
               <button
                 type="button"
                 (click)="navigateDay(1)"
-                class="p-2 hover:bg-stone-100 rounded-lg text-stone-500 hover:text-stone-900 transition-colors"
+                class="p-2 hover:bg-[#132a54] rounded-lg text-[#8fa3c7] hover:text-white transition-colors"
                 title="Día siguiente"
               >
                 ▶
@@ -77,14 +77,14 @@ interface TimelineRow {
             </div>
 
             <!-- User Menu -->
-            <div class="flex items-center gap-3 pl-3 border-l border-stone-200">
-              <div class="w-9 h-9 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center text-xs font-mono font-medium text-stone-800 shadow-sm">
+            <div class="flex items-center gap-3 pl-3 border-l border-white/[0.08]">
+              <div class="w-9 h-9 rounded-full bg-[#132a54] border border-white/[0.08] flex items-center justify-center text-xs font-mono font-medium text-white shadow-sm">
                 {{ authStore.userInitials() }}
               </div>
               <button
                 type="button"
                 (click)="logout()"
-                class="text-xs uppercase tracking-wider font-mono text-stone-500 hover:text-stone-900 transition-colors hidden sm:inline"
+                class="text-xs uppercase tracking-wider font-mono text-[#8fa3c7] hover:text-white transition-colors hidden sm:inline"
               >
                 Salir
               </button>
@@ -97,57 +97,57 @@ interface TimelineRow {
       <main class="max-w-7xl mx-auto px-6 py-8 w-full flex-1 space-y-8 relative z-10">
         <!-- Executive KPI Monoliths -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <div class="p-6 rounded-3xl bg-white border border-stone-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex items-center justify-between group hover:border-stone-400 transition-all duration-300">
+          <div class="p-6 rounded-3xl bg-[#0e2042]/90 backdrop-blur-2xl border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex items-center justify-between group hover:border-[#0056FB]/50 transition-all duration-300">
             <div>
-              <span class="text-[10px] text-stone-400 uppercase font-mono tracking-[0.2em] block mb-2">Ocupación Hoy</span>
-              <div class="text-3xl sm:text-4xl font-serif italic text-stone-900">
+              <span class="text-[10px] text-[#8fa3c7] uppercase font-mono tracking-[0.2em] block mb-2">Ocupación Hoy</span>
+              <div class="text-3xl sm:text-4xl font-serif italic text-white">
                 {{ occupancyPct() }}%
               </div>
-              <span class="text-[11px] text-stone-500 font-mono mt-1 block">Capacidad de pista reservada</span>
+              <span class="text-[11px] text-[#556b8e] font-mono mt-1 block">Capacidad de pista reservada</span>
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-500 font-mono text-sm group-hover:scale-105 transition-transform">
+            <div class="w-12 h-12 rounded-2xl bg-[#132a54] border border-white/[0.08] flex items-center justify-center text-[#0056FB] font-mono text-sm group-hover:scale-105 transition-transform shadow-[0_0_15px_rgba(0,86,251,0.2)]">
               %
             </div>
           </div>
 
-          <div class="p-6 rounded-3xl bg-white border border-stone-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex items-center justify-between group hover:border-stone-400 transition-all duration-300">
+          <div class="p-6 rounded-3xl bg-[#0e2042]/90 backdrop-blur-2xl border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex items-center justify-between group hover:border-[#0056FB]/50 transition-all duration-300">
             <div>
-              <span class="text-[10px] text-stone-400 uppercase font-mono tracking-[0.2em] block mb-2">Recaudación Estimada</span>
-              <div class="text-3xl sm:text-4xl font-serif italic text-stone-900">
+              <span class="text-[10px] text-[#8fa3c7] uppercase font-mono tracking-[0.2em] block mb-2">Recaudación Estimada</span>
+              <div class="text-3xl sm:text-4xl font-serif italic text-white">
                 {{ formatCents(totalRevenueCents()) }}
               </div>
-              <span class="text-[11px] text-stone-500 font-mono mt-1 block">Ingresos de la jornada</span>
+              <span class="text-[11px] text-[#556b8e] font-mono mt-1 block">Ingresos de la jornada</span>
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-500 font-mono text-sm group-hover:scale-105 transition-transform">
+            <div class="w-12 h-12 rounded-2xl bg-[#132a54] border border-white/[0.08] flex items-center justify-center text-[#0056FB] font-mono text-sm group-hover:scale-105 transition-transform shadow-[0_0_15px_rgba(0,86,251,0.2)]">
               $
             </div>
           </div>
 
-          <div class="p-6 rounded-3xl bg-white border border-stone-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex items-center justify-between group hover:border-stone-400 transition-all duration-300">
+          <div class="p-6 rounded-3xl bg-[#0e2042]/90 backdrop-blur-2xl border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex items-center justify-between group hover:border-[#0056FB]/50 transition-all duration-300">
             <div>
-              <span class="text-[10px] text-stone-400 uppercase font-mono tracking-[0.2em] block mb-2">Turnos Confirmados</span>
-              <div class="text-3xl sm:text-4xl font-serif italic text-stone-900">
+              <span class="text-[10px] text-[#8fa3c7] uppercase font-mono tracking-[0.2em] block mb-2">Turnos Confirmados</span>
+              <div class="text-3xl sm:text-4xl font-serif italic text-white">
                 {{ activeBookingsCount() }}
               </div>
-              <span class="text-[11px] text-stone-500 font-mono mt-1 block">Partidos programados</span>
+              <span class="text-[11px] text-[#556b8e] font-mono mt-1 block">Partidos programados</span>
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-500 font-mono text-sm group-hover:scale-105 transition-transform">
+            <div class="w-12 h-12 rounded-2xl bg-[#132a54] border border-white/[0.08] flex items-center justify-center text-[#0056FB] font-mono text-sm group-hover:scale-105 transition-transform shadow-[0_0_15px_rgba(0,86,251,0.2)]">
               #
             </div>
           </div>
         </div>
 
         <!-- Timeline Grid Calendar (Architectural Blueprint) -->
-        <div class="rounded-3xl border border-stone-200/90 bg-white shadow-[0_15px_45px_rgba(0,0,0,0.04)] overflow-hidden">
-          <div class="p-6 border-b border-stone-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stone-50/50">
+        <div class="rounded-3xl border border-white/[0.08] bg-[#0e2042]/90 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+          <div class="p-6 border-b border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#071328]/50">
             <div>
-              <h2 class="font-serif italic text-xl sm:text-2xl text-stone-900">Matriz de Ocupación por Cancha</h2>
-              <p class="text-xs text-stone-500 font-mono mt-0.5">Haz clic sobre cualquier celda libre para crear una reserva de mostrador</p>
+              <h2 class="font-serif italic text-xl sm:text-2xl text-white">Matriz de Ocupación por Cancha</h2>
+              <p class="text-xs text-[#8fa3c7] font-mono mt-0.5">Haz clic sobre cualquier celda libre para crear una reserva de mostrador</p>
             </div>
             <button
               type="button"
               (click)="openNewBookingModal()"
-              class="px-5 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 font-medium text-xs tracking-wider uppercase font-mono transition-all duration-300 shadow-sm flex items-center justify-center gap-2 active:scale-95"
+              class="px-5 py-2.5 rounded-xl bg-[#0056FB] hover:bg-[#0048d6] text-white font-medium text-xs tracking-wider uppercase font-mono transition-all duration-300 shadow-[0_0_25px_rgba(0,86,251,0.4)] flex items-center justify-center gap-2 active:scale-95"
             >
               <span>+ Nueva Reserva</span>
             </button>
@@ -157,26 +157,26 @@ interface TimelineRow {
           <div class="overflow-x-auto">
             <div class="min-w-[760px]">
               <!-- Header Row (Courts) -->
-              <div class="grid border-b border-stone-200/80 bg-stone-50/80 text-xs font-mono font-medium text-stone-700"
+              <div class="grid border-b border-white/[0.08] bg-[#071328]/80 text-xs font-mono font-medium text-[#8fa3c7]"
                    [style.grid-template-columns]="gridColumnsStyle()">
-                <div class="p-4 text-center border-r border-stone-200/80 text-stone-400 text-[10px] tracking-[0.2em] uppercase">
+                <div class="p-4 text-center border-r border-white/[0.08] text-[#556b8e] text-[10px] tracking-[0.2em] uppercase">
                   HORA
                 </div>
                 @for (court of courts(); track court.id) {
-                  <div class="p-4 text-center border-r border-stone-200/80 last:border-r-0 flex items-center justify-center gap-2.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-stone-500"></span>
-                    <span class="font-sans font-semibold text-stone-800 tracking-wide">{{ court.name }}</span>
-                    <span class="text-stone-400 font-normal text-[10px] uppercase font-mono tracking-wider">({{ court.sport }})</span>
+                  <div class="p-4 text-center border-r border-white/[0.08] last:border-r-0 flex items-center justify-center gap-2.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#0056FB]"></span>
+                    <span class="font-sans font-semibold text-white tracking-wide">{{ court.name }}</span>
+                    <span class="text-[#556b8e] font-normal text-[10px] uppercase font-mono tracking-wider">({{ court.sport }})</span>
                   </div>
                 }
               </div>
 
               <!-- Hour Rows -->
               @for (row of timelineRows; track row.hourStr) {
-                <div class="grid border-b border-stone-200/60 hover:bg-stone-50/40 transition-colors"
+                <div class="grid border-b border-white/[0.06] hover:bg-white/[0.02] transition-colors"
                      [style.grid-template-columns]="gridColumnsStyle()">
                   <!-- Time Label -->
-                  <div class="p-3 border-r border-stone-200/80 text-xs font-mono text-stone-500 flex items-center justify-center bg-stone-50/30">
+                  <div class="p-3 border-r border-white/[0.08] text-xs font-mono text-[#8fa3c7] flex items-center justify-center bg-[#071328]/40">
                     {{ row.hourStr }}
                   </div>
 
@@ -184,7 +184,7 @@ interface TimelineRow {
                   @for (court of courts(); track court.id) {
                     @let booking = getBookingForCell(court.id, row.hourNum);
                     <div
-                      class="p-1.5 border-r border-stone-200/60 last:border-r-0 min-h-[72px] flex items-center justify-center transition-colors relative"
+                      class="p-1.5 border-r border-white/[0.06] last:border-r-0 min-h-[72px] flex items-center justify-center transition-colors relative"
                     >
                       @if (booking) {
                         <!-- Booked Slot Card -->
@@ -194,12 +194,12 @@ interface TimelineRow {
                           (click)="openBookingDetails(booking)"
                         >
                           <div class="flex items-center justify-between gap-1">
-                            <span class="font-medium truncate max-w-[130px] text-stone-900 text-xs">{{ booking.customer_name }}</span>
+                            <span class="font-medium truncate max-w-[130px] text-white text-xs">{{ booking.customer_name }}</span>
                             <span class="font-mono text-[9px] uppercase tracking-wider opacity-75">{{ booking.code }}</span>
                           </div>
-                          <div class="flex items-center justify-between text-[11px] mt-1.5 pt-1.5 border-t border-black/[0.06]">
+                          <div class="flex items-center justify-between text-[11px] mt-1.5 pt-1.5 border-t border-white/[0.08]">
                             <span class="opacity-70 font-mono text-[10px]">{{ booking.customer_phone }}</span>
-                            <span class="font-serif italic text-stone-900">{{ formatCents(booking.price_cents) }}</span>
+                            <span class="font-serif italic text-white">{{ formatCents(booking.price_cents) }}</span>
                           </div>
                         </div>
                       } @else {
@@ -207,10 +207,10 @@ interface TimelineRow {
                         <button
                           type="button"
                           (click)="openSlotBooking(court.id, row.hourStr)"
-                          class="w-full h-full rounded-2xl hover:bg-stone-100/70 border border-transparent hover:border-stone-200 transition-all flex items-center justify-center group"
+                          class="w-full h-full rounded-2xl hover:bg-[#132a54]/50 border border-transparent hover:border-[#0056FB]/30 transition-all flex items-center justify-center group"
                           title="Crear reserva en este horario"
                         >
-                          <span class="text-[11px] font-mono text-stone-400 group-hover:text-stone-800 transition-colors uppercase tracking-wider">
+                          <span class="text-[11px] font-mono text-[#556b8e] group-hover:text-[#99beff] transition-colors uppercase tracking-wider">
                             + Libre
                           </span>
                         </button>
@@ -228,17 +228,17 @@ interface TimelineRow {
       <!-- MODAL: NUEVA RESERVA MOSTRADOR / TELÉFONO                      -->
       <!-- ============================================================= -->
       @if (showCreateModal()) {
-        <div class="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div class="w-full max-w-lg p-7 rounded-3xl bg-white border border-stone-200 shadow-[0_25px_80px_rgba(0,0,0,0.12)] space-y-6 animate-in fade-in zoom-in-95 font-sans">
-            <div class="flex items-center justify-between pb-4 border-b border-stone-200/80">
+        <div class="fixed inset-0 z-50 bg-[#071328]/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div class="w-full max-w-lg p-7 rounded-3xl bg-[#0e2042] border border-white/[0.08] shadow-[0_25px_80px_rgba(0,0,0,0.8)] space-y-6 animate-in fade-in zoom-in-95 font-sans">
+            <div class="flex items-center justify-between pb-4 border-b border-white/[0.08]">
               <div>
-                <span class="text-[10px] uppercase tracking-[0.2em] text-stone-400 font-mono block">Mostrador & Teléfono</span>
-                <h3 class="font-serif italic text-2xl text-stone-900">Nueva Reserva Manual</h3>
+                <span class="text-[10px] uppercase tracking-[0.2em] text-[#8fa3c7] font-mono block">Mostrador & Teléfono</span>
+                <h3 class="font-serif italic text-2xl text-white">Nueva Reserva Manual</h3>
               </div>
               <button
                 type="button"
                 (click)="showCreateModal.set(false)"
-                class="w-8 h-8 rounded-full border border-stone-200 flex items-center justify-center text-stone-500 hover:text-stone-900 hover:border-stone-400 transition-colors text-sm"
+                class="w-8 h-8 rounded-full border border-white/[0.1] flex items-center justify-center text-[#8fa3c7] hover:text-white hover:border-white/30 transition-colors text-sm"
               >
                 ✕
               </button>
@@ -247,74 +247,74 @@ interface TimelineRow {
             <form (ngSubmit)="submitManualBooking()" class="space-y-4">
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">Pista</label>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-[#8fa3c7] mb-1.5">Pista</label>
                   <select
                     [(ngModel)]="modalCourtId"
                     name="modalCourtId"
-                    class="w-full px-4 py-3 rounded-xl bg-stone-50/70 border border-stone-200 text-stone-900 text-sm focus:outline-none focus:border-stone-600 transition-colors"
+                    class="w-full px-4 py-3 rounded-xl bg-[#071328]/80 border border-white/[0.1] text-white text-sm focus:outline-none focus:border-[#0056FB] transition-colors"
                   >
                     @for (c of courts(); track c.id) {
-                      <option [value]="c.id" class="bg-white text-stone-900">{{ c.name }}</option>
+                      <option [value]="c.id" class="bg-[#0e2042] text-white">{{ c.name }}</option>
                     }
                   </select>
                 </div>
 
                 <div>
-                  <label class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">Hora Inicio</label>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-[#8fa3c7] mb-1.5">Hora Inicio</label>
                   <input
                     type="time"
                     [(ngModel)]="modalTime"
                     name="modalTime"
-                    class="w-full px-4 py-3 rounded-xl bg-stone-50/70 border border-stone-200 text-stone-900 text-sm font-mono focus:outline-none focus:border-stone-600 transition-colors"
+                    class="w-full px-4 py-3 rounded-xl bg-[#071328]/80 border border-white/[0.1] text-white text-sm font-mono focus:outline-none focus:border-[#0056FB] transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">Nombre del Titular *</label>
+                <label class="block text-[11px] font-mono uppercase tracking-wider text-[#8fa3c7] mb-1.5">Nombre del Titular *</label>
                 <input
                   type="text"
                   required
                   [(ngModel)]="modalCustomerName"
                   name="modalCustomerName"
                   placeholder="Ej: Daniel Gómez"
-                  class="w-full px-4 py-3 rounded-xl bg-stone-50/70 border border-stone-200 text-stone-900 placeholder:text-stone-400 text-sm focus:outline-none focus:border-stone-600 transition-colors"
+                  class="w-full px-4 py-3 rounded-xl bg-[#071328]/80 border border-white/[0.1] text-white placeholder-[#556b8e] text-sm focus:outline-none focus:border-[#0056FB] transition-colors"
                 />
               </div>
 
               <div>
-                <label class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">Teléfono / WhatsApp *</label>
+                <label class="block text-[11px] font-mono uppercase tracking-wider text-[#8fa3c7] mb-1.5">Teléfono / WhatsApp *</label>
                 <input
                   type="tel"
                   required
                   [(ngModel)]="modalCustomerPhone"
                   name="modalCustomerPhone"
                   placeholder="Ej: +57 311 000 1122"
-                  class="w-full px-4 py-3 rounded-xl bg-stone-50/70 border border-stone-200 text-stone-900 placeholder:text-stone-400 text-sm font-mono focus:outline-none focus:border-stone-600 transition-colors"
+                  class="w-full px-4 py-3 rounded-xl bg-[#071328]/80 border border-white/[0.1] text-white placeholder-[#556b8e] text-sm font-mono focus:outline-none focus:border-[#0056FB] transition-colors"
                 />
               </div>
 
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">Tarifa (COP)</label>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-[#8fa3c7] mb-1.5">Tarifa (COP)</label>
                   <input
                     type="number"
                     step="5000"
                     [(ngModel)]="modalPriceCents"
                     name="modalPriceCents"
-                    class="w-full px-4 py-3 rounded-xl bg-stone-50/70 border border-stone-200 text-stone-900 text-sm font-mono focus:outline-none focus:border-stone-600 transition-colors"
+                    class="w-full px-4 py-3 rounded-xl bg-[#071328]/80 border border-white/[0.1] text-white text-sm font-mono focus:outline-none focus:border-[#0056FB] transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">Estado Pago</label>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-[#8fa3c7] mb-1.5">Estado Pago</label>
                   <select
                     [(ngModel)]="modalPaymentStatus"
                     name="modalPaymentStatus"
-                    class="w-full px-4 py-3 rounded-xl bg-stone-50/70 border border-stone-200 text-stone-900 text-sm focus:outline-none focus:border-stone-600 transition-colors"
+                    class="w-full px-4 py-3 rounded-xl bg-[#071328]/80 border border-white/[0.1] text-white text-sm focus:outline-none focus:border-[#0056FB] transition-colors"
                   >
-                    <option value="paid" class="bg-white">Pagado en Sitio</option>
-                    <option value="pending_on_site" class="bg-white">Pendiente por Pagar</option>
+                    <option value="paid" class="bg-[#0e2042]">Pagado en Sitio</option>
+                    <option value="pending_on_site" class="bg-[#0e2042]">Pendiente por Pagar</option>
                   </select>
                 </div>
               </div>
@@ -323,14 +323,14 @@ interface TimelineRow {
                 <button
                   type="button"
                   (click)="showCreateModal.set(false)"
-                  class="px-5 py-3 rounded-xl border border-stone-200 text-stone-600 text-xs font-mono uppercase tracking-wider hover:bg-stone-50 transition-colors"
+                  class="px-5 py-3 rounded-xl border border-white/[0.1] text-[#8fa3c7] text-xs font-mono uppercase tracking-wider hover:bg-[#132a54] transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   [disabled]="isSubmitting() || !modalCustomerName || !modalCustomerPhone"
-                  class="flex-1 py-3 rounded-xl bg-stone-900 hover:bg-stone-800 disabled:opacity-40 text-stone-50 font-medium text-xs font-mono uppercase tracking-wider transition-all duration-300 shadow-md"
+                  class="flex-1 py-3 rounded-xl bg-[#0056FB] hover:bg-[#0048d6] disabled:opacity-40 text-white font-medium text-xs font-mono uppercase tracking-wider transition-all duration-300 shadow-[0_0_25px_rgba(0,86,251,0.4)]"
                 >
                   {{ isSubmitting() ? 'Guardando...' : 'Confirmar Reserva' }}
                 </button>
@@ -344,38 +344,38 @@ interface TimelineRow {
       <!-- MODAL: DETALLES DE RESERVA Y ACCIONES RÁPIDAS                 -->
       <!-- ============================================================= -->
       @if (selectedBooking()) {
-        <div class="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div class="w-full max-w-md p-7 rounded-3xl bg-white border border-stone-200 shadow-[0_25px_80px_rgba(0,0,0,0.12)] space-y-6 animate-in fade-in zoom-in-95 font-sans">
-            <div class="flex items-start justify-between pb-4 border-b border-stone-200/80">
+        <div class="fixed inset-0 z-50 bg-[#071328]/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div class="w-full max-w-md p-7 rounded-3xl bg-[#0e2042] border border-white/[0.08] shadow-[0_25px_80px_rgba(0,0,0,0.8)] space-y-6 animate-in fade-in zoom-in-95 font-sans">
+            <div class="flex items-start justify-between pb-4 border-b border-white/[0.08]">
               <div>
-                <span class="text-[10px] font-mono text-stone-400 tracking-[0.2em] uppercase block mb-1">CÓDIGO: {{ selectedBooking()?.code }}</span>
-                <h3 class="font-serif italic text-2xl text-stone-900">{{ selectedBooking()?.customer_name }}</h3>
+                <span class="text-[10px] font-mono text-[#8fa3c7] tracking-[0.2em] uppercase block mb-1">CÓDIGO: {{ selectedBooking()?.code }}</span>
+                <h3 class="font-serif italic text-2xl text-white">{{ selectedBooking()?.customer_name }}</h3>
               </div>
               <button
                 type="button"
                 (click)="selectedBooking.set(null)"
-                class="w-8 h-8 rounded-full border border-stone-200 flex items-center justify-center text-stone-500 hover:text-stone-900 hover:border-stone-400 transition-colors text-sm"
+                class="w-8 h-8 rounded-full border border-white/[0.1] flex items-center justify-center text-[#8fa3c7] hover:text-white hover:border-white/30 transition-colors text-sm"
               >
                 ✕
               </button>
             </div>
 
             <div class="space-y-3 text-xs">
-              <div class="flex justify-between py-1.5 border-b border-stone-100">
-                <span class="text-stone-500 font-mono uppercase text-[10px] tracking-wider">Cancha</span>
-                <span class="font-medium text-stone-800">{{ selectedBooking()?.court_name }}</span>
+              <div class="flex justify-between py-1.5 border-b border-white/[0.06]">
+                <span class="text-[#556b8e] font-mono uppercase text-[10px] tracking-wider">Cancha</span>
+                <span class="font-medium text-[#e2e8f4]">{{ selectedBooking()?.court_name }}</span>
               </div>
-              <div class="flex justify-between py-1.5 border-b border-stone-100">
-                <span class="text-stone-500 font-mono uppercase text-[10px] tracking-wider">Teléfono</span>
-                <span class="font-mono text-stone-800">{{ selectedBooking()?.customer_phone }}</span>
+              <div class="flex justify-between py-1.5 border-b border-white/[0.06]">
+                <span class="text-[#556b8e] font-mono uppercase text-[10px] tracking-wider">Teléfono</span>
+                <span class="font-mono text-[#e2e8f4]">{{ selectedBooking()?.customer_phone }}</span>
               </div>
-              <div class="flex justify-between py-1.5 border-b border-stone-100">
-                <span class="text-stone-500 font-mono uppercase text-[10px] tracking-wider">Valor</span>
-                <span class="font-serif italic text-stone-900 text-base">{{ formatCents(selectedBooking()?.price_cents) }}</span>
+              <div class="flex justify-between py-1.5 border-b border-white/[0.06]">
+                <span class="text-[#556b8e] font-mono uppercase text-[10px] tracking-wider">Valor</span>
+                <span class="font-serif italic text-white text-base">{{ formatCents(selectedBooking()?.price_cents) }}</span>
               </div>
-              <div class="flex justify-between py-1.5 border-b border-stone-100">
-                <span class="text-stone-500 font-mono uppercase text-[10px] tracking-wider">Estado Pago</span>
-                <span class="font-mono text-stone-700 uppercase px-2 py-0.5 rounded bg-stone-100 border border-stone-200 text-[10px]">{{ selectedBooking()?.payment_status }}</span>
+              <div class="flex justify-between py-1.5 border-b border-white/[0.06]">
+                <span class="text-[#556b8e] font-mono uppercase text-[10px] tracking-wider">Estado Pago</span>
+                <span class="font-mono text-[#99beff] uppercase px-2 py-0.5 rounded bg-[#0056FB]/20 border border-[#0056FB]/40 text-[10px]">{{ selectedBooking()?.payment_status }}</span>
               </div>
             </div>
 
@@ -384,21 +384,21 @@ interface TimelineRow {
               <button
                 type="button"
                 (click)="updateStatus('completed')"
-                class="w-full py-3 rounded-xl bg-stone-100 hover:bg-stone-200/80 border border-stone-200 text-stone-900 font-mono uppercase tracking-wider text-xs transition-colors shadow-sm"
+                class="w-full py-3 rounded-xl bg-[#0056FB] hover:bg-[#0048d6] text-white font-mono uppercase tracking-wider text-xs transition-colors shadow-[0_0_20px_rgba(0,86,251,0.35)]"
               >
                 ✓ Marcar como Completada
               </button>
               <button
                 type="button"
                 (click)="updateStatus('no_show')"
-                class="w-full py-3 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-amber-800 font-mono uppercase tracking-wider text-xs transition-colors shadow-sm"
+                class="w-full py-3 rounded-xl bg-amber-950/40 hover:bg-amber-900/60 border border-amber-500/30 text-amber-300 font-mono uppercase tracking-wider text-xs transition-colors shadow-sm"
               >
                 ⚠ Marcar No-Show
               </button>
               <button
                 type="button"
                 (click)="updateStatus('cancelled')"
-                class="w-full py-3 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-700 font-mono uppercase tracking-wider text-xs transition-colors"
+                class="w-full py-3 rounded-xl border border-rose-500/30 hover:bg-rose-950/40 text-rose-400 font-mono uppercase tracking-wider text-xs transition-colors"
               >
                 ✕ Cancelar Reserva
               </button>
@@ -637,11 +637,11 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
 
   getBookingCardClasses(b: AdminBooking): string {
     if (b.status === 'confirmed') {
-      return 'bg-[#edf1ea] border-[#5a6856]/40 text-[#2b3528] hover:border-[#5a6856]';
+      return 'bg-[#0d2247] border-[#0056FB]/60 text-white hover:border-[#0056FB] shadow-[0_0_15px_rgba(0,86,251,0.2)]';
     }
     if (b.status === 'held') {
-      return 'bg-[#fef3eb] border-[#c26950]/40 text-[#8c422d] hover:border-[#c26950]';
+      return 'bg-[#2b1e0f] border-amber-500/50 text-amber-200 hover:border-amber-400';
     }
-    return 'bg-stone-100 border-stone-200 text-stone-500';
+    return 'bg-[#071328] border-white/[0.08] text-[#8fa3c7]';
   }
 }

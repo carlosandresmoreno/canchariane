@@ -16,7 +16,7 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
-      class="relative w-full h-[460px] sm:h-[540px] rounded-3xl overflow-hidden bg-[#f4f2ea] border border-stone-200/80 shadow-[inset_0_2px_8px_rgba(0,0,0,0.02)] select-none"
+      class="relative w-full h-[460px] sm:h-[540px] rounded-3xl overflow-hidden bg-[#F8FAFC] border border-slate-200 shadow-sm select-none"
       (mousedown)="onMouseDown($event)"
       (mousemove)="onMouseMove($event)"
       (mouseup)="onMouseUp()"
@@ -27,16 +27,16 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
     >
       <!-- Subtle Architectural Coordinate Grid Overlay -->
       <div class="absolute top-4 left-4 z-20 pointer-events-none flex items-center gap-2">
-        <span class="w-1.5 h-1.5 rounded-full bg-stone-500 animate-pulse"></span>
-        <span class="font-mono text-[10px] uppercase tracking-widest text-stone-500">Plano Arquitectónico Interactivo</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-[#0056FB] animate-pulse"></span>
+        <span class="font-mono text-[10px] uppercase tracking-widest text-slate-500 font-medium">Plano Arquitectónico Interactivo</span>
       </div>
 
       <!-- Zoom & Pan Floating Controls -->
-      <div class="absolute top-4 right-4 z-20 flex flex-col gap-1.5 bg-white/90 backdrop-blur-xl p-1.5 rounded-2xl border border-stone-200/80 shadow-md">
+      <div class="absolute top-4 right-4 z-20 flex flex-col gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 shadow-sm">
         <button
           type="button"
           (click)="zoomIn()"
-          class="w-8 h-8 flex items-center justify-center rounded-xl bg-stone-50 text-stone-700 hover:bg-stone-100 transition-all text-base font-light"
+          class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 text-slate-700 hover:bg-[#0056FB] hover:text-white transition-all text-base font-light shadow-xs"
           title="Acercar plano"
           aria-label="Acercar plano"
         >
@@ -45,7 +45,7 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
         <button
           type="button"
           (click)="zoomOut()"
-          class="w-8 h-8 flex items-center justify-center rounded-xl bg-stone-50 text-stone-700 hover:bg-stone-100 transition-all text-base font-light"
+          class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 text-slate-700 hover:bg-[#0056FB] hover:text-white transition-all text-base font-light shadow-xs"
           title="Alejar plano"
           aria-label="Alejar plano"
         >
@@ -54,7 +54,7 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
         <button
           type="button"
           (click)="resetView()"
-          class="w-8 h-8 flex items-center justify-center rounded-xl bg-stone-50 text-stone-600 hover:bg-stone-100 transition-all font-mono text-[10px]"
+          class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 hover:bg-[#0056FB] hover:text-white transition-all font-mono text-[10px] shadow-xs"
           title="Restablecer escala"
           aria-label="Restablecer escala"
         >
@@ -63,18 +63,18 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
       </div>
 
       <!-- Minimalist Luxury Legend -->
-      <div class="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-4 bg-white/90 backdrop-blur-xl px-4 py-2 rounded-2xl border border-stone-200/80 text-[11px] font-medium text-stone-600 shadow-sm">
+      <div class="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-4 bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-200 text-[11px] font-medium text-slate-600 shadow-sm">
         <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-[#edf1ea] border border-[#5a6856]"></span>
-          <span class="text-stone-700">Disponible</span>
+          <span class="w-2.5 h-2.5 rounded-full bg-white border-2 border-[#0056FB]"></span>
+          <span class="text-slate-800 font-medium">Disponible</span>
         </div>
         <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-stone-200 border border-stone-300"></span>
-          <span class="text-stone-400">Ocupada</span>
+          <span class="w-2.5 h-2.5 rounded-full bg-slate-200 border border-slate-300"></span>
+          <span class="text-slate-400">Ocupada</span>
         </div>
         <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-stone-900 ring-2 ring-stone-900/20"></span>
-          <span class="text-stone-900 font-semibold">Seleccionada</span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#0056FB] ring-2 ring-[#0056FB]/25"></span>
+          <span class="text-slate-900 font-semibold">Seleccionada</span>
         </div>
       </div>
 
@@ -87,7 +87,7 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
         <defs>
           <!-- Subtle Blueprint Millimeter Grid -->
           <pattern id="arch-grid" width="50" height="50" patternUnits="userSpaceOnUse">
-            <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(0, 0, 0, 0.035)" stroke-width="0.75" />
+            <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(15, 23, 42, 0.04)" stroke-width="0.75" />
           </pattern>
         </defs>
 
@@ -112,8 +112,8 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
                   [attr.y]="decShape.y"
                   [attr.width]="decShape.w"
                   [attr.height]="decShape.h"
-                  fill="rgba(255, 255, 255, 0.7)"
-                  stroke="rgba(180, 175, 160, 0.5)"
+                  fill="rgba(255, 255, 255, 0.95)"
+                  stroke="rgba(203, 213, 225, 0.8)"
                   stroke-width="1"
                   rx="8"
                 />
@@ -123,7 +123,7 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
                     [attr.y]="decShape.y + decShape.h / 2"
                     text-anchor="middle"
                     dominant-baseline="middle"
-                    fill="#78716c"
+                    fill="#64748b"
                     font-size="11"
                     font-family="'Plus Jakarta Sans', sans-serif"
                     font-weight="500"
@@ -199,8 +199,8 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
                       width="96"
                       height="24"
                       rx="12"
-                      fill="#edf1ea"
-                      stroke="#5a6856"
+                      fill="#EFF6FF"
+                      stroke="#0056FB"
                       stroke-width="1"
                     />
                     <text
@@ -208,7 +208,7 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
                       [attr.y]="courtItem.shape.y + courtItem.shape.h / 2 + 23"
                       text-anchor="middle"
                       dominant-baseline="middle"
-                      fill="#3f4738"
+                      fill="#0056FB"
                       font-family="'JetBrains Mono', monospace"
                       font-size="11"
                       font-weight="600"
@@ -222,7 +222,7 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
                     [attr.y]="courtItem.shape.y + courtItem.shape.h / 2 + 16"
                     text-anchor="middle"
                     dominant-baseline="middle"
-                    fill="#a8a29e"
+                    fill="#94A3B8"
                     font-family="'Plus Jakarta Sans', sans-serif"
                     font-size="12"
                     font-weight="400"
@@ -324,31 +324,31 @@ export class CourtMapComponent {
     if (isSelected) {
       return {
         isAvailable,
-        fill: '#ffffff',
-        stroke: '#1c1917',
+        fill: '#EFF6FF',
+        stroke: '#0056FB',
         strokeWidth: 2.5,
-        titleColor: '#1c1917',
-        serviceLineStroke: 'rgba(28, 25, 23, 0.15)'
+        titleColor: '#0056FB',
+        serviceLineStroke: 'rgba(0, 86, 251, 0.25)'
       };
     }
 
     if (isAvailable) {
       return {
         isAvailable: true,
-        fill: '#ffffff',
-        stroke: '#5a6856',
+        fill: '#FFFFFF',
+        stroke: '#0056FB',
         strokeWidth: 1.5,
-        titleColor: '#292524',
-        serviceLineStroke: 'rgba(90, 104, 86, 0.2)'
+        titleColor: '#0F172A',
+        serviceLineStroke: 'rgba(0, 86, 251, 0.15)'
       };
     }
 
     return {
       isAvailable: false,
-      fill: 'rgba(235, 233, 226, 0.6)',
-      stroke: 'rgba(215, 210, 200, 0.8)',
+      fill: '#F1F5F9',
+      stroke: '#E2E8F0',
       strokeWidth: 1,
-      titleColor: '#a8a29e',
+      titleColor: '#94A3B8',
       serviceLineStroke: 'rgba(0, 0, 0, 0.03)'
     };
   }
