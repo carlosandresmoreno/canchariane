@@ -1,0 +1,46 @@
+# Production Caddyfile with automated Let's Encrypt SSL and security headers
+# Replace {$DOMAIN:localhost} with your real production domain (e.g. canchariane.com)
+
+{$DOMAIN:localhost} {
+    # Security Headers
+    header {
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        -Server
+    }
+
+    # Encode with gzip and zstd
+    encode zstd gzip
+
+    # Reverse proxy API requests to FastAPI backend
+    handle /api/* {
+        reverse_proxy backend:8000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Health check endpoint
+    handle /health* {
+        reverse_proxy backend:8000
+    }
+
+    # Reverse proxy all other requests to Angular Frontend
+    handle {
+        reverse_proxy frontend:80 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 50mb
+            roll_keep 10
+        }
+    }
+}

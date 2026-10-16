@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     HOLD_EXPIRATION_MINUTES: int = 10
     MIN_LEAD_TIME_MINUTES: int = 30
 
+    # CORS
+    CORS_ORIGINS: list[str] = ["*"]
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

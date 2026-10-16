@@ -1,0 +1,97 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: canchariane_prod_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-canchariane}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-canchariane_secure_password_replace_in_prod}
+      POSTGRES_DB: ${POSTGRES_DB:-canchariane_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-canchariane} -d ${POSTGRES_DB:-canchariane_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+    networks:
+      - canchariane_network
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: canchariane_prod_backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "false"
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-canchariane}:${POSTGRES_PASSWORD:-canchariane_secure_password_replace_in_prod}@postgres:5432/${POSTGRES_DB:-canchariane_db}
+      SYNC_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-canchariane}:${POSTGRES_PASSWORD:-canchariane_secure_password_replace_in_prod}@postgres:5432/${POSTGRES_DB:-canchariane_db}
+      JWT_SECRET: ${JWT_SECRET:-replace_with_a_super_secret_64_byte_random_string_in_production}
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 15
+      REFRESH_TOKEN_EXPIRE_DAYS: 30
+      DEFAULT_TIMEZONE: America/Bogota
+      HOLD_EXPIRATION_MINUTES: 10
+      MIN_LEAD_TIME_MINUTES: 30
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - canchariane_network
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: canchariane_prod_frontend
+    restart: always
+    depends_on:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      - canchariane_network
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: canchariane_prod_caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # HTTP/3 QUIC
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - caddy_logs:/var/log/caddy
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - canchariane_network
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
+  caddy_logs:
+
+networks:
+  canchariane_network:
+    driver: bridge

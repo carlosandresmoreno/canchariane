@@ -38,4 +38,4 @@ ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:create_app --factory --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "alembic upgrade head && python scripts/seed_demo_club.py && uvicorn app.main:create_app --factory --host 0.0.0.0 --port 8000"]
