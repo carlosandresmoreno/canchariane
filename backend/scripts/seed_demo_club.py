@@ -1,6 +1,12 @@
 import asyncio
-import uuid6
 from datetime import time
+from pathlib import Path
+import sys
+
+# Ensure backend root is on python path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+import uuid6
 from sqlalchemy import select
 from app.infrastructure.db.session import async_session_factory
 from app.infrastructure.db.models import (

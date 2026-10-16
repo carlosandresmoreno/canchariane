@@ -34,6 +34,7 @@ COPY --chown=appuser:appuser . .
 
 USER appuser
 ENV PATH="/home/appuser/.local/bin:$PATH"
+ENV PYTHONPATH="/app"
 ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000

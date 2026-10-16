@@ -15,11 +15,17 @@ export const authGuard: CanActivateFn = (route, state) => {
   });
 };
 
-export const superadminGuard: CanActivateFn = () => {
+export const superadminGuard: CanActivateFn = (route, state) => {
   const authStore = inject(AuthStore);
   const router = inject(Router);
 
-  if (authStore.isAuthenticated() && authStore.isSuperadmin()) {
+  if (!authStore.isAuthenticated()) {
+    return router.createUrlTree(['/auth/login'], {
+      queryParams: { returnUrl: state.url }
+    });
+  }
+
+  if (authStore.isSuperadmin()) {
     return true;
   }
 

@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard, superadminGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -27,9 +28,18 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./features/admin/pages/club-dashboard/club-dashboard.component').then(
         (m) => m.ClubDashboardComponent
+      )
+  },
+  {
+    path: 'superadmin',
+    canActivate: [superadminGuard],
+    loadComponent: () =>
+      import('./features/superadmin/pages/superadmin-dashboard/superadmin-dashboard.component').then(
+        (m) => m.SuperadminDashboardComponent
       )
   },
   {

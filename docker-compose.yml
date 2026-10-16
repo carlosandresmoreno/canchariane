@@ -25,6 +25,7 @@ services:
     container_name: canchariane_backend
     restart: unless-stopped
     environment:
+      PYTHONPATH: /app
       ENVIRONMENT: production
       DATABASE_URL: postgresql+asyncpg://canchariane:canchariane_password@postgres:5432/canchariane_db
       SYNC_DATABASE_URL: postgresql+psycopg://canchariane:canchariane_password@postgres:5432/canchariane_db
