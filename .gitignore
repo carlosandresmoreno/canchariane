@@ -1,0 +1,29 @@
+# Python / Virtual Environment
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Node / Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Docker & Database
+postgres_data/
+
+# Environment files with sensitive credentials
+*.env
+!.env.example
+
+# IDE / System
+.vscode/
+.idea/
+.DS_Store
+*.log
