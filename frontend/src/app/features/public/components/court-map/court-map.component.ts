@@ -16,7 +16,7 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
-      class="relative w-full h-[450px] sm:h-[520px] rounded-2xl overflow-hidden bg-slate-950 border border-slate-800/80 shadow-2xl select-none"
+      class="relative w-full h-[460px] sm:h-[540px] rounded-3xl overflow-hidden bg-[#f4f2ea] border border-stone-200/80 shadow-[inset_0_2px_8px_rgba(0,0,0,0.02)] select-none"
       (mousedown)="onMouseDown($event)"
       (mousemove)="onMouseMove($event)"
       (mouseup)="onMouseUp()"
@@ -25,50 +25,56 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
       (touchmove)="onTouchMove($event)"
       (touchend)="onTouchEnd()"
     >
-      <!-- Zoom & Pan Controls Floating Toolbar -->
-      <div class="absolute top-4 right-4 z-20 flex flex-col gap-2 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-xl border border-slate-700/60 shadow-lg">
+      <!-- Subtle Architectural Coordinate Grid Overlay -->
+      <div class="absolute top-4 left-4 z-20 pointer-events-none flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-stone-500 animate-pulse"></span>
+        <span class="font-mono text-[10px] uppercase tracking-widest text-stone-500">Plano Arquitectónico Interactivo</span>
+      </div>
+
+      <!-- Zoom & Pan Floating Controls -->
+      <div class="absolute top-4 right-4 z-20 flex flex-col gap-1.5 bg-white/90 backdrop-blur-xl p-1.5 rounded-2xl border border-stone-200/80 shadow-md">
         <button
           type="button"
           (click)="zoomIn()"
-          class="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-800/80 text-slate-200 hover:bg-emerald-600 hover:text-white transition-colors text-lg font-bold"
-          title="Acercar mapa"
-          aria-label="Acercar mapa"
+          class="w-8 h-8 flex items-center justify-center rounded-xl bg-stone-50 text-stone-700 hover:bg-stone-100 transition-all text-base font-light"
+          title="Acercar plano"
+          aria-label="Acercar plano"
         >
           +
         </button>
         <button
           type="button"
           (click)="zoomOut()"
-          class="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-800/80 text-slate-200 hover:bg-emerald-600 hover:text-white transition-colors text-lg font-bold"
-          title="Alejar mapa"
-          aria-label="Alejar mapa"
+          class="w-8 h-8 flex items-center justify-center rounded-xl bg-stone-50 text-stone-700 hover:bg-stone-100 transition-all text-base font-light"
+          title="Alejar plano"
+          aria-label="Alejar plano"
         >
           −
         </button>
         <button
           type="button"
           (click)="resetView()"
-          class="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-xs font-semibold"
-          title="Restablecer vista"
-          aria-label="Restablecer vista"
+          class="w-8 h-8 flex items-center justify-center rounded-xl bg-stone-50 text-stone-600 hover:bg-stone-100 transition-all font-mono text-[10px]"
+          title="Restablecer escala"
+          aria-label="Restablecer escala"
         >
           1:1
         </button>
       </div>
 
-      <!-- Legend -->
-      <div class="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-3 bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-800 text-xs font-medium text-slate-300">
-        <div class="flex items-center gap-1.5">
-          <span class="w-3.5 h-3.5 rounded-md bg-emerald-500/80 border border-emerald-400"></span>
-          <span>Disponible</span>
+      <!-- Minimalist Luxury Legend -->
+      <div class="absolute bottom-4 left-4 z-20 flex flex-wrap items-center gap-4 bg-white/90 backdrop-blur-xl px-4 py-2 rounded-2xl border border-stone-200/80 text-[11px] font-medium text-stone-600 shadow-sm">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#edf1ea] border border-[#5a6856]"></span>
+          <span class="text-stone-700">Disponible</span>
         </div>
-        <div class="flex items-center gap-1.5">
-          <span class="w-3.5 h-3.5 rounded-md bg-slate-800 border border-slate-700"></span>
-          <span>Ocupada</span>
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-stone-200 border border-stone-300"></span>
+          <span class="text-stone-400">Ocupada</span>
         </div>
-        <div class="flex items-center gap-1.5">
-          <span class="w-3.5 h-3.5 rounded-md bg-emerald-400 ring-2 ring-emerald-300 ring-offset-1 ring-offset-slate-900"></span>
-          <span>Seleccionada</span>
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-stone-900 ring-2 ring-stone-900/20"></span>
+          <span class="text-stone-900 font-semibold">Seleccionada</span>
         </div>
       </div>
 
@@ -79,51 +85,55 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
         [attr.viewBox]="viewBoxString()"
       >
         <defs>
-          <!-- Grid Background Pattern -->
-          <pattern id="grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255, 255, 255, 0.04)" stroke-width="1" />
-          </pattern>
-          <pattern id="blocked-hatch" width="12" height="12" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-            <line x1="0" y1="0" x2="0" y2="12" stroke="rgba(239, 68, 68, 0.4)" stroke-width="3" />
+          <!-- Subtle Blueprint Millimeter Grid -->
+          <pattern id="arch-grid" width="50" height="50" patternUnits="userSpaceOnUse">
+            <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(0, 0, 0, 0.035)" stroke-width="0.75" />
           </pattern>
         </defs>
 
         <!-- Dynamic Pan and Zoom Transform Group -->
         <g [attr.transform]="transformString()">
-          <!-- Background Grid Canvas -->
+          <!-- Blueprint Base Rect -->
           <rect
             [attr.x]="0"
             [attr.y]="0"
             [attr.width]="layout()?.view_box_w || 1000"
             [attr.height]="layout()?.view_box_h || 1000"
-            fill="url(#grid-pattern)"
+            fill="url(#arch-grid)"
           />
 
-          <!-- Decorations (walkways, nets, labels) -->
+          <!-- Decorations (Recepción, Cafetería, Parqueadero) -->
           @for (dec of layout()?.decorations || []; track dec.id) {
-            <g class="pointer-events-none">
-              <rect
-                [attr.x]="dec.x"
-                [attr.y]="dec.y"
-                [attr.width]="dec.w || 20"
-                [attr.height]="dec.h || 20"
-                fill="rgba(51, 65, 85, 0.4)"
-                rx="4"
-              />
-              @if (dec.label) {
-                <text
-                  [attr.x]="dec.x + (dec.w || 20) / 2"
-                  [attr.y]="dec.y + (dec.h || 20) / 2"
-                  text-anchor="middle"
-                  dominant-baseline="middle"
-                  fill="#94a3b8"
-                  font-size="12"
-                  font-weight="600"
-                >
-                  {{ dec.label }}
-                </text>
-              }
-            </g>
+            @let decShape = getDecorationShape(dec);
+            @if (decShape) {
+              <g class="pointer-events-none">
+                <rect
+                  [attr.x]="decShape.x"
+                  [attr.y]="decShape.y"
+                  [attr.width]="decShape.w"
+                  [attr.height]="decShape.h"
+                  fill="rgba(255, 255, 255, 0.7)"
+                  stroke="rgba(180, 175, 160, 0.5)"
+                  stroke-width="1"
+                  rx="8"
+                />
+                @if (dec.label) {
+                  <text
+                    [attr.x]="decShape.x + decShape.w / 2"
+                    [attr.y]="decShape.y + decShape.h / 2"
+                    text-anchor="middle"
+                    dominant-baseline="middle"
+                    fill="#78716c"
+                    font-size="11"
+                    font-family="'Plus Jakarta Sans', sans-serif"
+                    font-weight="500"
+                    letter-spacing="0.05em"
+                  >
+                    {{ dec.label }}
+                  </text>
+                }
+              </g>
+            }
           }
 
           <!-- Courts Geometry -->
@@ -131,7 +141,7 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
             @let state = getCourtState(courtItem.court_id);
             @let slot = getCourtSlot(courtItem.court_id);
             <g
-              class="group cursor-pointer transition-all duration-200 outline-none"
+              class="group cursor-pointer transition-all duration-300 outline-none"
               tabindex="0"
               role="button"
               [attr.aria-label]="courtItem.label + (state.isAvailable ? ' - Disponible por ' + formatPrice(slot?.price_cents) : ' - Ocupada')"
@@ -145,59 +155,63 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
                   [attr.y]="courtItem.shape.y"
                   [attr.width]="courtItem.shape.w"
                   [attr.height]="courtItem.shape.h"
-                  rx="12"
+                  rx="16"
                   [attr.fill]="state.fill"
                   [attr.stroke]="state.stroke"
                   [attr.stroke-width]="state.strokeWidth"
-                  class="transition-all duration-200 group-hover:brightness-110"
+                  class="transition-all duration-300 shadow-sm"
                 />
 
-                <!-- Court Service Lines Visual Effect -->
+                <!-- Court Service Lines -->
                 <line
                   [attr.x1]="courtItem.shape.x + courtItem.shape.w / 2"
-                  [attr.y1]="courtItem.shape.y + 10"
+                  [attr.y1]="courtItem.shape.y + 12"
                   [attr.x2]="courtItem.shape.x + courtItem.shape.w / 2"
-                  [attr.y2]="courtItem.shape.y + courtItem.shape.h - 10"
-                  stroke="rgba(255, 255, 255, 0.15)"
-                  stroke-dasharray="4,4"
-                  stroke-width="1.5"
+                  [attr.y2]="courtItem.shape.y + courtItem.shape.h - 12"
+                  [attr.stroke]="state.serviceLineStroke"
+                  stroke-dasharray="3,3"
+                  stroke-width="1"
                   class="pointer-events-none"
                 />
 
-                <!-- Label & Price Text Overlay -->
+                <!-- Court Title -->
                 <text
                   [attr.x]="courtItem.shape.x + courtItem.shape.w / 2"
                   [attr.y]="courtItem.shape.y + courtItem.shape.h / 2 - 12"
                   text-anchor="middle"
                   dominant-baseline="middle"
-                  fill="#f8fafc"
-                  font-size="16"
-                  font-weight="700"
-                  class="pointer-events-none select-none drop-shadow-md"
+                  [attr.fill]="state.titleColor"
+                  font-family="'Plus Jakarta Sans', sans-serif"
+                  font-size="15"
+                  font-weight="600"
+                  letter-spacing="-0.01em"
+                  class="pointer-events-none select-none"
                 >
                   {{ courtItem.label || 'Cancha' }}
                 </text>
 
+                <!-- Status / Price Badge Overlay -->
                 @if (state.isAvailable && slot) {
-                  <!-- Price Pill -->
-                  <g class="pointer-events-none">
+                  <g class="pointer-events-none select-none">
                     <rect
-                      [attr.x]="courtItem.shape.x + courtItem.shape.w / 2 - 45"
-                      [attr.y]="courtItem.shape.y + courtItem.shape.h / 2 + 8"
-                      width="90"
-                      height="26"
-                      rx="13"
-                      fill="rgba(16, 185, 129, 0.95)"
+                      [attr.x]="courtItem.shape.x + courtItem.shape.w / 2 - 48"
+                      [attr.y]="courtItem.shape.y + courtItem.shape.h / 2 + 10"
+                      width="96"
+                      height="24"
+                      rx="12"
+                      fill="#edf1ea"
+                      stroke="#5a6856"
+                      stroke-width="1"
                     />
                     <text
                       [attr.x]="courtItem.shape.x + courtItem.shape.w / 2"
-                      [attr.y]="courtItem.shape.y + courtItem.shape.h / 2 + 22"
+                      [attr.y]="courtItem.shape.y + courtItem.shape.h / 2 + 23"
                       text-anchor="middle"
                       dominant-baseline="middle"
-                      fill="#ffffff"
-                      font-size="12"
-                      font-weight="800"
-                      class="select-none"
+                      fill="#3f4738"
+                      font-family="'JetBrains Mono', monospace"
+                      font-size="11"
+                      font-weight="600"
                     >
                       {{ formatPrice(slot.price_cents) }}
                     </text>
@@ -205,13 +219,15 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
                 } @else {
                   <text
                     [attr.x]="courtItem.shape.x + courtItem.shape.w / 2"
-                    [attr.y]="courtItem.shape.y + courtItem.shape.h / 2 + 14"
+                    [attr.y]="courtItem.shape.y + courtItem.shape.h / 2 + 16"
                     text-anchor="middle"
                     dominant-baseline="middle"
-                    fill="#64748b"
-                    font-size="13"
-                    font-weight="600"
-                    class="pointer-events-none select-none"
+                    fill="#a8a29e"
+                    font-family="'Plus Jakarta Sans', sans-serif"
+                    font-size="12"
+                    font-weight="400"
+                    letter-spacing="0.05em"
+                    class="pointer-events-none select-none uppercase text-[10px]"
                   >
                     Ocupada
                   </text>
@@ -222,7 +238,7 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
                   [attr.fill]="state.fill"
                   [attr.stroke]="state.stroke"
                   [attr.stroke-width]="state.strokeWidth"
-                  class="transition-all duration-200 group-hover:brightness-110"
+                  class="transition-all duration-300"
                 />
               }
             </g>
@@ -233,15 +249,11 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
   `
 })
 export class CourtMapComponent {
-  // Inputs
   readonly layout = input<PublicClubLayout | null>(null);
   readonly slots = input<PublicSlot[]>([]);
   readonly selectedCourtId = input<string | null>(null);
-
-  // Output
   readonly courtSelect = output<string>();
 
-  // Pan & Zoom Reactive Signals
   readonly scale = signal<number>(1);
   readonly panX = signal<number>(0);
   readonly panY = signal<number>(0);
@@ -277,11 +289,33 @@ export class CourtMapComponent {
     return this.slots().find((s) => s.court_id === courtId);
   }
 
+  getDecorationShape(dec: any): { x: number; y: number; w: number; h: number } | null {
+    if (dec?.shape && typeof dec.shape.x === 'number') {
+      return {
+        x: dec.shape.x,
+        y: dec.shape.y,
+        w: dec.shape.w || 200,
+        h: dec.shape.h || 60
+      };
+    }
+    if (typeof dec?.x === 'number') {
+      return {
+        x: dec.x,
+        y: dec.y,
+        w: dec.w || 200,
+        h: dec.h || 60
+      };
+    }
+    return null;
+  }
+
   getCourtState(courtId: string): {
     isAvailable: boolean;
     fill: string;
     stroke: string;
     strokeWidth: number;
+    titleColor: string;
+    serviceLineStroke: string;
   } {
     const slot = this.getCourtSlot(courtId);
     const isAvailable = !!(slot && slot.is_available);
@@ -290,26 +324,32 @@ export class CourtMapComponent {
     if (isSelected) {
       return {
         isAvailable,
-        fill: 'rgba(16, 185, 129, 0.45)',
-        stroke: '#34d399',
-        strokeWidth: 4
+        fill: '#ffffff',
+        stroke: '#1c1917',
+        strokeWidth: 2.5,
+        titleColor: '#1c1917',
+        serviceLineStroke: 'rgba(28, 25, 23, 0.15)'
       };
     }
 
     if (isAvailable) {
       return {
         isAvailable: true,
-        fill: 'rgba(5, 150, 105, 0.28)',
-        stroke: 'rgba(16, 185, 129, 0.8)',
-        strokeWidth: 2
+        fill: '#ffffff',
+        stroke: '#5a6856',
+        strokeWidth: 1.5,
+        titleColor: '#292524',
+        serviceLineStroke: 'rgba(90, 104, 86, 0.2)'
       };
     }
 
     return {
       isAvailable: false,
-      fill: 'rgba(30, 41, 59, 0.7)',
-      stroke: 'rgba(71, 85, 105, 0.5)',
-      strokeWidth: 1.5
+      fill: 'rgba(235, 233, 226, 0.6)',
+      stroke: 'rgba(215, 210, 200, 0.8)',
+      strokeWidth: 1,
+      titleColor: '#a8a29e',
+      serviceLineStroke: 'rgba(0, 0, 0, 0.03)'
     };
   }
 
@@ -320,17 +360,16 @@ export class CourtMapComponent {
   }
 
   formatPrice(cents?: number): string {
-    if (!cents) return '$0';
+    if (!cents) return '$0 COP';
     return '$' + (cents / 100).toLocaleString('es-CO');
   }
 
-  // Pan & Zoom Handlers
   zoomIn(): void {
-    this.scale.update((s) => Math.min(2.5, s + 0.2));
+    this.scale.update((s) => Math.min(2.5, +(s + 0.25).toFixed(2)));
   }
 
   zoomOut(): void {
-    this.scale.update((s) => Math.max(0.6, s - 0.2));
+    this.scale.update((s) => Math.max(0.75, +(s - 0.25).toFixed(2)));
   }
 
   resetView(): void {

@@ -1,68 +1,127 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Outfit', 'Inter', sans-serif;
-  --color-brand-50: #ecfdf5;
-  --color-brand-100: #d1fae5;
-  --color-brand-200: #a7f3d0;
-  --color-brand-300: #6ee7b7;
-  --color-brand-400: #34d399;
-  --color-brand-500: #10b981;
-  --color-brand-600: #059669;
-  --color-brand-700: #047857;
-  --color-brand-800: #065f46;
-  --color-brand-900: #064e3b;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Syne', sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Architectural Boutique Palette: Warm Alabaster, Warm Sand, Graphite Slate, Muted Olive, Soft Terracotta */
+  --color-canvas-50: #faf9f5;
+  --color-canvas-100: #f5f4ee;
+  --color-canvas-200: #ebe9e1;
+  --color-canvas-300: #dedad0;
+
+  --color-graphite-900: #1c1917;
+  --color-graphite-800: #292524;
+  --color-graphite-700: #44403c;
+  --color-graphite-600: #57534e;
+  --color-graphite-400: #78716c;
+
+  --color-olive-700: #3f4738;
+  --color-olive-600: #4e5a46;
+  --color-olive-500: #627258;
+  --color-olive-100: #edf1ea;
+
+  --color-terracotta-700: #8c422d;
+  --color-terracotta-600: #a7533b;
+  --color-terracotta-500: #c26950;
+  --color-terracotta-100: #faede9;
 }
 
-/* Glassmorphism & Cards */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* Base Body Ambient Atmosphere */
+html {
+  background-color: #faf9f5;
+  color: #1c1917;
+  scroll-behavior: smooth;
 }
 
-.glass-card {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+/* Luminous Architectural Sunlit Diffuse Overlay */
+.ambient-lighting {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(220, 205, 180, 0.20) 0%, transparent 65%),
+    radial-gradient(circle at 90% 15%, rgba(185, 200, 180, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 10% 80%, rgba(230, 220, 205, 0.15) 0%, transparent 50%);
 }
 
-.glass-card-hover {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+/* Luminous Architectural Glassmorphism Container */
+.luxury-glass {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(228, 224, 214, 0.8);
+  box-shadow: 0 20px 40px -15px rgba(28, 25, 23, 0.04), 0 2px 6px -1px rgba(28, 25, 23, 0.02);
 }
 
-.glass-card-hover:hover {
-  border-color: rgba(16, 185, 129, 0.35);
+.luxury-glass-interactive {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luxury-glass-interactive:hover {
+  background: #ffffff;
+  border-color: rgba(200, 195, 182, 0.9);
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.6), 0 0 15px rgba(16, 185, 129, 0.15);
+  box-shadow: 0 30px 60px -15px rgba(28, 25, 23, 0.08), 0 4px 12px -2px rgba(28, 25, 23, 0.03);
 }
 
-/* Diagonal stripe pattern for blocked/maintenance slots */
+/* Architectural Hairline Divider */
+.hairline {
+  border-color: rgba(228, 224, 214, 0.8);
+}
+
+.hairline-hover:hover {
+  border-color: rgba(180, 175, 162, 0.9);
+}
+
+/* Shimmer Loading Skeleton (Light Alabaster) */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(235, 233, 225, 0.5) 0%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(235, 233, 225, 0.5) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Diagonal Stripe Pattern for Blocked Slots */
 .blocked-stripes {
   background: repeating-linear-gradient(
-    45deg,
-    rgba(239, 68, 68, 0.12),
-    rgba(239, 68, 68, 0.12) 8px,
-    rgba(239, 68, 68, 0.22) 8px,
-    rgba(239, 68, 68, 0.22) 16px
+    -45deg,
+    rgba(28, 25, 23, 0.03),
+    rgba(28, 25, 23, 0.03) 8px,
+    rgba(28, 25, 23, 0.06) 8px,
+    rgba(28, 25, 23, 0.06) 16px
   );
 }
 
-/* Custom scrollbars */
+/* Minimalist Warm Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #090d16;
+  background: #faf9f5;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: rgba(120, 113, 108, 0.2);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: rgba(120, 113, 108, 0.4);
 }
+

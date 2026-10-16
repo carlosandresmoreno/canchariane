@@ -17,15 +17,32 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
-      class="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl border font-mono text-sm shadow-md transition-colors"
-      [ngClass]="timerClasses()"
+      class="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/95 backdrop-blur-xl border transition-all duration-300 shadow-sm"
+      [ngClass]="containerBorderClass()"
     >
-      <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <div class="flex items-center gap-1">
-        <span class="text-xs uppercase font-sans tracking-wide opacity-80">Bloqueo temporal:</span>
-        <span class="font-bold text-base tracking-wider">{{ formattedTime() }}</span>
+      <div class="relative flex items-center justify-center">
+        <span
+          class="w-2 h-2 rounded-full"
+          [ngClass]="isUrgent() ? 'bg-rose-500 animate-ping' : 'bg-olive-600'"
+        ></span>
+        <span
+          class="absolute w-2 h-2 rounded-full"
+          [ngClass]="isUrgent() ? 'bg-rose-600' : 'bg-stone-800'"
+        ></span>
+      </div>
+
+      <div class="flex items-baseline gap-2">
+        <span class="text-[10px] uppercase font-mono tracking-widest text-stone-500 font-medium">Hold Activo:</span>
+        <span class="font-mono font-medium text-sm tracking-wider" [ngClass]="textClass()">{{ formattedTime() }}</span>
+      </div>
+
+      <!-- Linear Micro Progress Bar -->
+      <div class="w-12 h-1 rounded-full bg-stone-100 overflow-hidden ml-1">
+        <div
+          class="h-full rounded-full transition-all duration-1000 ease-linear"
+          [style.width.%]="progressPercent()"
+          [ngClass]="progressClass()"
+        ></div>
       </div>
     </div>
   `
@@ -36,6 +53,7 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
 
   private timerId: any = null;
   readonly remainingSeconds = signal<number>(600);
+  private initialSeconds = 600;
 
   readonly formattedTime = computed(() => {
     const s = Math.max(0, this.remainingSeconds());
@@ -44,14 +62,30 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   });
 
+  readonly progressPercent = computed(() => {
+    return Math.min(100, Math.max(0, (this.remainingSeconds() / this.initialSeconds) * 100));
+  });
+
   readonly isNormal = computed(() => this.remainingSeconds() > 120);
   readonly isWarning = computed(() => this.remainingSeconds() <= 120 && this.remainingSeconds() > 45);
   readonly isUrgent = computed(() => this.remainingSeconds() <= 45);
 
-  readonly timerClasses = computed(() => {
-    if (this.isUrgent()) return 'bg-rose-950/70 border-rose-500/60 text-rose-300 animate-pulse';
-    if (this.isWarning()) return 'bg-amber-950/60 border-amber-500/50 text-amber-300';
-    return 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300';
+  readonly containerBorderClass = computed(() => {
+    if (this.isUrgent()) return 'border-rose-300 shadow-rose-100';
+    if (this.isWarning()) return 'border-amber-300 shadow-amber-100';
+    return 'border-stone-200/80 shadow-stone-100';
+  });
+
+  readonly textClass = computed(() => {
+    if (this.isUrgent()) return 'text-rose-600';
+    if (this.isWarning()) return 'text-amber-800';
+    return 'text-stone-900';
+  });
+
+  readonly progressClass = computed(() => {
+    if (this.isUrgent()) return 'bg-rose-500';
+    if (this.isWarning()) return 'bg-amber-600';
+    return 'bg-stone-800';
   });
 
   ngOnInit(): void {

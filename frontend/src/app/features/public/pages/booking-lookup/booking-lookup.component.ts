@@ -12,148 +12,166 @@ import { PublicBookingResponse } from '../../models/public.models';
   imports: [CommonModule, FormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
-      <!-- Navbar -->
-      <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur-xl sticky top-0 z-40">
-        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <a routerLink="/" class="flex items-center gap-2.5 text-white font-bold font-display text-lg">
-            <span class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-slate-950">C</span>
-            <span>Canchariane</span>
+    <div class="min-h-screen bg-[#faf9f5] text-stone-800 flex flex-col justify-between selection:bg-stone-900 selection:text-stone-50 relative overflow-hidden font-sans">
+      <!-- Luminous Architectural Sunlit Diffuse Overlay -->
+      <div class="ambient-lighting"></div>
+
+      <!-- Top Architectural Navbar -->
+      <header class="border-b border-stone-200/70 bg-[#faf9f5]/80 backdrop-blur-xl sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-6 h-20 flex items-center justify-between">
+          <a routerLink="/" class="flex items-center gap-3 text-stone-800 group transition-all duration-300">
+            <div class="w-9 h-9 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-xs font-serif italic text-stone-900 shadow-sm group-hover:border-stone-400 transition-all">
+              C
+            </div>
+            <div class="flex flex-col">
+              <span class="font-display font-semibold text-xs tracking-[0.22em] uppercase text-stone-900">Canchariane</span>
+              <span class="text-[9px] uppercase tracking-widest text-stone-400 font-mono">Conserjería Digital</span>
+            </div>
           </a>
+
           <a
             routerLink="/"
-            class="text-xs sm:text-sm text-slate-400 hover:text-white transition-colors"
+            class="text-xs tracking-wider uppercase text-stone-600 hover:text-stone-950 transition-colors flex items-center gap-2 group font-mono"
           >
-            ← Volver al inicio
+            <span class="text-stone-400 group-hover:-translate-x-1 transition-transform">←</span>
+            <span>Volver a Reservas</span>
           </a>
         </div>
       </header>
 
       <!-- Main Container -->
-      <main class="max-w-xl mx-auto px-4 py-10 w-full flex-1 space-y-8">
-        <div class="text-center space-y-2">
-          <h1 class="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
+      <main class="max-w-xl mx-auto px-6 py-16 w-full flex-1 space-y-10 relative z-10">
+        <div class="text-center space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 border border-stone-200 text-[10px] tracking-[0.2em] uppercase text-stone-600 font-mono">
+            <span>Localizador de Turnos</span>
+          </div>
+          <h1 class="text-4xl sm:text-5xl font-serif italic font-normal text-stone-900 tracking-tight">
             Consultar Reserva
           </h1>
-          <p class="text-slate-400 text-sm">
-            Ingresa tu código único de 9 caracteres (ej: <span class="font-mono text-emerald-400">CAN-A1B2C3</span>)
+          <p class="text-stone-500 text-sm max-w-sm mx-auto leading-relaxed">
+            Ingresa tu código único de 9 caracteres para revisar detalles, horarios o gestionar tu turno.
           </p>
         </div>
 
-        <!-- Lookup Search Box -->
-        <form (ngSubmit)="searchBooking()" class="p-4 sm:p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
-          <div class="flex flex-col sm:flex-row gap-3">
-            <input
-              type="text"
-              required
-              [(ngModel)]="searchCode"
-              name="searchCode"
-              placeholder="CAN-XXXXXX"
-              maxlength="12"
-              class="flex-1 px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-base uppercase text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 tracking-wider"
-            />
+        <!-- Lookup Search Console -->
+        <form (ngSubmit)="searchBooking()" class="p-2 sm:p-2.5 rounded-2xl bg-white border border-stone-200/90 shadow-[0_10px_30px_rgba(0,0,0,0.04)] space-y-3">
+          <div class="flex flex-col sm:flex-row gap-2">
+            <div class="relative flex-1">
+              <input
+                type="text"
+                required
+                [(ngModel)]="searchCode"
+                name="searchCode"
+                placeholder="CAN-A1B2C3"
+                maxlength="14"
+                class="w-full px-5 py-3.5 rounded-xl bg-stone-50/70 border border-stone-200 font-mono text-base uppercase text-stone-900 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-stone-600 tracking-widest transition-all duration-300"
+              />
+            </div>
             <button
               type="submit"
               [disabled]="isSearching() || !searchCode.trim()"
-              class="py-3 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-bold transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+              class="py-3.5 px-7 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 font-medium text-xs font-mono uppercase tracking-wider disabled:opacity-40 transition-all duration-300 flex items-center justify-center gap-2 shadow-md active:scale-[0.98]"
             >
               @if (isSearching()) {
-                <span class="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>
+                <span class="w-3.5 h-3.5 border-2 border-stone-50 border-t-transparent rounded-full animate-spin"></span>
                 <span>Buscando...</span>
               } @else {
-                <span>Buscar</span>
+                <span>Consultar</span>
               }
             </button>
           </div>
 
           @if (errorMessage()) {
-            <div class="p-3.5 rounded-xl bg-rose-950/60 border border-rose-800/80 text-rose-300 text-xs text-center">
+            <div class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs text-center font-sans tracking-wide">
               {{ errorMessage() }}
             </div>
           }
         </form>
 
-        <!-- Booking Result Card -->
+        <!-- Booking Result Card (Architectural Receipt Ticket) -->
         @if (booking()) {
-          <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-200">
-            <div class="flex items-start justify-between pb-4 border-b border-slate-800">
+          <div class="rounded-3xl bg-white border border-stone-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.06)] overflow-hidden transition-all duration-500 animate-in fade-in zoom-in-95">
+            <!-- Receipt Header -->
+            <div class="p-6 sm:p-7 border-b border-stone-200/70 flex items-center justify-between bg-stone-50/50">
               <div>
-                <span class="text-xs font-mono text-slate-400">CÓDIGO</span>
-                <div class="font-mono text-2xl font-extrabold text-emerald-400 tracking-wider select-all">
+                <span class="text-[10px] font-mono uppercase tracking-[0.2em] text-stone-400 block mb-1">Identificador de Reserva</span>
+                <div class="font-mono text-2xl sm:text-3xl font-light text-stone-900 tracking-wider select-all">
                   {{ booking()?.code }}
                 </div>
               </div>
               <span
-                class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border"
-                [ngClass]="booking()?.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border-rose-500/30'"
+                class="px-3.5 py-1.5 rounded-full text-[11px] font-mono uppercase tracking-widest border"
+                [ngClass]="booking()?.status === 'confirmed' ? 'bg-[#edf1ea] text-[#3f4738] border-[#5a6856]/30' : 'bg-stone-100 text-stone-600 border-stone-200'"
               >
                 {{ booking()?.status }}
               </span>
             </div>
 
-            <!-- Details Grid -->
-            <div class="grid grid-cols-2 gap-4 text-sm">
+            <!-- Receipt Grid Details -->
+            <div class="p-6 sm:p-7 grid grid-cols-2 gap-y-6 gap-x-4 text-xs font-sans">
               <div>
-                <span class="text-xs text-slate-500 block">Club</span>
-                <span class="font-semibold text-white">{{ booking()?.club_name }}</span>
+                <span class="text-[10px] uppercase tracking-wider text-stone-400 font-mono block mb-1">Club Anfitrión</span>
+                <span class="font-medium text-stone-800 text-sm">{{ booking()?.club_name }}</span>
               </div>
               <div>
-                <span class="text-xs text-slate-500 block">Cancha</span>
-                <span class="font-semibold text-white">{{ booking()?.court_name }}</span>
+                <span class="text-[10px] uppercase tracking-wider text-stone-400 font-mono block mb-1">Instalación</span>
+                <span class="font-medium text-stone-800 text-sm">{{ booking()?.court_name }}</span>
               </div>
               <div>
-                <span class="text-xs text-slate-500 block">Horario</span>
-                <span class="font-mono text-white text-xs">
+                <span class="text-[10px] uppercase tracking-wider text-stone-400 font-mono block mb-1">Fecha & Hora</span>
+                <span class="font-mono text-stone-700 text-xs">
                   {{ formatDateTime(booking()?.start_time) }}
                 </span>
               </div>
               <div>
-                <span class="text-xs text-slate-500 block">Titular</span>
-                <span class="font-semibold text-white">{{ booking()?.customer_name }}</span>
+                <span class="text-[10px] uppercase tracking-wider text-stone-400 font-mono block mb-1">Titular</span>
+                <span class="font-medium text-stone-800 text-sm">{{ booking()?.customer_name }}</span>
               </div>
               <div>
-                <span class="text-xs text-slate-500 block">Tarifa</span>
-                <span class="font-display font-bold text-emerald-400 text-base">
+                <span class="text-[10px] uppercase tracking-wider text-stone-400 font-mono block mb-1">Importe</span>
+                <span class="font-serif italic text-stone-900 text-xl block">
                   {{ formatCents(booking()?.price_cents) }}
                 </span>
               </div>
               <div>
-                <span class="text-xs text-slate-500 block">Pago</span>
-                <span class="font-semibold text-amber-300 text-xs uppercase">{{ booking()?.payment_status }}</span>
+                <span class="text-[10px] uppercase tracking-wider text-stone-400 font-mono block mb-1">Liquidación</span>
+                <span class="font-mono text-stone-700 text-xs uppercase px-2.5 py-1 rounded-md bg-stone-100 border border-stone-200 inline-block">
+                  {{ booking()?.payment_status }}
+                </span>
               </div>
             </div>
 
             <!-- Cancellation action -->
             @if (booking()?.status === 'confirmed') {
-              <div class="pt-4 border-t border-slate-800">
+              <div class="p-6 sm:p-7 border-t border-stone-200/70 bg-stone-50/30">
                 @if (!showCancelConfirm()) {
                   <button
                     type="button"
                     (click)="showCancelConfirm.set(true)"
-                    class="w-full py-2.5 rounded-xl border border-rose-800/80 text-rose-400 hover:bg-rose-950/40 text-xs font-semibold transition-colors"
+                    class="w-full py-3 rounded-xl border border-stone-200 hover:border-rose-300 text-stone-600 hover:text-rose-700 hover:bg-rose-50/50 text-xs font-mono uppercase tracking-wider transition-all duration-300"
                   >
-                    Cancelar esta reserva
+                    Cancelar este turno
                   </button>
                 } @else {
-                  <div class="p-4 rounded-xl bg-rose-950/30 border border-rose-800/60 space-y-3">
-                    <p class="text-xs text-rose-300">
-                      ¿Seguro que deseas cancelar? Esta acción liberará la cancha inmediatamente.
+                  <div class="p-5 rounded-2xl bg-rose-50/60 border border-rose-200 space-y-3">
+                    <p class="text-xs text-rose-800 leading-relaxed font-sans">
+                      ¿Confirmas la cancelación? La cancha se liberará de inmediato para otros miembros del club.
                     </p>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-3">
                       <button
                         type="button"
                         [disabled]="isCancelling()"
                         (click)="cancelBooking()"
-                        class="flex-1 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-colors"
+                        class="flex-1 py-2.5 rounded-xl bg-rose-700 hover:bg-rose-600 text-white font-medium text-xs transition-colors shadow-sm"
                       >
-                        {{ isCancelling() ? 'Cancelando...' : 'Sí, Cancelar Reserva' }}
+                        {{ isCancelling() ? 'Cancelando...' : 'Confirmar Cancelación' }}
                       </button>
                       <button
                         type="button"
                         (click)="showCancelConfirm.set(false)"
-                        class="px-4 py-2 rounded-lg border border-slate-700 text-slate-300 text-xs font-semibold hover:bg-slate-800 transition-colors"
+                        class="px-4 py-2.5 rounded-xl border border-stone-200 text-stone-700 text-xs hover:bg-stone-100 transition-colors"
                       >
-                        No cancelar
+                        Desistir
                       </button>
                     </div>
                   </div>
@@ -164,9 +182,9 @@ import { PublicBookingResponse } from '../../models/public.models';
         }
       </main>
 
-      <!-- Footer -->
-      <footer class="border-t border-slate-900 py-6 text-center text-xs text-slate-600">
-        Canchariane v2 • Consulta y gestión de reservas
+      <!-- Minimalist Architectural Footer -->
+      <footer class="border-t border-stone-200/60 py-8 text-center text-[11px] text-stone-400 font-mono tracking-wider">
+        CANCHARIANE ARCHITECTURE • BERLIN / TOKYO MINIMALISM
       </footer>
     </div>
   `

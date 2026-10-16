@@ -25,33 +25,36 @@ interface TimelineRow {
   imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-white">
-      <!-- Top Navbar -->
-      <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-xl sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-bold text-slate-950 shadow-md">
+    <div class="min-h-screen bg-[#faf9f5] text-stone-800 flex flex-col selection:bg-stone-900 selection:text-stone-50 relative overflow-hidden font-sans">
+      <!-- Luminous Architectural Sunlit Diffuse Overlay -->
+      <div class="ambient-lighting"></div>
+
+      <!-- Top Architectural Navbar -->
+      <header class="border-b border-stone-200/70 bg-[#faf9f5]/85 backdrop-blur-xl sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-2xl bg-white border border-stone-200 flex items-center justify-center font-serif italic text-sm text-stone-900 shadow-sm">
               C
             </div>
             <div>
-              <div class="flex items-center gap-2">
-                <h1 class="font-display font-bold text-white text-base sm:text-lg">Panel de Administración</h1>
-                <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold flex items-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  SSE En Vivo
+              <div class="flex items-center gap-2.5">
+                <h1 class="font-display font-semibold text-stone-900 text-sm sm:text-base tracking-wide">Panel de Operaciones</h1>
+                <span class="px-2.5 py-0.5 rounded-full bg-[#edf1ea] text-[#3f4738] border border-[#5a6856]/30 text-[10px] font-mono tracking-wider uppercase flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#5a6856] animate-pulse"></span>
+                  SSE Sincronizado
                 </span>
               </div>
-              <p class="text-xs text-slate-400">Recepción & Gestión de Canchas</p>
+              <p class="text-[11px] text-stone-400 font-mono tracking-wider uppercase">Recepción & Gestión de Pistas</p>
             </div>
           </div>
 
           <!-- User controls & Date navigation -->
-          <div class="flex items-center gap-3">
-            <div class="flex items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700 text-xs font-semibold">
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-stone-200 text-xs font-mono shadow-sm">
               <button
                 type="button"
                 (click)="navigateDay(-1)"
-                class="p-1.5 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors"
+                class="p-2 hover:bg-stone-100 rounded-lg text-stone-500 hover:text-stone-900 transition-colors"
                 title="Día anterior"
               >
                 ◀
@@ -59,14 +62,14 @@ interface TimelineRow {
               <button
                 type="button"
                 (click)="goToToday()"
-                class="px-2.5 py-1 hover:bg-slate-700 rounded-lg text-slate-200 hover:text-white transition-colors"
+                class="px-3.5 py-1.5 hover:bg-stone-100 rounded-lg text-stone-800 hover:text-stone-950 transition-colors tracking-wider uppercase text-[11px]"
               >
                 {{ formattedDateDisplay() }}
               </button>
               <button
                 type="button"
                 (click)="navigateDay(1)"
-                class="p-1.5 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors"
+                class="p-2 hover:bg-stone-100 rounded-lg text-stone-500 hover:text-stone-900 transition-colors"
                 title="Día siguiente"
               >
                 ▶
@@ -74,14 +77,14 @@ interface TimelineRow {
             </div>
 
             <!-- User Menu -->
-            <div class="flex items-center gap-2 pl-2 border-l border-slate-800">
-              <div class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-emerald-400">
+            <div class="flex items-center gap-3 pl-3 border-l border-stone-200">
+              <div class="w-9 h-9 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center text-xs font-mono font-medium text-stone-800 shadow-sm">
                 {{ authStore.userInitials() }}
               </div>
               <button
                 type="button"
                 (click)="logout()"
-                class="text-xs text-slate-400 hover:text-rose-400 transition-colors hidden sm:inline"
+                class="text-xs uppercase tracking-wider font-mono text-stone-500 hover:text-stone-900 transition-colors hidden sm:inline"
               >
                 Salir
               </button>
@@ -91,57 +94,60 @@ interface TimelineRow {
       </header>
 
       <!-- Main Content -->
-      <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-1 space-y-6">
-        <!-- KPI Strip -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg flex items-center justify-between">
+      <main class="max-w-7xl mx-auto px-6 py-8 w-full flex-1 space-y-8 relative z-10">
+        <!-- Executive KPI Monoliths -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div class="p-6 rounded-3xl bg-white border border-stone-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex items-center justify-between group hover:border-stone-400 transition-all duration-300">
             <div>
-              <span class="text-xs text-slate-400 uppercase font-semibold">Ocupación Hoy</span>
-              <div class="text-2xl font-display font-extrabold text-white mt-1">
+              <span class="text-[10px] text-stone-400 uppercase font-mono tracking-[0.2em] block mb-2">Ocupación Hoy</span>
+              <div class="text-3xl sm:text-4xl font-serif italic text-stone-900">
                 {{ occupancyPct() }}%
               </div>
+              <span class="text-[11px] text-stone-500 font-mono mt-1 block">Capacidad de pista reservada</span>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-xl">
+            <div class="w-12 h-12 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-500 font-mono text-sm group-hover:scale-105 transition-transform">
               %
             </div>
           </div>
 
-          <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg flex items-center justify-between">
+          <div class="p-6 rounded-3xl bg-white border border-stone-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex items-center justify-between group hover:border-stone-400 transition-all duration-300">
             <div>
-              <span class="text-xs text-slate-400 uppercase font-semibold">Ingresos del Día</span>
-              <div class="text-2xl font-display font-extrabold text-emerald-400 mt-1">
+              <span class="text-[10px] text-stone-400 uppercase font-mono tracking-[0.2em] block mb-2">Recaudación Estimada</span>
+              <div class="text-3xl sm:text-4xl font-serif italic text-stone-900">
                 {{ formatCents(totalRevenueCents()) }}
               </div>
+              <span class="text-[11px] text-stone-500 font-mono mt-1 block">Ingresos de la jornada</span>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 font-bold text-lg">
+            <div class="w-12 h-12 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-500 font-mono text-sm group-hover:scale-105 transition-transform">
               $
             </div>
           </div>
 
-          <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-lg flex items-center justify-between">
+          <div class="p-6 rounded-3xl bg-white border border-stone-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex items-center justify-between group hover:border-stone-400 transition-all duration-300">
             <div>
-              <span class="text-xs text-slate-400 uppercase font-semibold">Reservas Activas</span>
-              <div class="text-2xl font-display font-extrabold text-white mt-1">
+              <span class="text-[10px] text-stone-400 uppercase font-mono tracking-[0.2em] block mb-2">Turnos Confirmados</span>
+              <div class="text-3xl sm:text-4xl font-serif italic text-stone-900">
                 {{ activeBookingsCount() }}
               </div>
+              <span class="text-[11px] text-stone-500 font-mono mt-1 block">Partidos programados</span>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold text-lg">
-              🎾
+            <div class="w-12 h-12 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-500 font-mono text-sm group-hover:scale-105 transition-transform">
+              #
             </div>
           </div>
         </div>
 
-        <!-- Timeline Grid Calendar -->
-        <div class="rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl overflow-hidden">
-          <div class="p-4 border-b border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <h2 class="font-bold text-sm sm:text-base text-white">Rejilla de Reservas (Mostrador & Online)</h2>
-              <span class="text-xs text-slate-500 hidden sm:inline">• Haz clic en cualquier espacio vacío para crear una reserva rápida</span>
+        <!-- Timeline Grid Calendar (Architectural Blueprint) -->
+        <div class="rounded-3xl border border-stone-200/90 bg-white shadow-[0_15px_45px_rgba(0,0,0,0.04)] overflow-hidden">
+          <div class="p-6 border-b border-stone-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stone-50/50">
+            <div>
+              <h2 class="font-serif italic text-xl sm:text-2xl text-stone-900">Matriz de Ocupación por Cancha</h2>
+              <p class="text-xs text-stone-500 font-mono mt-0.5">Haz clic sobre cualquier celda libre para crear una reserva de mostrador</p>
             </div>
             <button
               type="button"
               (click)="openNewBookingModal()"
-              class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-md flex items-center gap-1.5"
+              class="px-5 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 font-medium text-xs tracking-wider uppercase font-mono transition-all duration-300 shadow-sm flex items-center justify-center gap-2 active:scale-95"
             >
               <span>+ Nueva Reserva</span>
             </button>
@@ -149,28 +155,28 @@ interface TimelineRow {
 
           <!-- Multi-court timeline table -->
           <div class="overflow-x-auto">
-            <div class="min-w-[700px]">
+            <div class="min-w-[760px]">
               <!-- Header Row (Courts) -->
-              <div class="grid border-b border-slate-800 bg-slate-950/70 text-xs font-bold text-slate-300"
+              <div class="grid border-b border-stone-200/80 bg-stone-50/80 text-xs font-mono font-medium text-stone-700"
                    [style.grid-template-columns]="gridColumnsStyle()">
-                <div class="p-3 text-center border-r border-slate-800 text-slate-500 font-mono">
+                <div class="p-4 text-center border-r border-stone-200/80 text-stone-400 text-[10px] tracking-[0.2em] uppercase">
                   HORA
                 </div>
                 @for (court of courts(); track court.id) {
-                  <div class="p-3 text-center border-r border-slate-800 last:border-r-0 flex items-center justify-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span>{{ court.name }}</span>
-                    <span class="text-slate-500 font-normal text-[10px] uppercase">({{ court.sport }})</span>
+                  <div class="p-4 text-center border-r border-stone-200/80 last:border-r-0 flex items-center justify-center gap-2.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-stone-500"></span>
+                    <span class="font-sans font-semibold text-stone-800 tracking-wide">{{ court.name }}</span>
+                    <span class="text-stone-400 font-normal text-[10px] uppercase font-mono tracking-wider">({{ court.sport }})</span>
                   </div>
                 }
               </div>
 
               <!-- Hour Rows -->
               @for (row of timelineRows; track row.hourStr) {
-                <div class="grid border-b border-slate-800/60 hover:bg-slate-800/20 transition-colors"
+                <div class="grid border-b border-stone-200/60 hover:bg-stone-50/40 transition-colors"
                      [style.grid-template-columns]="gridColumnsStyle()">
                   <!-- Time Label -->
-                  <div class="p-3 border-r border-slate-800 text-xs font-mono font-semibold text-slate-400 flex items-center justify-center bg-slate-950/40">
+                  <div class="p-3 border-r border-stone-200/80 text-xs font-mono text-stone-500 flex items-center justify-center bg-stone-50/30">
                     {{ row.hourStr }}
                   </div>
 
@@ -178,22 +184,22 @@ interface TimelineRow {
                   @for (court of courts(); track court.id) {
                     @let booking = getBookingForCell(court.id, row.hourNum);
                     <div
-                      class="p-1.5 border-r border-slate-800/60 last:border-r-0 min-h-[64px] flex items-center justify-center transition-colors relative"
+                      class="p-1.5 border-r border-stone-200/60 last:border-r-0 min-h-[72px] flex items-center justify-center transition-colors relative"
                     >
                       @if (booking) {
                         <!-- Booked Slot Card -->
                         <div
-                          class="w-full h-full p-2 rounded-xl border text-xs cursor-pointer transition-all flex flex-col justify-between"
+                          class="w-full h-full p-2.5 rounded-2xl border text-xs cursor-pointer transition-all flex flex-col justify-between shadow-sm"
                           [ngClass]="getBookingCardClasses(booking)"
                           (click)="openBookingDetails(booking)"
                         >
-                          <div class="flex items-center justify-between">
-                            <span class="font-bold truncate max-w-[120px]">{{ booking.customer_name }}</span>
-                            <span class="font-mono text-[10px] uppercase opacity-80">{{ booking.code }}</span>
+                          <div class="flex items-center justify-between gap-1">
+                            <span class="font-medium truncate max-w-[130px] text-stone-900 text-xs">{{ booking.customer_name }}</span>
+                            <span class="font-mono text-[9px] uppercase tracking-wider opacity-75">{{ booking.code }}</span>
                           </div>
-                          <div class="flex items-center justify-between text-[11px] mt-1 pt-1 border-t border-slate-700/40">
-                            <span class="opacity-80">{{ booking.customer_phone }}</span>
-                            <span class="font-semibold">{{ formatCents(booking.price_cents) }}</span>
+                          <div class="flex items-center justify-between text-[11px] mt-1.5 pt-1.5 border-t border-black/[0.06]">
+                            <span class="opacity-70 font-mono text-[10px]">{{ booking.customer_phone }}</span>
+                            <span class="font-serif italic text-stone-900">{{ formatCents(booking.price_cents) }}</span>
                           </div>
                         </div>
                       } @else {
@@ -201,10 +207,10 @@ interface TimelineRow {
                         <button
                           type="button"
                           (click)="openSlotBooking(court.id, row.hourStr)"
-                          class="w-full h-full rounded-xl hover:bg-emerald-950/20 hover:border-emerald-500/40 border border-transparent transition-all flex items-center justify-center group"
+                          class="w-full h-full rounded-2xl hover:bg-stone-100/70 border border-transparent hover:border-stone-200 transition-all flex items-center justify-center group"
                           title="Crear reserva en este horario"
                         >
-                          <span class="text-xs text-slate-600 group-hover:text-emerald-400 font-semibold group-hover:scale-110 transition-transform">
+                          <span class="text-[11px] font-mono text-stone-400 group-hover:text-stone-800 transition-colors uppercase tracking-wider">
                             + Libre
                           </span>
                         </button>
@@ -222,14 +228,17 @@ interface TimelineRow {
       <!-- MODAL: NUEVA RESERVA MOSTRADOR / TELÉFONO                      -->
       <!-- ============================================================= -->
       @if (showCreateModal()) {
-        <div class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div class="w-full max-w-lg p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 class="font-bold text-base text-white">Nueva Reserva Mostrador</h3>
+        <div class="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div class="w-full max-w-lg p-7 rounded-3xl bg-white border border-stone-200 shadow-[0_25px_80px_rgba(0,0,0,0.12)] space-y-6 animate-in fade-in zoom-in-95 font-sans">
+            <div class="flex items-center justify-between pb-4 border-b border-stone-200/80">
+              <div>
+                <span class="text-[10px] uppercase tracking-[0.2em] text-stone-400 font-mono block">Mostrador & Teléfono</span>
+                <h3 class="font-serif italic text-2xl text-stone-900">Nueva Reserva Manual</h3>
+              </div>
               <button
                 type="button"
                 (click)="showCreateModal.set(false)"
-                class="text-slate-400 hover:text-white text-lg font-bold"
+                class="w-8 h-8 rounded-full border border-stone-200 flex items-center justify-center text-stone-500 hover:text-stone-900 hover:border-stone-400 transition-colors text-sm"
               >
                 ✕
               </button>
@@ -238,74 +247,74 @@ interface TimelineRow {
             <form (ngSubmit)="submitManualBooking()" class="space-y-4">
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-xs font-semibold text-slate-300 mb-1">Cancha</label>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">Pista</label>
                   <select
                     [(ngModel)]="modalCourtId"
                     name="modalCourtId"
-                    class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-emerald-500"
+                    class="w-full px-4 py-3 rounded-xl bg-stone-50/70 border border-stone-200 text-stone-900 text-sm focus:outline-none focus:border-stone-600 transition-colors"
                   >
                     @for (c of courts(); track c.id) {
-                      <option [value]="c.id">{{ c.name }}</option>
+                      <option [value]="c.id" class="bg-white text-stone-900">{{ c.name }}</option>
                     }
                   </select>
                 </div>
 
                 <div>
-                  <label class="block text-xs font-semibold text-slate-300 mb-1">Hora Inicio</label>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">Hora Inicio</label>
                   <input
                     type="time"
                     [(ngModel)]="modalTime"
                     name="modalTime"
-                    class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-emerald-500"
+                    class="w-full px-4 py-3 rounded-xl bg-stone-50/70 border border-stone-200 text-stone-900 text-sm font-mono focus:outline-none focus:border-stone-600 transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre del Cliente *</label>
+                <label class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">Nombre del Titular *</label>
                 <input
                   type="text"
                   required
                   [(ngModel)]="modalCustomerName"
                   name="modalCustomerName"
                   placeholder="Ej: Daniel Gómez"
-                  class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-emerald-500"
+                  class="w-full px-4 py-3 rounded-xl bg-stone-50/70 border border-stone-200 text-stone-900 placeholder:text-stone-400 text-sm focus:outline-none focus:border-stone-600 transition-colors"
                 />
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1">Teléfono / WhatsApp *</label>
+                <label class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">Teléfono / WhatsApp *</label>
                 <input
                   type="tel"
                   required
                   [(ngModel)]="modalCustomerPhone"
                   name="modalCustomerPhone"
                   placeholder="Ej: +57 311 000 1122"
-                  class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-emerald-500"
+                  class="w-full px-4 py-3 rounded-xl bg-stone-50/70 border border-stone-200 text-stone-900 placeholder:text-stone-400 text-sm font-mono focus:outline-none focus:border-stone-600 transition-colors"
                 />
               </div>
 
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-xs font-semibold text-slate-300 mb-1">Tarifa (COP)</label>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">Tarifa (COP)</label>
                   <input
                     type="number"
                     step="5000"
                     [(ngModel)]="modalPriceCents"
                     name="modalPriceCents"
-                    class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-emerald-500"
+                    class="w-full px-4 py-3 rounded-xl bg-stone-50/70 border border-stone-200 text-stone-900 text-sm font-mono focus:outline-none focus:border-stone-600 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label class="block text-xs font-semibold text-slate-300 mb-1">Estado de Pago</label>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">Estado Pago</label>
                   <select
                     [(ngModel)]="modalPaymentStatus"
                     name="modalPaymentStatus"
-                    class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-emerald-500"
+                    class="w-full px-4 py-3 rounded-xl bg-stone-50/70 border border-stone-200 text-stone-900 text-sm focus:outline-none focus:border-stone-600 transition-colors"
                   >
-                    <option value="paid">Pagado en Sitio</option>
-                    <option value="pending_on_site">Pendiente por Pagar</option>
+                    <option value="paid" class="bg-white">Pagado en Sitio</option>
+                    <option value="pending_on_site" class="bg-white">Pendiente por Pagar</option>
                   </select>
                 </div>
               </div>
@@ -314,14 +323,14 @@ interface TimelineRow {
                 <button
                   type="button"
                   (click)="showCreateModal.set(false)"
-                  class="px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 text-sm font-semibold hover:bg-slate-800"
+                  class="px-5 py-3 rounded-xl border border-stone-200 text-stone-600 text-xs font-mono uppercase tracking-wider hover:bg-stone-50 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   [disabled]="isSubmitting() || !modalCustomerName || !modalCustomerPhone"
-                  class="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-bold text-sm shadow-md"
+                  class="flex-1 py-3 rounded-xl bg-stone-900 hover:bg-stone-800 disabled:opacity-40 text-stone-50 font-medium text-xs font-mono uppercase tracking-wider transition-all duration-300 shadow-md"
                 >
                   {{ isSubmitting() ? 'Guardando...' : 'Confirmar Reserva' }}
                 </button>
@@ -335,38 +344,38 @@ interface TimelineRow {
       <!-- MODAL: DETALLES DE RESERVA Y ACCIONES RÁPIDAS                 -->
       <!-- ============================================================= -->
       @if (selectedBooking()) {
-        <div class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div class="w-full max-w-md p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
-            <div class="flex items-start justify-between pb-3 border-b border-slate-800">
+        <div class="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div class="w-full max-w-md p-7 rounded-3xl bg-white border border-stone-200 shadow-[0_25px_80px_rgba(0,0,0,0.12)] space-y-6 animate-in fade-in zoom-in-95 font-sans">
+            <div class="flex items-start justify-between pb-4 border-b border-stone-200/80">
               <div>
-                <span class="text-xs font-mono text-emerald-400 font-bold">{{ selectedBooking()?.code }}</span>
-                <h3 class="font-bold text-lg text-white">{{ selectedBooking()?.customer_name }}</h3>
+                <span class="text-[10px] font-mono text-stone-400 tracking-[0.2em] uppercase block mb-1">CÓDIGO: {{ selectedBooking()?.code }}</span>
+                <h3 class="font-serif italic text-2xl text-stone-900">{{ selectedBooking()?.customer_name }}</h3>
               </div>
               <button
                 type="button"
                 (click)="selectedBooking.set(null)"
-                class="text-slate-400 hover:text-white text-lg font-bold"
+                class="w-8 h-8 rounded-full border border-stone-200 flex items-center justify-center text-stone-500 hover:text-stone-900 hover:border-stone-400 transition-colors text-sm"
               >
                 ✕
               </button>
             </div>
 
-            <div class="space-y-2 text-xs">
-              <div class="flex justify-between py-1 border-b border-slate-800">
-                <span class="text-slate-400">Cancha:</span>
-                <span class="font-bold text-white">{{ selectedBooking()?.court_name }}</span>
+            <div class="space-y-3 text-xs">
+              <div class="flex justify-between py-1.5 border-b border-stone-100">
+                <span class="text-stone-500 font-mono uppercase text-[10px] tracking-wider">Cancha</span>
+                <span class="font-medium text-stone-800">{{ selectedBooking()?.court_name }}</span>
               </div>
-              <div class="flex justify-between py-1 border-b border-slate-800">
-                <span class="text-slate-400">Teléfono:</span>
-                <span class="font-bold text-white">{{ selectedBooking()?.customer_phone }}</span>
+              <div class="flex justify-between py-1.5 border-b border-stone-100">
+                <span class="text-stone-500 font-mono uppercase text-[10px] tracking-wider">Teléfono</span>
+                <span class="font-mono text-stone-800">{{ selectedBooking()?.customer_phone }}</span>
               </div>
-              <div class="flex justify-between py-1 border-b border-slate-800">
-                <span class="text-slate-400">Valor:</span>
-                <span class="font-bold text-emerald-400 font-display">{{ formatCents(selectedBooking()?.price_cents) }}</span>
+              <div class="flex justify-between py-1.5 border-b border-stone-100">
+                <span class="text-stone-500 font-mono uppercase text-[10px] tracking-wider">Valor</span>
+                <span class="font-serif italic text-stone-900 text-base">{{ formatCents(selectedBooking()?.price_cents) }}</span>
               </div>
-              <div class="flex justify-between py-1 border-b border-slate-800">
-                <span class="text-slate-400">Estado Pago:</span>
-                <span class="font-semibold text-amber-300 uppercase">{{ selectedBooking()?.payment_status }}</span>
+              <div class="flex justify-between py-1.5 border-b border-stone-100">
+                <span class="text-stone-500 font-mono uppercase text-[10px] tracking-wider">Estado Pago</span>
+                <span class="font-mono text-stone-700 uppercase px-2 py-0.5 rounded bg-stone-100 border border-stone-200 text-[10px]">{{ selectedBooking()?.payment_status }}</span>
               </div>
             </div>
 
@@ -375,21 +384,21 @@ interface TimelineRow {
               <button
                 type="button"
                 (click)="updateStatus('completed')"
-                class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-colors"
+                class="w-full py-3 rounded-xl bg-stone-100 hover:bg-stone-200/80 border border-stone-200 text-stone-900 font-mono uppercase tracking-wider text-xs transition-colors shadow-sm"
               >
                 ✓ Marcar como Completada
               </button>
               <button
                 type="button"
                 (click)="updateStatus('no_show')"
-                class="w-full py-2.5 rounded-xl bg-amber-600/80 hover:bg-amber-600 text-white font-bold text-xs shadow-md transition-colors"
+                class="w-full py-3 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-amber-800 font-mono uppercase tracking-wider text-xs transition-colors shadow-sm"
               >
-                ⚠ Marcar No-Show (No Asistió)
+                ⚠ Marcar No-Show
               </button>
               <button
                 type="button"
                 (click)="updateStatus('cancelled')"
-                class="w-full py-2.5 rounded-xl border border-rose-800 text-rose-400 hover:bg-rose-950/40 font-bold text-xs transition-colors"
+                class="w-full py-3 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-700 font-mono uppercase tracking-wider text-xs transition-colors"
               >
                 ✕ Cancelar Reserva
               </button>
@@ -628,11 +637,11 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
 
   getBookingCardClasses(b: AdminBooking): string {
     if (b.status === 'confirmed') {
-      return 'bg-emerald-950/50 border-emerald-600/50 text-emerald-200';
+      return 'bg-[#edf1ea] border-[#5a6856]/40 text-[#2b3528] hover:border-[#5a6856]';
     }
     if (b.status === 'held') {
-      return 'bg-amber-950/50 border-amber-600/50 text-amber-200';
+      return 'bg-[#fef3eb] border-[#c26950]/40 text-[#8c422d] hover:border-[#c26950]';
     }
-    return 'bg-rose-950/40 border-rose-800/40 text-rose-300';
+    return 'bg-stone-100 border-stone-200 text-stone-500';
   }
 }

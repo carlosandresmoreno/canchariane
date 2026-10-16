@@ -34,29 +34,33 @@ interface DayOption {
   imports: [CommonModule, FormsModule, RouterLink, CourtMapComponent, CountdownTimerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
-      <!-- Top Navbar -->
-      <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-xl sticky top-0 z-40">
-        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center font-extrabold text-white text-lg shadow-lg shadow-emerald-900/30">
+    <div class="relative min-h-screen bg-[#faf9f5] text-stone-800 flex flex-col justify-between selection:bg-stone-900 selection:text-stone-50 overflow-x-hidden font-sans">
+      <!-- Luminous Architectural Sunlit Diffuse Overlay -->
+      <div class="ambient-lighting"></div>
+
+      <!-- Top Quiet Luxury Header -->
+      <header class="relative z-30 border-b border-stone-200/70 bg-[#faf9f5]/80 backdrop-blur-xl sticky top-0">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-2xl bg-white border border-stone-200 flex items-center justify-center font-serif italic text-lg text-stone-900 shadow-sm">
               C
             </div>
             <div>
-              <h1 class="font-display font-bold text-base sm:text-lg leading-tight text-white tracking-tight">
-                {{ club()?.name || 'Cargando club...' }}
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-[10px] tracking-[0.25em] text-stone-500 uppercase">Club</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-stone-400"></span>
+                <span class="text-xs text-stone-500">{{ club()?.timezone || 'America/Bogota' }}</span>
+              </div>
+              <h1 class="font-serif italic text-xl sm:text-2xl text-stone-900 tracking-tight leading-none mt-0.5">
+                {{ club()?.name || 'Club Deportivo' }}
               </h1>
-              <p class="text-xs text-slate-400 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-                <span>{{ club()?.address || 'Pádel & Deporte' }}</span>
-              </p>
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-3">
             <a
               routerLink="/lookup"
-              class="text-xs sm:text-sm font-medium text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700/80 hover:bg-slate-800 transition-colors"
+              class="text-xs font-mono uppercase tracking-wider text-stone-700 hover:text-stone-950 px-4 py-2 rounded-xl bg-white border border-stone-200/80 hover:border-stone-400 transition-all shadow-sm"
             >
               Consultar Reserva
             </a>
@@ -65,59 +69,51 @@ interface DayOption {
       </header>
 
       <!-- Main Step Container -->
-      <main class="max-w-5xl mx-auto px-4 py-6 w-full flex-1">
-        <!-- Wizard Step Indicator -->
-        <nav aria-label="Progreso de la reserva" class="mb-8">
-          <ol class="flex items-center justify-center gap-2 sm:gap-4 max-w-md mx-auto">
-            <li class="flex items-center gap-2" [class.text-emerald-400]="currentStep() >= 1" [class.text-slate-500]="currentStep() < 1">
-              <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border transition-colors"
-                    [class.border-emerald-500]="currentStep() >= 1"
-                    [class.bg-emerald-500]="currentStep() >= 1"
-                    [class.text-slate-950]="currentStep() >= 1"
-                    [class.border-slate-700]="currentStep() < 1">1</span>
-              <span class="text-xs sm:text-sm font-semibold">Cancha & Hora</span>
-            </li>
-            <div class="w-8 h-[2px]" [class.bg-emerald-500]="currentStep() >= 2" [class.bg-slate-800]="currentStep() < 2"></div>
-            <li class="flex items-center gap-2" [class.text-emerald-400]="currentStep() >= 2" [class.text-slate-500]="currentStep() < 2">
-              <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border transition-colors"
-                    [class.border-emerald-500]="currentStep() >= 2"
-                    [class.bg-emerald-500]="currentStep() >= 2"
-                    [class.text-slate-950]="currentStep() >= 2"
-                    [class.border-slate-700]="currentStep() < 2">2</span>
-              <span class="text-xs sm:text-sm font-semibold">Tus Datos</span>
-            </li>
-            <div class="w-8 h-[2px]" [class.bg-emerald-500]="currentStep() >= 3" [class.bg-slate-800]="currentStep() < 3"></div>
-            <li class="flex items-center gap-2" [class.text-emerald-400]="currentStep() >= 3" [class.text-slate-500]="currentStep() < 3">
-              <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border transition-colors"
-                    [class.border-emerald-500]="currentStep() >= 3"
-                    [class.bg-emerald-500]="currentStep() >= 3"
-                    [class.text-slate-950]="currentStep() >= 3"
-                    [class.border-slate-700]="currentStep() < 3">3</span>
-              <span class="text-xs sm:text-sm font-semibold">Confirmación</span>
-            </li>
-          </ol>
+      <main class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-8 w-full flex-1">
+        <!-- Minimalist Step Indicator -->
+        <nav aria-label="Progreso" class="mb-10">
+          <div class="flex items-center justify-between max-w-md mx-auto border-b border-stone-200/80 pb-3 text-xs">
+            <div class="flex items-center gap-2" [class.text-stone-900]="currentStep() >= 1" [class.text-stone-400]="currentStep() < 1">
+              <span class="font-mono text-[11px] font-semibold">01</span>
+              <span class="tracking-wider uppercase text-[10px]">Cancha & Hora</span>
+            </div>
+            <span class="text-stone-300">/</span>
+            <div class="flex items-center gap-2" [class.text-stone-900]="currentStep() >= 2" [class.text-stone-400]="currentStep() < 2">
+              <span class="font-mono text-[11px] font-semibold">02</span>
+              <span class="tracking-wider uppercase text-[10px]">Tus Datos</span>
+            </div>
+            <span class="text-stone-300">/</span>
+            <div class="flex items-center gap-2" [class.text-stone-900]="currentStep() >= 3" [class.text-stone-400]="currentStep() < 3">
+              <span class="font-mono text-[11px] font-semibold">03</span>
+              <span class="tracking-wider uppercase text-[10px]">Confirmación</span>
+            </div>
+          </div>
         </nav>
 
         <!-- ============================================================= -->
         <!-- PASO 1: SELECCIÓN DE FECHA, HORA Y CANCHA                     -->
         <!-- ============================================================= -->
         @if (currentStep() === 1) {
-          <div class="space-y-6">
+          <div class="space-y-8 animate-in fade-in duration-500">
             <!-- Date Carousel Selector -->
             <div>
-              <label class="block text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">
-                1. Selecciona el Día
-              </label>
-              <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-medium">1. Fecha de Juego</span>
+                <span class="text-xs text-stone-500 font-mono">{{ selectedDate() }}</span>
+              </div>
+
+              <div class="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none">
                 @for (day of availableDays(); track day.dateStr) {
                   <button
                     type="button"
                     (click)="selectDate(day.dateStr)"
-                    class="px-4 py-2.5 rounded-xl border text-left shrink-0 transition-all font-medium"
-                    [ngClass]="selectedDate() === day.dateStr ? 'bg-emerald-500 border-emerald-400 text-slate-950 font-bold shadow-lg shadow-emerald-950' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'"
+                    class="px-5 py-3 rounded-2xl border text-left shrink-0 transition-all duration-300"
+                    [ngClass]="selectedDate() === day.dateStr 
+                      ? 'bg-stone-900 border-stone-900 text-stone-50 shadow-md' 
+                      : 'bg-white border-stone-200/80 text-stone-600 hover:border-stone-400 hover:text-stone-900 shadow-sm'"
                   >
-                    <div class="text-xs opacity-80">{{ day.label }}</div>
-                    <div class="text-sm font-bold">{{ day.fullLabel }}</div>
+                    <div class="text-[10px] font-mono uppercase tracking-wider opacity-80">{{ day.label }}</div>
+                    <div class="text-sm font-semibold mt-0.5 tracking-tight">{{ day.fullLabel }}</div>
                   </button>
                 }
               </div>
@@ -125,18 +121,16 @@ interface DayOption {
 
             <!-- Hour Selector -->
             <div>
-              <div class="flex items-center justify-between mb-2">
-                <label class="block text-xs uppercase tracking-wider text-slate-400 font-semibold">
-                  2. Selecciona la Hora
-                </label>
-                <div class="text-xs text-slate-400">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-medium">2. Franja Horaria</span>
+                <span class="font-mono text-xs text-stone-500">
                   {{ distinctHours().length }} horarios disponibles
-                </div>
+                </span>
               </div>
 
               @if (distinctHours().length === 0 && !isLoadingSlots()) {
-                <div class="p-6 rounded-xl bg-slate-900 border border-slate-800 text-center text-slate-400">
-                  No hay horarios disponibles para esta fecha. Prueba seleccionando otro día.
+                <div class="p-8 rounded-3xl bg-white border border-stone-200/80 text-center text-stone-500 font-light text-sm shadow-sm">
+                  No hay horarios programados para esta fecha. Selecciona otro día.
                 </div>
               } @else {
                 <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
@@ -144,8 +138,10 @@ interface DayOption {
                     <button
                       type="button"
                       (click)="selectHour(hour)"
-                      class="px-4 py-2 rounded-xl border font-mono text-sm shrink-0 transition-all"
-                      [ngClass]="selectedHour() === hour ? 'bg-emerald-500 border-emerald-400 text-slate-950 font-bold' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'"
+                      class="px-4 py-2.5 rounded-xl border font-mono text-xs shrink-0 transition-all duration-300"
+                      [ngClass]="selectedHour() === hour 
+                        ? 'bg-stone-900 text-white font-bold border-stone-900 shadow-sm' 
+                        : 'bg-white border-stone-200/80 text-stone-600 hover:border-stone-400 hover:text-stone-900 shadow-sm'"
                     >
                       {{ hour }}
                     </button>
@@ -156,71 +152,71 @@ interface DayOption {
 
             <!-- View Switcher & Court Selector -->
             <div>
-              <div class="flex items-center justify-between mb-3">
-                <label class="block text-xs uppercase tracking-wider text-slate-400 font-semibold">
-                  3. Elige tu Cancha
-                </label>
-                <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800 text-xs font-medium">
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-[11px] uppercase tracking-[0.2em] text-stone-500 font-medium">3. Selección de Cancha</span>
+                <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-stone-200/80 text-xs shadow-sm">
                   <button
                     type="button"
-                    (click)="viewMode.set('map')"
-                    class="px-2.5 py-1 rounded-md transition-colors"
-                    [class.bg-slate-800]="viewMode() === 'map'"
-                    [class.text-white]="viewMode() === 'map'"
-                    [class.text-slate-400]="viewMode() !== 'map'"
+                    (click)="activeView.set('map')"
+                    class="px-3 py-1 rounded-lg transition-all"
+                    [ngClass]="activeView() === 'map' ? 'bg-stone-900 text-white font-medium' : 'text-stone-500 hover:text-stone-800'"
                   >
-                    Mapa Interactivo
+                    Plano SVG
                   </button>
                   <button
                     type="button"
-                    (click)="viewMode.set('list')"
-                    class="px-2.5 py-1 rounded-md transition-colors"
-                    [class.bg-slate-800]="viewMode() === 'list'"
-                    [class.text-white]="viewMode() === 'list'"
-                    [class.text-slate-400]="viewMode() !== 'list'"
+                    (click)="activeView.set('list')"
+                    class="px-3 py-1 rounded-lg transition-all"
+                    [ngClass]="activeView() === 'list' ? 'bg-stone-900 text-white font-medium' : 'text-stone-500 hover:text-stone-800'"
                   >
                     Lista
                   </button>
                 </div>
               </div>
 
-              @if (viewMode() === 'map') {
+              <!-- Interactive SVG Court Map View -->
+              @if (activeView() === 'map') {
                 <app-court-map
                   [layout]="layout()"
                   [slots]="slotsForSelectedHour()"
                   [selectedCourtId]="selectedCourtId()"
-                  (courtSelect)="onCourtSelected($event)"
+                  (courtSelect)="onCourtSelect($event)"
                 />
-              } @else {
-                <!-- List View of Courts -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  @for (slot of slotsForSelectedHour(); track slot.court_id) {
-                    <div
-                      class="p-5 rounded-2xl border transition-all cursor-pointer relative"
-                      [ngClass]="getCourtCardClass(slot)"
-                      (click)="slot.is_available && onCourtSelected(slot.court_id)"
-                    >
-                      <div class="flex items-start justify-between mb-3">
-                        <div>
-                          <h4 class="font-bold text-base text-white">{{ slot.court_name }}</h4>
-                          <p class="text-xs text-slate-400 font-mono">{{ slot.local_start_time }} - {{ slot.local_end_time }}</p>
-                        </div>
-                        @if (slot.is_available) {
-                          <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
-                            Disponible
-                          </span>
-                        } @else {
-                          <span class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 text-xs font-semibold">
-                            Ocupada
-                          </span>
-                        }
-                      </div>
+              }
 
-                      <div class="flex items-center justify-between pt-3 border-t border-slate-800/80">
-                        <span class="text-xs text-slate-400">Tarifa 60 min</span>
-                        <span class="font-display font-bold text-lg text-emerald-400">
-                          {{ formatCents(slot.price_cents) }}
-                        </span>
+              <!-- Alternative Grid/List View -->
+              @if (activeView() === 'list') {
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  @for (court of club()?.courts || []; track court.id) {
+                    @let slot = getSlotForCourt(court.id);
+                    @let isAvailable = !!(slot && slot.is_available);
+                    @let isSelected = selectedCourtId() === court.id;
+                    <div
+                      class="p-5 rounded-2xl border transition-all duration-300 cursor-pointer shadow-sm"
+                      [ngClass]="isSelected 
+                        ? 'bg-white border-stone-900 ring-2 ring-stone-900/10 shadow-md' 
+                        : isAvailable 
+                          ? 'bg-white border-stone-200/80 hover:border-stone-400' 
+                          : 'bg-stone-100/60 border-stone-200/40 opacity-40 cursor-not-allowed'"
+                      (click)="isAvailable && onCourtSelect(court.id)"
+                    >
+                      <div class="flex items-start justify-between">
+                        <div>
+                          <div class="text-[10px] font-mono uppercase tracking-widest text-stone-400">{{ court.sport }}</div>
+                          <h3 class="font-semibold text-stone-900 text-base mt-0.5">{{ court.name }}</h3>
+                          <p class="text-xs text-stone-500 mt-1 capitalize">{{ court.surface }} • {{ court.player_format }}</p>
+                        </div>
+                        <div>
+                          @if (isAvailable && slot) {
+                            <span class="font-mono text-xs font-semibold text-stone-800 bg-[#edf1ea] px-2.5 py-1 rounded-full border border-[#5a6856]/40">
+                              {{ formatCents(slot.price_cents) }}
+                            </span>
+                          } @else {
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full border border-stone-200">
+                              Ocupada
+                            </span>
+                          }
+                        </div>
                       </div>
                     </div>
                   }
@@ -228,154 +224,142 @@ interface DayOption {
               }
             </div>
 
-            <!-- Sticky Bottom Action Bar -->
-            <div class="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800/90 z-30 shadow-2xl">
-              <div class="max-w-5xl mx-auto flex items-center justify-between gap-4">
-                <div>
-                  @if (selectedSlot()) {
-                    <div class="text-xs text-slate-400 font-medium">Seleccionado:</div>
-                    <div class="font-bold text-white text-sm sm:text-base flex items-center gap-2">
-                      <span>{{ selectedSlot()?.court_name }}</span>
-                      <span class="text-emerald-400 font-mono">{{ selectedSlot()?.local_start_time }}</span>
-                      <span class="text-slate-500">•</span>
-                      <span class="text-emerald-400 font-display">{{ formatCents(selectedSlot()?.price_cents) }}</span>
+            <!-- Sticky Bottom Selection Action Drawer -->
+            @if (selectedCourtId() && selectedSlot()) {
+              <div class="sticky bottom-4 z-30 p-4 sm:p-5 rounded-3xl bg-white/95 backdrop-blur-2xl border border-stone-200/90 shadow-[0_15px_40px_rgba(0,0,0,0.06)] flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-bottom-4 duration-300">
+                <div class="flex items-center gap-4 text-left w-full sm:w-auto">
+                  <div class="w-12 h-12 rounded-2xl bg-stone-100 border border-stone-200 flex items-center justify-center font-serif italic text-xl text-stone-900">
+                    ✓
+                  </div>
+                  <div>
+                    <div class="text-[10px] font-mono uppercase tracking-widest text-stone-400">Selección Actual</div>
+                    <div class="font-semibold text-stone-900 text-base leading-tight">{{ selectedSlot()?.court_name }}</div>
+                    <div class="text-xs text-stone-500 font-mono mt-0.5">
+                      {{ selectedDate() }} • {{ selectedSlot()?.local_start_time }} - {{ selectedSlot()?.local_end_time }}
                     </div>
-                  } @else {
-                    <div class="text-sm text-slate-400">Selecciona una hora y cancha en el mapa para continuar</div>
-                  }
+                  </div>
                 </div>
 
-                <button
-                  type="button"
-                  [disabled]="!selectedSlot() || isCreatingHold()"
-                  (click)="proceedToHold()"
-                  class="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:hover:bg-emerald-500 text-slate-950 font-bold transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 shrink-0 min-h-[48px]"
-                >
-                  @if (isCreatingHold()) {
-                    <span class="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>
-                    <span>Apartando...</span>
-                  } @else {
-                    <span>Continuar</span>
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  }
-                </button>
+                <div class="flex items-center justify-between sm:justify-end gap-5 w-full sm:w-auto border-t sm:border-t-0 border-stone-200/60 pt-3 sm:pt-0">
+                  <div class="text-left sm:text-right">
+                    <div class="text-[10px] uppercase font-mono tracking-wider text-stone-400">Tarifa Total</div>
+                    <div class="font-serif italic text-2xl text-stone-900 leading-none">
+                      {{ formatCents(selectedSlot()?.price_cents) }}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    [disabled]="isHolding()"
+                    (click)="proceedToHold()"
+                    class="py-3 px-6 rounded-2xl bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-stone-50 font-medium text-xs tracking-wider uppercase font-mono transition-all shadow-md flex items-center gap-2 active:scale-95"
+                  >
+                    @if (isHolding()) {
+                      <span class="w-3.5 h-3.5 border-2 border-stone-50 border-t-transparent rounded-full animate-spin"></span>
+                      <span>Bloqueando...</span>
+                    } @else {
+                      <span>Reservar Ahora</span>
+                      <span class="text-sm">→</span>
+                    }
+                  </button>
+                </div>
               </div>
-            </div>
-            <!-- Spacer for bottom bar -->
-            <div class="h-20"></div>
+            }
           </div>
         }
 
         <!-- ============================================================= -->
-        <!-- PASO 2: FORMULARIO DE INVITADO Y CUENTA REGRESIVA             -->
+        <!-- PASO 2: CHECKOUT DE INVITADO + TEMPORIZADOR DE HOLD           -->
         <!-- ============================================================= -->
-        @if (currentStep() === 2) {
-          <div class="max-w-xl mx-auto space-y-6">
-            <!-- Hold Active Alert Banner -->
-            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-4 shadow-xl">
+        @if (currentStep() === 2 && hold()) {
+          <div class="max-w-xl mx-auto space-y-6 animate-in fade-in duration-500">
+            <!-- Hold Status Banner -->
+            <div class="flex items-center justify-between p-4 rounded-3xl bg-white/95 backdrop-blur-2xl border border-stone-200/80 shadow-sm">
               <div>
-                <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-                  Cancha apartada exclusivamente para ti
-                </h3>
-                <p class="text-xs text-slate-400">Completa tus datos antes de que expire el tiempo.</p>
+                <span class="text-[10px] font-mono uppercase tracking-widest text-stone-400 block">Cancha Bloqueada</span>
+                <span class="font-semibold text-stone-900 text-sm">{{ selectedSlot()?.court_name }}</span>
               </div>
               <app-countdown-timer
-                [expiresAt]="holdData()?.expires_at || null"
+                [expiresAt]="hold()?.expires_at || null"
                 (expired)="onHoldExpired()"
               />
             </div>
 
-            <!-- Booking Summary Card -->
-            <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
-              <h4 class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Resumen de la Reserva</h4>
-              <div class="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span class="text-slate-400 block text-xs">Cancha</span>
-                  <span class="font-bold text-white">{{ selectedSlot()?.court_name }}</span>
-                </div>
-                <div>
-                  <span class="text-slate-400 block text-xs">Fecha</span>
-                  <span class="font-bold text-white">{{ selectedDate() }}</span>
-                </div>
-                <div>
-                  <span class="text-slate-400 block text-xs">Horario</span>
-                  <span class="font-bold text-white font-mono">{{ selectedSlot()?.local_start_time }} - {{ selectedSlot()?.local_end_time }}</span>
-                </div>
-                <div>
-                  <span class="text-slate-400 block text-xs">Total a pagar</span>
-                  <span class="font-bold text-emerald-400 font-display text-lg">{{ formatCents(selectedSlot()?.price_cents) }}</span>
-                </div>
+            <!-- Guest Form Card -->
+            <form (ngSubmit)="confirmBooking()" class="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200/80 shadow-[0_15px_45px_rgba(0,0,0,0.04)] space-y-5">
+              <div class="border-b border-stone-200/60 pb-4">
+                <h2 class="font-serif italic text-2xl text-stone-900">Detalles del Titular</h2>
+                <p class="text-xs text-stone-500 mt-1">Ingresa tus datos para vincular el código de reserva.</p>
               </div>
-            </div>
-
-            <!-- Guest Form -->
-            <form (ngSubmit)="confirmBooking()" class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-              <h4 class="text-sm font-bold text-white">Datos de Contacto</h4>
 
               <div>
-                <label for="cust-name" class="block text-xs font-semibold text-slate-300 mb-1.5">Nombre Completo *</label>
+                <label for="name" class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">
+                  Nombre Completo
+                </label>
                 <input
-                  id="cust-name"
+                  id="name"
                   type="text"
                   required
-                  [(ngModel)]="guestName"
-                  name="guestName"
+                  [(ngModel)]="customerName"
+                  name="customerName"
                   placeholder="Ej: Carlos Moreno"
-                  class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors text-sm"
+                  class="w-full px-4 py-3 rounded-2xl bg-stone-50/70 border border-stone-200 text-stone-900 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-stone-600 text-sm transition-colors"
                 />
               </div>
 
               <div>
-                <label for="cust-phone" class="block text-xs font-semibold text-slate-300 mb-1.5">Teléfono / WhatsApp *</label>
+                <label for="phone" class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">
+                  Teléfono Móvil
+                </label>
                 <input
-                  id="cust-phone"
+                  id="phone"
                   type="tel"
                   required
-                  [(ngModel)]="guestPhone"
-                  name="guestPhone"
+                  [(ngModel)]="customerPhone"
+                  name="customerPhone"
                   placeholder="Ej: +57 300 123 4567"
-                  class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors text-sm"
+                  class="w-full px-4 py-3 rounded-2xl bg-stone-50/70 border border-stone-200 text-stone-900 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-stone-600 text-sm transition-colors font-mono"
                 />
               </div>
 
               <div>
-                <label for="cust-email" class="block text-xs font-semibold text-slate-300 mb-1.5">Correo Electrónico *</label>
+                <label for="email" class="block text-[11px] font-mono uppercase tracking-wider text-stone-600 mb-1.5">
+                  Correo Electrónico
+                </label>
                 <input
-                  id="cust-email"
+                  id="email"
                   type="email"
                   required
-                  [(ngModel)]="guestEmail"
-                  name="guestEmail"
-                  placeholder="carlos@ejemplo.com"
-                  class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors text-sm"
+                  [(ngModel)]="customerEmail"
+                  name="customerEmail"
+                  placeholder="carlos@example.com"
+                  class="w-full px-4 py-3 rounded-2xl bg-stone-50/70 border border-stone-200 text-stone-900 placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-stone-600 text-sm transition-colors"
                 />
               </div>
 
-              @if (bookingError()) {
-                <div class="p-3.5 rounded-xl bg-rose-950/60 border border-rose-800/80 text-rose-300 text-xs">
-                  {{ bookingError() }}
-                </div>
-              }
+              <!-- Price Summary -->
+              <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-center justify-between">
+                <span class="text-xs text-stone-600 font-mono">Total a Pagar en Sitio:</span>
+                <span class="font-serif italic text-2xl text-stone-900">{{ formatCents(hold()?.price_cents) }}</span>
+              </div>
 
-              <div class="flex items-center gap-3 pt-4">
+              <!-- Action Buttons -->
+              <div class="flex gap-3 pt-2">
                 <button
                   type="button"
-                  (click)="cancelHoldAndBack()"
-                  class="px-5 py-3 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-semibold text-sm transition-colors"
+                  (click)="cancelHoldAndGoBack()"
+                  class="py-3 px-5 rounded-2xl border border-stone-200 text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-mono uppercase tracking-wider transition-all"
                 >
-                  Cambiar Cancha
+                  Regresar
                 </button>
                 <button
                   type="submit"
-                  [disabled]="isConfirming() || !guestName || !guestPhone || !guestEmail"
-                  class="flex-1 py-3 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+                  [disabled]="isConfirming() || !customerName || !customerPhone || !customerEmail"
+                  class="flex-1 py-3 px-6 rounded-2xl bg-stone-900 hover:bg-stone-800 disabled:opacity-40 text-stone-50 font-medium text-xs font-mono uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 active:scale-95"
                 >
                   @if (isConfirming()) {
-                    <span class="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>
-                    <span>Confirmando Reserva...</span>
+                    <span class="w-3.5 h-3.5 border-2 border-stone-50 border-t-transparent rounded-full animate-spin"></span>
+                    <span>Confirmando...</span>
                   } @else {
                     <span>Confirmar Reserva</span>
                   }
@@ -389,83 +373,82 @@ interface DayOption {
         <!-- PASO 3: CONFIRMACIÓN EXITOSA Y CÓDIGO CAN-XXXXXX               -->
         <!-- ============================================================= -->
         @if (currentStep() === 3 && confirmedBooking()) {
-          <div class="max-w-xl mx-auto space-y-6 text-center animate-in fade-in zoom-in-95 duration-300">
-            <!-- Success Icon -->
-            <div class="w-20 h-20 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center mx-auto text-emerald-400 shadow-xl shadow-emerald-950">
-              <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+          <div class="max-w-xl mx-auto space-y-8 text-center animate-in zoom-in-95 duration-500">
+            <div class="w-16 h-16 rounded-3xl bg-stone-100 border border-stone-200 flex items-center justify-center mx-auto text-stone-900 shadow-sm">
+              <svg class="w-8 h-8 text-stone-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
             </div>
 
             <div>
-              <h2 class="text-2xl sm:text-3xl font-display font-extrabold text-white">¡Reserva Confirmada!</h2>
-              <p class="text-slate-400 text-sm mt-1">Hemos registrado tu reserva exitosamente en el club.</p>
+              <h2 class="font-serif italic text-3xl sm:text-4xl text-stone-900">Reserva Confirmada</h2>
+              <p class="text-stone-500 text-xs mt-1">Hemos asegurado tu turno en las instalaciones del club.</p>
             </div>
 
-            <!-- Booking Code Display Box -->
-            <div class="p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-emerald-500/40 shadow-2xl relative">
-              <div class="text-xs uppercase tracking-widest text-emerald-400 font-bold mb-1">Código de Reserva</div>
-              <div class="font-mono text-3xl sm:text-4xl font-extrabold text-white tracking-widest select-all my-2">
-                {{ confirmedBooking()?.code }}
+            <!-- Architectural Receipt Card -->
+            <div class="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.06)] text-left space-y-6">
+              <div class="text-center py-4 border-y border-stone-200/70">
+                <div class="font-mono text-[10px] uppercase tracking-[0.3em] text-stone-400 mb-1">Código de Acceso</div>
+                <div class="font-mono text-3xl sm:text-4xl font-extrabold text-stone-900 tracking-widest select-all">
+                  {{ confirmedBooking()?.code }}
+                </div>
+                <div class="text-[11px] text-stone-400 mt-1 font-mono">Presenta este código al ingresar a la pista</div>
               </div>
-              <p class="text-xs text-slate-400">Presenta este código al llegar a recepción.</p>
 
-              <div class="mt-4 pt-4 border-t border-slate-800 grid grid-cols-2 gap-4 text-left text-xs">
+              <div class="grid grid-cols-2 gap-4 text-xs font-sans">
                 <div>
-                  <span class="text-slate-500 block">Cancha</span>
-                  <span class="font-bold text-white text-sm">{{ confirmedBooking()?.court_name }}</span>
+                  <span class="text-stone-400 uppercase font-mono text-[10px] block">Cancha</span>
+                  <span class="font-semibold text-stone-900 text-sm">{{ confirmedBooking()?.court_name }}</span>
                 </div>
                 <div>
-                  <span class="text-slate-500 block">Titular</span>
-                  <span class="font-bold text-white text-sm">{{ confirmedBooking()?.customer_name }}</span>
+                  <span class="text-stone-400 uppercase font-mono text-[10px] block">Titular</span>
+                  <span class="font-semibold text-stone-900 text-sm">{{ confirmedBooking()?.customer_name }}</span>
                 </div>
                 <div>
-                  <span class="text-slate-500 block">Total</span>
-                  <span class="font-bold text-emerald-400 text-sm font-display">{{ formatCents(confirmedBooking()?.price_cents) }}</span>
+                  <span class="text-stone-400 uppercase font-mono text-[10px] block">Importe</span>
+                  <span class="font-serif italic text-xl text-stone-900">{{ formatCents(confirmedBooking()?.price_cents) }}</span>
                 </div>
                 <div>
-                  <span class="text-slate-500 block">Estado de Pago</span>
-                  <span class="font-semibold text-amber-300 text-xs uppercase">{{ confirmedBooking()?.payment_status }}</span>
+                  <span class="text-stone-400 uppercase font-mono text-[10px] block">Liquidación</span>
+                  <span class="font-mono text-[11px] text-stone-700 uppercase bg-stone-100 px-2 py-0.5 rounded border border-stone-200 inline-block">{{ confirmedBooking()?.payment_status }}</span>
                 </div>
               </div>
-            </div>
 
-            <!-- Action Buttons -->
-            <div class="flex flex-col sm:flex-row gap-3">
-              <a
-                [href]="getWhatsAppShareUrl()"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-lg"
-              >
-                <span>Compartir en WhatsApp</span>
-              </a>
-
-              <button
-                type="button"
-                (click)="downloadIcs()"
-                class="py-3 px-4 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 font-semibold text-sm transition-colors flex items-center justify-center gap-2"
-              >
-                <span>Agregar a Calendario (.ics)</span>
-              </button>
+              <div class="pt-4 border-t border-stone-200/70 flex flex-col sm:flex-row gap-3">
+                <a
+                  [href]="getWhatsAppShareUrl()"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex-1 py-3 px-4 rounded-xl bg-stone-100 hover:bg-stone-200/80 border border-stone-200 text-stone-900 font-mono uppercase tracking-wider text-xs text-center transition-all flex items-center justify-center gap-2"
+                >
+                  <span>Compartir en WhatsApp</span>
+                </a>
+                <button
+                  type="button"
+                  (click)="downloadIcs()"
+                  class="py-3 px-4 rounded-xl border border-stone-200 text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-mono uppercase tracking-wider transition-all"
+                >
+                  Guardar (.ics)
+                </button>
+              </div>
             </div>
 
             <div class="pt-4">
               <button
                 type="button"
                 (click)="resetWizard()"
-                class="text-xs text-slate-400 hover:text-white underline transition-colors"
+                class="text-xs text-stone-400 hover:text-stone-800 transition-colors uppercase tracking-widest font-mono"
               >
-                Hacer otra reserva en {{ club()?.name }}
+                ← Realizar otra reserva
               </button>
             </div>
           </div>
         }
       </main>
 
-      <!-- Footer -->
-      <footer class="border-t border-slate-900 py-6 text-center text-xs text-slate-600">
-        Powered by Canchariane v2 • Sistema de Reservas en Tiempo Real
+      <!-- Minimalist Editorial Footer -->
+      <footer class="relative z-10 border-t border-stone-200/60 py-8 text-center text-xs text-stone-400 font-mono tracking-widest">
+        CANCHARIANE &copy; 2026 • ARIANEDEVS
       </footer>
     </div>
   `
@@ -473,50 +456,46 @@ interface DayOption {
 export class PublicBookingWizardComponent implements OnInit {
   private readonly publicService = inject(PublicBookingService);
 
-  // Inputs via route binding (e.g. /c/:slug)
   readonly slug = input<string>('club-alpha');
 
   // State Signals
-  readonly currentStep = signal<number>(1);
   readonly club = signal<PublicClub | null>(null);
   readonly layout = signal<PublicClubLayout | null>(null);
-  readonly viewMode = signal<'map' | 'list'>('map');
-
+  readonly allDaySlots = signal<PublicSlot[]>([]);
   readonly selectedDate = signal<string>('');
   readonly selectedHour = signal<string>('');
   readonly selectedCourtId = signal<string | null>(null);
+  readonly activeView = signal<'map' | 'list'>('map');
 
-  readonly allDaySlots = signal<PublicSlot[]>([]);
-  readonly isLoadingSlots = signal<boolean>(false);
-  readonly isCreatingHold = signal<boolean>(false);
+  // Flow Signals
+  readonly currentStep = signal<1 | 2 | 3>(1);
+  readonly isHolding = signal<boolean>(false);
   readonly isConfirming = signal<boolean>(false);
-
-  readonly holdData = signal<CreateHoldResponse | null>(null);
+  readonly isLoadingSlots = signal<boolean>(false);
+  readonly hold = signal<CreateHoldResponse | null>(null);
   readonly confirmedBooking = signal<PublicBookingResponse | null>(null);
-  readonly bookingError = signal<string | null>(null);
 
-  // Guest Form
-  guestName = '';
-  guestPhone = '';
-  guestEmail = '';
+  // Form Fields
+  customerName = '';
+  customerPhone = '';
+  customerEmail = '';
 
-  // Next 14 days
   readonly availableDays = computed<DayOption[]>(() => {
     const days: DayOption[] = [];
     const now = new Date();
-    const dows = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 7; i++) {
       const d = new Date(now);
       d.setDate(now.getDate() + i);
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      const dateStr = `${yyyy}-${mm}-${dd}`;
-
-      let label = `${dows[d.getDay()]}`;
+      const dateStr = d.toISOString().split('T')[0];
+      const dd = d.getDate().toString().padStart(2, '0');
+      const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+      let label = `${dd}/${mm}`;
       if (i === 0) label = 'Hoy';
-      if (i === 1) label = 'Mañana';
-
+      else if (i === 1) label = 'Mañana';
+      else {
+        const weekdays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        label = weekdays[d.getDay()];
+      }
       days.push({
         dateStr,
         label,
@@ -526,7 +505,6 @@ export class PublicBookingWizardComponent implements OnInit {
     return days;
   });
 
-  // Unique hours in active day
   readonly distinctHours = computed<string[]>(() => {
     const slots = this.allDaySlots();
     const set = new Set<string>();
@@ -538,14 +516,12 @@ export class PublicBookingWizardComponent implements OnInit {
     return Array.from(set).sort();
   });
 
-  // Slots matching selected hour
   readonly slotsForSelectedHour = computed<PublicSlot[]>(() => {
     const hour = this.selectedHour();
     if (!hour) return [];
     return this.allDaySlots().filter((s) => s.local_start_time === hour);
   });
 
-  // Active chosen slot
   readonly selectedSlot = computed<PublicSlot | null>(() => {
     const courtId = this.selectedCourtId();
     if (!courtId) return null;
@@ -584,7 +560,6 @@ export class PublicBookingWizardComponent implements OnInit {
       next: (slots) => {
         this.allDaySlots.set(slots);
         this.isLoadingSlots.set(false);
-        // Default to first available hour if none chosen
         const hours = this.distinctHours();
         if (hours.length > 0 && !hours.includes(this.selectedHour())) {
           this.selectedHour.set(hours[0]);
@@ -604,15 +579,15 @@ export class PublicBookingWizardComponent implements OnInit {
 
   selectHour(h: string): void {
     this.selectedHour.set(h);
-    // If current selected court is not available at new hour, clear it
-    const available = this.slotsForSelectedHour().find((s) => s.court_id === this.selectedCourtId() && s.is_available);
-    if (!available) {
-      this.selectedCourtId.set(null);
-    }
+    this.selectedCourtId.set(null);
   }
 
-  onCourtSelected(courtId: string): void {
+  onCourtSelect(courtId: string): void {
     this.selectedCourtId.set(courtId);
+  }
+
+  getSlotForCourt(courtId: string): PublicSlot | undefined {
+    return this.slotsForSelectedHour().find((s) => s.court_id === courtId);
   }
 
   proceedToHold(): void {
@@ -620,9 +595,7 @@ export class PublicBookingWizardComponent implements OnInit {
     const clubSlug = this.slug();
     if (!slot || !clubSlug) return;
 
-    this.isCreatingHold.set(true);
-    this.bookingError.set(null);
-
+    this.isHolding.set(true);
     this.publicService
       .createHold(clubSlug, {
         court_id: slot.court_id,
@@ -630,47 +603,33 @@ export class PublicBookingWizardComponent implements OnInit {
         duration_minutes: slot.duration_minutes
       })
       .subscribe({
-        next: (hold) => {
-          this.holdData.set(hold);
-          this.isCreatingHold.set(false);
+        next: (holdRes) => {
+          this.hold.set(holdRes);
+          this.isHolding.set(false);
           this.currentStep.set(2);
         },
         error: (err) => {
-          this.isCreatingHold.set(false);
-          this.bookingError.set(err.error?.detail || 'No fue posible apartar la cancha. Por favor elige otro horario.');
+          this.isHolding.set(false);
+          alert(err.error?.detail || 'El slot ya no está disponible. Selecciona otro.');
+          this.loadAvailability();
         }
       });
   }
 
-  cancelHoldAndBack(): void {
-    this.currentStep.set(1);
-    this.holdData.set(null);
-  }
-
-  onHoldExpired(): void {
-    alert('El tiempo de reserva temporal ha expirado. Por favor selecciona tu horario nuevamente.');
-    this.currentStep.set(1);
-    this.holdData.set(null);
-    this.loadAvailability();
-  }
-
   confirmBooking(): void {
-    const hold = this.holdData();
+    const currentHold = this.hold();
     const clubSlug = this.slug();
-    if (!hold || !clubSlug) return;
+    if (!currentHold || !clubSlug) return;
 
     this.isConfirming.set(true);
-    this.bookingError.set(null);
-
-    // Generate client-side idempotency UUID
-    const idempotencyKey = crypto.randomUUID();
+    const idempotencyKey = 'idemp-' + Math.random().toString(36).substring(2) + Date.now();
 
     this.publicService
       .confirmBooking(clubSlug, idempotencyKey, {
-        hold_id: hold.hold_id,
-        customer_name: this.guestName.trim(),
-        customer_phone: this.guestPhone.trim(),
-        customer_email: this.guestEmail.trim()
+        hold_id: currentHold.hold_id,
+        customer_name: this.customerName.trim(),
+        customer_phone: this.customerPhone.trim(),
+        customer_email: this.customerEmail.trim()
       })
       .subscribe({
         next: (booking) => {
@@ -680,16 +639,32 @@ export class PublicBookingWizardComponent implements OnInit {
         },
         error: (err) => {
           this.isConfirming.set(false);
-          this.bookingError.set(err.error?.detail || 'Error al confirmar la reserva. Intenta nuevamente.');
+          alert(err.error?.detail || 'No se pudo confirmar la reserva. Intenta de nuevo.');
         }
       });
   }
 
+  cancelHoldAndGoBack(): void {
+    this.currentStep.set(1);
+    this.hold.set(null);
+  }
+
+  onHoldExpired(): void {
+    alert('El tiempo de reserva de 10 minutos ha expirado. Por favor selecciona tu horario de nuevo.');
+    this.currentStep.set(1);
+    this.hold.set(null);
+    this.selectedCourtId.set(null);
+    this.loadAvailability();
+  }
+
   resetWizard(): void {
     this.currentStep.set(1);
-    this.holdData.set(null);
+    this.hold.set(null);
     this.confirmedBooking.set(null);
     this.selectedCourtId.set(null);
+    this.customerName = '';
+    this.customerPhone = '';
+    this.customerEmail = '';
     this.loadAvailability();
   }
 
@@ -700,13 +675,9 @@ export class PublicBookingWizardComponent implements OnInit {
 
   getWhatsAppShareUrl(): string {
     const b = this.confirmedBooking();
-    if (!b) return '';
+    if (!b) return '#';
     const text = encodeURIComponent(
-      `¡Hola! Confirmé mi reserva en ${this.club()?.name}:\n` +
-      `🎾 Cancha: ${b.court_name}\n` +
-      `📅 Fecha: ${this.selectedDate()}\n` +
-      `⏰ Hora: ${this.selectedHour()}\n` +
-      `🔑 Código de reserva: ${b.code}`
+      `¡Hola! Confirmé mi reserva deportiva en ${b.club_name}.\nCancha: ${b.court_name}\nCódigo: ${b.code}\nFecha: ${b.start_time}`
     );
     return `https://wa.me/?text=${text}`;
   }
@@ -714,20 +685,15 @@ export class PublicBookingWizardComponent implements OnInit {
   downloadIcs(): void {
     const b = this.confirmedBooking();
     if (!b) return;
-
-    const start = new Date(b.start_time).toISOString().replace(/-|:|\.\d+/g, '');
-    const end = new Date(b.end_time).toISOString().replace(/-|:|\.\d+/g, '');
-
     const icsContent = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//Canchariane//Padel Booking//ES',
+      'PRODID:-//Canchariane//Reservas//ES',
       'BEGIN:VEVENT',
-      `SUMMARY:Partido de Pádel - ${b.court_name}`,
-      `DESCRIPTION:Reserva confirmada en ${this.club()?.name}. Código: ${b.code}`,
-      `LOCATION:${this.club()?.address || this.club()?.name}`,
-      `DTSTART:${start}`,
-      `DTEND:${end}`,
+      `SUMMARY:Reserva ${b.court_name} (${b.club_name})`,
+      `DESCRIPTION:Código de reserva: ${b.code}`,
+      `DTSTART:${new Date(b.start_time).toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
+      `DTEND:${new Date(b.end_time).toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
       'STATUS:CONFIRMED',
       'END:VEVENT',
       'END:VCALENDAR'
@@ -740,15 +706,5 @@ export class PublicBookingWizardComponent implements OnInit {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }
-
-  getCourtCardClass(slot: PublicSlot): string {
-    if (this.selectedCourtId() === slot.court_id) {
-      return 'border-emerald-500 bg-emerald-950/20';
-    }
-    if (!slot.is_available) {
-      return 'border-slate-800 bg-slate-900/70 opacity-50 cursor-not-allowed';
-    }
-    return 'border-slate-800 bg-slate-900/70 hover:border-slate-700';
   }
 }
