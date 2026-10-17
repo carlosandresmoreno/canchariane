@@ -265,7 +265,8 @@ async def get_club_availability(
     slug: str,
     target_date: Annotated[date, Query(alias="date")],
     sport: str | None = None,
-    duration: Annotated[int, Query(ge=30, le=180)] = 60,
+    duration: Annotated[int, Query(ge=30, le=240)] = 60,
+    step: Annotated[int | None, Query(ge=15, le=240)] = None,
     db: Annotated[AsyncSession, Depends(get_db)] = None,
 ) -> list[SlotPublicDTO]:
     # 1. Fetch club
@@ -383,6 +384,12 @@ async def get_club_availability(
     ]
 
     # 6. Execute pure domain compute_slots
+    step_minutes = step
+    if step_minutes is None:
+        step_minutes = club.settings.get("slot_step_minutes") if club.settings else None
+        if not step_minutes:
+            step_minutes = duration
+
     slots = compute_slots(
         day=target_date,
         tz=club_tz,
@@ -392,7 +399,7 @@ async def get_club_availability(
         blocks=domain_blocks,
         pricing_rules=domain_pricing,
         duration=timedelta(minutes=duration),
-        step=timedelta(minutes=30),
+        step=timedelta(minutes=step_minutes),
         now=datetime.now(UTC),
         min_lead_time=timedelta(minutes=settings.MIN_LEAD_TIME_MINUTES),
         default_price=Money(cents=5000000, currency="COP"),
@@ -454,6 +461,10 @@ async def create_hold(
             currency = rule.currency
             if rule.court_id == court.id:
                 break
+
+    # Scale price proportionally with duration relative to 60-min standard rate
+    if data.duration_minutes != 60 and price_cents > 0:
+        price_cents = int(round(price_cents * (data.duration_minutes / 60.0)))
 
     # 3.5 Check if court is blocked for maintenance, tournament, etc.
     block_conflict_query = select(BlockModel).where(

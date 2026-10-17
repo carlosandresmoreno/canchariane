@@ -299,11 +299,12 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
             </div>
 
             <form (ngSubmit)="submitManualBooking()" class="space-y-4">
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Cancha</label>
                   <select
                     [(ngModel)]="modalCourtId"
+                    (ngModelChange)="onDurationChange()"
                     name="modalCourtId"
                     class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
                   >
@@ -321,6 +322,22 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                     name="modalTime"
                     class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
                   />
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Duración</label>
+                  <select
+                    [(ngModel)]="modalDurationMinutes"
+                    (ngModelChange)="onDurationChange()"
+                    name="modalDurationMinutes"
+                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
+                  >
+                    <option [ngValue]="30">30 min (0.5 h)</option>
+                    <option [ngValue]="60">60 min (1 hora)</option>
+                    <option [ngValue]="90">90 min (1.5 h)</option>
+                    <option [ngValue]="120">120 min (2 horas)</option>
+                    <option [ngValue]="180">180 min (3 horas)</option>
+                  </select>
                 </div>
               </div>
 
@@ -905,6 +922,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   // Modal form bindings
   modalCourtId = '';
   modalTime = '14:00';
+  modalDurationMinutes = 60;
   modalCustomerName = '';
   modalCustomerPhone = '';
   modalPriceCents = 8000000;
@@ -1118,17 +1136,26 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
 
   openNewBookingModal(): void {
     this.modalTime = '14:00';
+    this.modalDurationMinutes = 60;
     this.modalCustomerName = '';
     this.modalCustomerPhone = '';
+    this.onDurationChange();
     this.showCreateBookingModal.set(true);
   }
 
   openSlotBooking(courtId: string, hourStr: string): void {
     this.modalCourtId = courtId;
     this.modalTime = hourStr;
+    this.modalDurationMinutes = 60;
     this.modalCustomerName = '';
     this.modalCustomerPhone = '';
+    this.onDurationChange();
     this.showCreateBookingModal.set(true);
+  }
+
+  onDurationChange(): void {
+    const baseHourly = 8000000;
+    this.modalPriceCents = Math.round((baseHourly * (Number(this.modalDurationMinutes) || 60)) / 60);
   }
 
   openBookingDetails(b: AdminBooking): void {
@@ -1280,7 +1307,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
       .createBooking(clubId, {
         court_id: this.modalCourtId,
         period_start: periodStart,
-        duration_minutes: 60,
+        duration_minutes: Number(this.modalDurationMinutes) || 60,
         customer_name: this.modalCustomerName.trim(),
         customer_phone: this.modalCustomerPhone.trim(),
         price_cents: Number(this.modalPriceCents) || 8000000,

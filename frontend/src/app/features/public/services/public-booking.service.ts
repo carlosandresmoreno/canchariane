@@ -29,12 +29,33 @@ export class PublicBookingService {
   getAvailability(
     slug: string,
     date: string,
-    courtId?: string,
+    optionsOrCourtId?:
+      | string
+      | {
+          courtId?: string;
+          sport?: string;
+          duration?: number;
+          step?: number;
+        },
     sport?: string,
-    duration: number = 60
+    duration: number = 60,
+    step?: number
   ): Observable<PublicSlot[]> {
-    let params = new HttpParams().set('date', date).set('duration', duration.toString());
-    if (sport) params = params.set('sport', sport);
+    let opts: { courtId?: string; sport?: string; duration?: number; step?: number } = {};
+    if (typeof optionsOrCourtId === 'object' && optionsOrCourtId !== null) {
+      opts = optionsOrCourtId;
+    } else {
+      opts = {
+        courtId: optionsOrCourtId,
+        sport,
+        duration: duration ?? 60,
+        step
+      };
+    }
+    const finalDuration = opts.duration ?? 60;
+    let params = new HttpParams().set('date', date).set('duration', finalDuration.toString());
+    if (opts.sport) params = params.set('sport', opts.sport);
+    if (opts.step) params = params.set('step', opts.step.toString());
 
     return this.http.get<any[]>(`${this.baseUrl}/clubs/${slug}/availability`, { params }).pipe(
       map((rawSlots) =>
@@ -49,7 +70,7 @@ export class PublicBookingService {
           end_time: s.period_end_utc,
           local_start_time: s.local_start,
           local_end_time: s.local_end,
-          duration_minutes: duration,
+          duration_minutes: finalDuration,
           price_cents: s.price_cents,
           currency: s.currency,
           is_available: true

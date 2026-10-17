@@ -128,18 +128,67 @@ interface DayOption {
               </div>
             </div>
 
-            <!-- Hour Selector -->
+            <!-- Duration Selector -->
             <div>
               <div class="flex items-center justify-between mb-3">
-                <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">2. Franja Horaria</span>
-                <span class="font-mono text-xs text-slate-500">
-                  {{ distinctHours().length }} horarios disponibles
-                </span>
+                <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">2. Duración del Turno</span>
+                <span class="text-xs text-slate-500 font-mono">{{ selectedDuration() }} minutos</span>
+              </div>
+
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                @for (opt of durationOptions; track opt.minutes) {
+                  <button
+                    type="button"
+                    (click)="selectDuration(opt.minutes)"
+                    class="p-3.5 rounded-2xl border text-left transition-all duration-300"
+                    [ngClass]="selectedDuration() === opt.minutes 
+                      ? 'bg-[#0056FB] border-[#0056FB] text-white shadow-md' 
+                      : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/70 shadow-xs'"
+                  >
+                    <div class="text-sm font-semibold tracking-tight">{{ opt.label }}</div>
+                    <div class="text-[10px] font-mono uppercase tracking-wider opacity-80 mt-0.5">{{ opt.sub }}</div>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Hour Selector with Interval Toggle -->
+            <div>
+              <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <div class="flex items-center gap-3">
+                  <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">3. Franja Horaria</span>
+                  <span class="font-mono text-xs text-slate-400">
+                    {{ distinctHours().length }} horarios disponibles
+                  </span>
+                </div>
+
+                <!-- Interval Selector (En punto vs Cada 30m) -->
+                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs shadow-inner">
+                  <span class="text-[10px] uppercase font-mono tracking-wider text-slate-400 px-1.5">Inicio:</span>
+                  <button
+                    type="button"
+                    (click)="setStepMode('exact')"
+                    class="px-2.5 py-1 rounded-lg text-xs transition-all"
+                    [ngClass]="stepMode() === 'exact' ? 'bg-white text-slate-900 font-medium shadow-xs' : 'text-slate-500 hover:text-slate-900'"
+                    title="Turnos comenzando en punto (ej. 08:00, 09:00, 10:00)"
+                  >
+                    En punto
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setStepMode('half')"
+                    class="px-2.5 py-1 rounded-lg text-xs transition-all"
+                    [ngClass]="stepMode() === 'half' ? 'bg-white text-slate-900 font-medium shadow-xs' : 'text-slate-500 hover:text-slate-900'"
+                    title="Turnos comenzando cada 30 min (ej. 08:00, 08:30, 09:00)"
+                  >
+                    Cada 30m
+                  </button>
+                </div>
               </div>
 
               @if (distinctHours().length === 0 && !isLoadingSlots()) {
                 <div class="p-8 rounded-3xl bg-slate-50 border border-slate-200 text-center text-slate-500 font-light text-sm shadow-xs">
-                  No hay horarios programados para esta fecha. Selecciona otro día.
+                  No hay horarios programados para esta fecha y duración. Selecciona otro día o ajusta la duración.
                 </div>
               } @else {
                 <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
@@ -162,7 +211,7 @@ interface DayOption {
             <!-- View Switcher & Court Selector -->
             <div>
               <div class="flex items-center justify-between mb-4">
-                <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">3. Selección de Cancha</span>
+                <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">4. Selección de Cancha</span>
                 <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs shadow-inner">
                   <button
                     type="button"
@@ -244,7 +293,7 @@ interface DayOption {
                     <div class="text-[10px] font-mono uppercase tracking-widest text-slate-400">Selección Actual</div>
                     <div class="font-semibold text-slate-900 text-base leading-tight">{{ selectedSlot()?.court_name }}</div>
                     <div class="text-xs text-slate-500 font-mono mt-0.5">
-                      {{ selectedDate() }} • {{ selectedSlot()?.local_start_time }} - {{ selectedSlot()?.local_end_time }}
+                      {{ selectedDate() }} • {{ selectedSlot()?.local_start_time }} - {{ selectedSlot()?.local_end_time }} ({{ selectedDuration() }} min)
                     </div>
                   </div>
                 </div>
@@ -286,7 +335,7 @@ interface DayOption {
             <div class="flex items-center justify-between p-4 rounded-3xl bg-white/95 backdrop-blur-2xl border border-slate-200 shadow-sm">
               <div>
                 <span class="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">Cancha Bloqueada</span>
-                <span class="font-semibold text-slate-900 text-sm">{{ selectedSlot()?.court_name }}</span>
+                <span class="font-semibold text-slate-900 text-sm">{{ selectedSlot()?.court_name }} ({{ selectedDuration() }} min)</span>
               </div>
               <app-countdown-timer
                 [expiresAt]="hold()?.expires_at || null"
@@ -414,12 +463,16 @@ interface DayOption {
                   <span class="font-semibold text-slate-900 text-sm">{{ confirmedBooking()?.customer_name }}</span>
                 </div>
                 <div>
-                  <span class="text-slate-400 uppercase font-mono text-[10px] block">Importe</span>
-                  <span class="font-serif italic text-xl text-slate-900">{{ formatCents(confirmedBooking()?.price_cents) }}</span>
+                  <span class="text-slate-400 uppercase font-mono text-[10px] block">Duración</span>
+                  <span class="font-semibold text-slate-900 text-sm">{{ selectedDuration() }} min</span>
                 </div>
                 <div>
                   <span class="text-slate-400 uppercase font-mono text-[10px] block">Liquidación</span>
                   <span class="font-mono text-[11px] text-[#0056FB] uppercase bg-[#EFF6FF] px-2 py-0.5 rounded border border-[#0056FB]/30 inline-block">{{ confirmedBooking()?.payment_status }}</span>
+                </div>
+                <div class="col-span-2">
+                  <span class="text-slate-400 uppercase font-mono text-[10px] block">Importe Total</span>
+                  <span class="font-serif italic text-2xl text-slate-900">{{ formatCents(confirmedBooking()?.price_cents) }}</span>
                 </div>
               </div>
 
@@ -485,6 +538,17 @@ export class PublicBookingWizardComponent implements OnInit {
   readonly selectedHour = signal<string>('');
   readonly selectedCourtId = signal<string | null>(null);
   readonly activeView = signal<'map' | 'list'>('map');
+
+  // Duration & Interval Signals
+  readonly selectedDuration = signal<number>(60);
+  readonly stepMode = signal<'exact' | 'half'>('exact');
+
+  readonly durationOptions = [
+    { minutes: 60, label: '60 min', sub: '1 hora (Estándar)' },
+    { minutes: 90, label: '90 min', sub: '1.5 horas' },
+    { minutes: 120, label: '120 min', sub: '2 horas' },
+    { minutes: 30, label: '30 min', sub: 'Media hora' }
+  ];
 
   // Flow Signals
   readonly currentStep = signal<1 | 2 | 3>(1);
@@ -574,20 +638,37 @@ export class PublicBookingWizardComponent implements OnInit {
     const clubSlug = this.slug();
     if (!dateStr || !clubSlug) return;
 
+    const duration = this.selectedDuration();
+    const step = this.stepMode() === 'half' ? 30 : duration;
+
     this.isLoadingSlots.set(true);
-    this.publicService.getAvailability(clubSlug, dateStr).subscribe({
-      next: (slots) => {
-        this.allDaySlots.set(slots);
-        this.isLoadingSlots.set(false);
-        const hours = this.distinctHours();
-        if (hours.length > 0 && !hours.includes(this.selectedHour())) {
-          this.selectedHour.set(hours[0]);
+    this.publicService
+      .getAvailability(clubSlug, dateStr, { duration, step })
+      .subscribe({
+        next: (slots) => {
+          this.allDaySlots.set(slots);
+          this.isLoadingSlots.set(false);
+          const hours = this.distinctHours();
+          if (hours.length > 0 && !hours.includes(this.selectedHour())) {
+            this.selectedHour.set(hours[0]);
+          }
+        },
+        error: () => {
+          this.isLoadingSlots.set(false);
         }
-      },
-      error: () => {
-        this.isLoadingSlots.set(false);
-      }
-    });
+      });
+  }
+
+  selectDuration(minutes: number): void {
+    this.selectedDuration.set(minutes);
+    this.selectedCourtId.set(null);
+    this.loadAvailability();
+  }
+
+  setStepMode(mode: 'exact' | 'half'): void {
+    this.stepMode.set(mode);
+    this.selectedCourtId.set(null);
+    this.loadAvailability();
   }
 
   selectDate(d: string): void {

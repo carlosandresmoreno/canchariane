@@ -125,11 +125,18 @@ def compute_slots(
                             break
 
                 if matched_rule:
-                    slot_price = matched_rule.price
+                    base_price = matched_rule.price
                 elif default_price:
-                    slot_price = default_price
+                    base_price = default_price
                 else:
-                    slot_price = Money(cents=0, currency="COP")
+                    base_price = Money(cents=0, currency="COP")
+
+                # Scale price proportionally with duration relative to 60-minute base
+                if duration != timedelta(minutes=60) and base_price.cents > 0:
+                    scaled_cents = int(round(base_price.cents * (duration.total_seconds() / 3600.0)))
+                    slot_price = Money(cents=scaled_cents, currency=base_price.currency)
+                else:
+                    slot_price = base_price
 
                 available_slots.append(
                     Slot(

@@ -58,7 +58,7 @@ class CreateHoldRequest(BaseModel):
     club_slug: str
     court_id: UUID
     start_time: datetime  # ISO 8601 with timezone (e.g. 2026-10-20T18:00:00Z)
-    duration_minutes: int = Field(default=60, ge=30, le=180)
+    duration_minutes: int = Field(default=60, ge=30, le=240)
 
 
 class HoldResponse(BaseModel):
