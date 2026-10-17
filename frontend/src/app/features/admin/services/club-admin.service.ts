@@ -129,12 +129,28 @@ export interface ClubLayout {
   decorations: DecorationItem[];
 }
 
+export interface ClubDashboardInfo {
+  club_id: string;
+  club_name: string;
+  slug: string;
+  is_published: boolean;
+  phone?: string | null;
+  address?: string | null;
+  role: string;
+  timezone: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ClubAdminService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = '/api/v1/clubs';
+
+  // --- Club Info & Portal ---
+  getClubInfo(clubId: string): Observable<ClubDashboardInfo> {
+    return this.http.get<ClubDashboardInfo>(`${this.baseUrl}/${clubId}/dashboard`);
+  }
 
   // --- Courts ---
   getCourts(clubId: string): Observable<AdminCourt[]> {

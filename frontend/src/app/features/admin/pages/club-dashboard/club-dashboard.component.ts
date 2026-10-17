@@ -19,6 +19,7 @@ import {
   AdminCourtCreate,
   AdminCreateBlock,
   ClubAdminService,
+  ClubDashboardInfo,
   ClubLayout,
   ClubStaffCreate,
   ClubStaffMember
@@ -75,6 +76,17 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'staff' | 'st
 
           <!-- Controls & Profile -->
           <div class="flex items-center gap-3">
+            <!-- Share Public Portal Button -->
+            <button
+              type="button"
+              (click)="openShareModal()"
+              class="px-3 sm:px-3.5 py-2 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-[#0056FB] font-mono text-xs font-semibold tracking-wider flex items-center gap-1.5 transition-all shadow-xs active:scale-95"
+              title="Compartir link del portal de reservas de este club"
+            >
+              <span class="text-sm">🔗</span>
+              <span class="hidden sm:inline">Compartir Portal</span>
+            </button>
+
             <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200">
               <span class="hidden md:inline-flex px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#0056FB] text-[10px] font-mono tracking-wider font-medium">
                 {{ userRoleBadge() }}
@@ -199,6 +211,7 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'staff' | 'st
             (todayClicked)="goToToday()"
             (openNewBookingModal)="openNewBookingModal()"
             (openNewBlockModal)="openNewBlockModal($event)"
+            (openShareModal)="openShareModal()"
             (slotClicked)="openSlotBooking($event.courtId, $event.hourStr)"
             (selectBooking)="openBookingDetails($event)"
             (selectBlock)="openBlockDetails($event)"
@@ -628,6 +641,145 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'staff' | 'st
           </div>
         </div>
       }
+
+      <!-- ============================================================= -->
+      <!-- MODAL: COMPARTIR PORTAL PÚBLICO DE RESERVAS DEL CLUB           -->
+      <!-- ============================================================= -->
+      @if (showShareModal()) {
+        <div class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div class="w-full max-w-xl p-7 rounded-3xl bg-white border border-slate-200 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 font-sans text-slate-900">
+            <!-- Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-xl text-[#0056FB] shadow-xs">
+                  🔗
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] uppercase tracking-[0.2em] text-[#0056FB] font-mono font-semibold">Portal Oficial para Clientes</span>
+                    @if (isPublished()) {
+                      <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-mono font-medium flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Público Activo
+                      </span>
+                    } @else {
+                      <span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-mono font-medium">
+                        Modo Borrador
+                      </span>
+                    }
+                  </div>
+                  <h3 class="font-serif italic text-2xl text-slate-900 leading-tight">
+                    {{ clubName() }}
+                  </h3>
+                </div>
+              </div>
+              <button
+                type="button"
+                (click)="closeShareModal()"
+                class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-800 transition-colors text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            <!-- Description -->
+            <p class="text-xs text-slate-600 font-sans leading-relaxed">
+              Comparte este enlace con tus jugadores en WhatsApp, historias de Instagram o página web. Al abrirlo, verán directamente el portal público de tu club con el mapa interactivo y horarios disponibles en tiempo real.
+            </p>
+
+            <!-- URL Display and 1-Click Copy Box -->
+            <div class="space-y-2">
+              <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500">
+                Enlace Directo de Reserva
+              </label>
+              <div class="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-50 border border-slate-200 focus-within:border-[#0056FB] focus-within:bg-white transition-all">
+                <span class="pl-3 text-slate-400 font-mono text-xs">🌐</span>
+                <input
+                  type="text"
+                  readonly
+                  [value]="publicPortalUrl()"
+                  (click)="$any($event.target).select()"
+                  class="flex-1 bg-transparent border-none text-xs font-mono text-slate-800 select-all focus:outline-none"
+                />
+                <button
+                  type="button"
+                  (click)="copyPublicLink()"
+                  class="px-4 py-2 rounded-xl text-xs font-mono font-semibold transition-all flex items-center gap-1.5 shadow-xs"
+                  [ngClass]="hasCopiedLink() ? 'bg-emerald-600 text-white' : 'bg-[#0056FB] hover:bg-[#0048d6] text-white active:scale-95'"
+                >
+                  <span>{{ hasCopiedLink() ? '✓ Copiado' : '📋 Copiar' }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Quick Action Cards (WhatsApp & Direct Open) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Share on WhatsApp -->
+              <button
+                type="button"
+                (click)="shareViaWhatsapp()"
+                class="p-4 rounded-2xl bg-emerald-50/80 hover:bg-emerald-100/90 border border-emerald-200 text-left transition-all group flex items-start gap-3 active:scale-95"
+              >
+                <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-lg shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                  💬
+                </div>
+                <div class="space-y-0.5 min-w-0">
+                  <span class="font-sans font-semibold text-slate-900 text-xs block truncate">Compartir por WhatsApp</span>
+                  <span class="text-[11px] text-emerald-800 block leading-tight">Abre WhatsApp con mensaje y link listos para enviar</span>
+                </div>
+              </button>
+
+              <!-- Open Public Portal in New Tab -->
+              <button
+                type="button"
+                (click)="openPublicPortal()"
+                class="p-4 rounded-2xl bg-blue-50/80 hover:bg-blue-100/90 border border-blue-200 text-left transition-all group flex items-start gap-3 active:scale-95"
+              >
+                <div class="w-10 h-10 rounded-xl bg-[#0056FB] text-white flex items-center justify-center text-lg shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                  ↗
+                </div>
+                <div class="space-y-0.5 min-w-0">
+                  <span class="font-sans font-semibold text-slate-900 text-xs block truncate">Ver Portal Público</span>
+                  <span class="text-[11px] text-blue-800 block leading-tight">Probar y visualizar la página tal como la ven tus clientes</span>
+                </div>
+              </button>
+            </div>
+
+            <!-- Full Message Template Ready to Paste -->
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold">
+                  Plantilla de Mensaje para Clientes
+                </span>
+                <button
+                  type="button"
+                  (click)="copyFullMessage()"
+                  class="text-[11px] font-mono text-[#0056FB] hover:underline font-semibold flex items-center gap-1"
+                >
+                  <span>{{ hasCopiedMessage() ? '✓ Texto Copiado' : 'Copiar Texto Completo' }}</span>
+                </button>
+              </div>
+              <p class="text-xs text-slate-700 font-mono bg-white p-3 rounded-xl border border-slate-200/80 select-all leading-relaxed">
+                ¡Hola! 👋 Ya puedes reservar tu cancha en {{ clubName() }} online y en tiempo real. Ingresa aquí para ver las canchas libres y elegir tu horario: {{ publicPortalUrl() }}
+              </p>
+            </div>
+
+            <!-- Footer Tip & Close -->
+            <div class="flex items-center justify-between pt-2">
+              <span class="text-[11px] text-slate-400 font-mono flex items-center gap-1">
+                <span>💡</span> Los clientes no necesitan instalar ninguna app.
+              </span>
+              <button
+                type="button"
+                (click)="closeShareModal()"
+                class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-mono text-xs uppercase tracking-wider transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `
 })
@@ -655,6 +807,10 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   readonly selectedBlock = signal<AdminBlock | null>(null);
   readonly showCreateBookingModal = signal<boolean>(false);
   readonly showCreateBlockModal = signal<boolean>(false);
+  readonly showShareModal = signal<boolean>(false);
+  readonly hasCopiedLink = signal<boolean>(false);
+  readonly hasCopiedMessage = signal<boolean>(false);
+  readonly clubInfo = signal<ClubDashboardInfo | null>(null);
   readonly isSubmitting = signal<boolean>(false);
   readonly isSubmittingBlock = signal<boolean>(false);
   readonly isSavingLayout = signal<boolean>(false);
@@ -700,6 +856,16 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     if (role === 'staff') return '📋 Recepcionista';
     if (role === 'owner') return '🏆 Dueño del Club';
     return '🏢 Administrador de Club';
+  });
+
+  readonly clubSlug = computed(() => this.clubInfo()?.slug || 'club-alpha');
+  readonly clubName = computed(() => this.clubInfo()?.club_name || 'Club Deportivo');
+  readonly isPublished = computed(() => this.clubInfo()?.is_published ?? true);
+  readonly publicPortalUrl = computed(() => {
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/c/${this.clubSlug()}`;
+    }
+    return `https://canchariane.com/c/${this.clubSlug()}`;
   });
 
   readonly formattedDateDisplay = computed(() => {
@@ -779,6 +945,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   }
 
   loadAllData(clubId: string): void {
+    this.loadClubInfo(clubId);
     this.loadCourts(clubId);
     this.loadBookings(clubId);
     this.loadBlocks(clubId);
@@ -786,6 +953,13 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
       this.loadLayout(clubId);
       this.loadStaff(clubId);
     }
+  }
+
+  loadClubInfo(clubId: string): void {
+    this.adminService.getClubInfo(clubId).subscribe({
+      next: (info) => this.clubInfo.set(info),
+      error: (e) => console.error('Error fetching club info', e)
+    });
   }
 
   loadCourts(clubId: string): void {
@@ -1192,6 +1366,50 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
       currency: 'COP',
       maximumFractionDigits: 0
     });
+  }
+
+  openShareModal(): void {
+    this.hasCopiedLink.set(false);
+    this.hasCopiedMessage.set(false);
+    this.showShareModal.set(true);
+  }
+
+  closeShareModal(): void {
+    this.showShareModal.set(false);
+  }
+
+  copyPublicLink(): void {
+    const url = this.publicPortalUrl();
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        this.hasCopiedLink.set(true);
+        setTimeout(() => this.hasCopiedLink.set(false), 2500);
+      });
+    }
+  }
+
+  copyFullMessage(): void {
+    const msg = `¡Hola! 👋 Ya puedes reservar tu cancha en ${this.clubName()} online y en tiempo real. Ingresa aquí para ver las canchas libres y elegir tu horario: ${this.publicPortalUrl()}`;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(msg).then(() => {
+        this.hasCopiedMessage.set(true);
+        setTimeout(() => this.hasCopiedMessage.set(false), 2500);
+      });
+    }
+  }
+
+  shareViaWhatsapp(): void {
+    const msg = `¡Hola! 👋 Reserva tu cancha en ${this.clubName()} online aquí: ${this.publicPortalUrl()}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    if (typeof window !== 'undefined') {
+      window.open(url, '_blank');
+    }
+  }
+
+  openPublicPortal(): void {
+    if (typeof window !== 'undefined') {
+      window.open(this.publicPortalUrl(), '_blank');
+    }
   }
 
   logout(): void {

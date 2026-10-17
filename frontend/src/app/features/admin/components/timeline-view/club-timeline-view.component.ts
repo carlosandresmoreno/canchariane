@@ -64,6 +64,16 @@ interface TimelineRow {
             </button>
           </div>
 
+          <!-- Compartir Link Portal Button -->
+          <button
+            type="button"
+            (click)="openShareModal.emit()"
+            class="px-3.5 py-2.5 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-[#0056FB] font-medium text-xs tracking-wider uppercase font-mono transition-all duration-300 shadow-xs flex items-center justify-center gap-1.5 active:scale-95"
+            title="Compartir enlace público del portal para que los clientes reserven en línea"
+          >
+            <span>🔗 Compartir Portal</span>
+          </button>
+
           <!-- Bloquear Horario Button -->
           <button
             type="button"
@@ -227,6 +237,7 @@ export class ClubTimelineViewComponent {
   @Output() slotClicked = new EventEmitter<{ courtId: string; hourStr: string }>();
   @Output() selectBooking = new EventEmitter<AdminBooking>();
   @Output() selectBlock = new EventEmitter<AdminBlock>();
+  @Output() openShareModal = new EventEmitter<void>();
 
   readonly timelineRows: TimelineRow[] = Array.from({ length: 16 }, (_, i) => {
     const h = i + 7;

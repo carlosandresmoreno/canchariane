@@ -76,6 +76,10 @@ async def get_club_dashboard(
     return {
         "club_id": str(club_id),
         "club_name": club.name,
+        "slug": club.slug,
+        "is_published": club.is_published,
+        "phone": club.phone,
+        "address": club.address,
         "role": user_ctx.memberships.get(str(club_id), "staff"),
         "timezone": club.timezone,
     }
