@@ -147,6 +147,7 @@ def compute_slots(
                         local_end=candidate_end,
                         price=slot_price,
                         status="available",
+                        hourly_rate=base_price,
                     )
                 )
 

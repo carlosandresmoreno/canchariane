@@ -25,6 +25,8 @@ from app.application.dto.admin import (
     BusinessHoursUpdateRequest,
     ClubLayoutResponse,
     ClubLayoutUpdateRequest,
+    ClubSettingsResponse,
+    ClubSettingsUpdateRequest,
     ClubStaffCreateRequest,
     ClubStaffMemberResponse,
     CourtAdminResponse,
@@ -86,6 +88,76 @@ async def get_club_dashboard(
 
 
 # ---------------------------------------------------------
+# CLUB SETTINGS (RENTAL DURATIONS & STEP)
+# ---------------------------------------------------------
+@router.get("/{club_id}/settings", response_model=ClubSettingsResponse)
+async def get_club_settings(
+    auth_context: Annotated[tuple[UUID, UserContext], Depends(require_club_role("staff"))],
+    db: Annotated[AsyncSession, Depends(get_db)] = None,
+) -> ClubSettingsResponse:
+    club_id, _ = auth_context
+    club = await db.get(ClubModel, club_id)
+    if not club:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Club no encontrado")
+    s = club.settings or {}
+    allowed = s.get("allowed_durations") or [60]
+    default_dur = s.get("default_duration") or (allowed[0] if allowed else 60)
+    return ClubSettingsResponse(
+        allowed_durations=allowed,
+        default_duration=default_dur,
+        slot_step_minutes=s.get("slot_step_minutes"),
+        currency=s.get("currency", "COP"),
+    )
+
+
+@router.patch("/{club_id}/settings", response_model=ClubSettingsResponse)
+async def update_club_settings(
+    data: ClubSettingsUpdateRequest,
+    auth_context: Annotated[tuple[UUID, UserContext], Depends(require_club_role("admin"))],
+    db: Annotated[AsyncSession, Depends(get_db)] = None,
+) -> ClubSettingsResponse:
+    club_id, _ = auth_context
+    club = await db.get(ClubModel, club_id)
+    if not club:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Club no encontrado")
+
+    s = dict(club.settings or {})
+    if data.allowed_durations is not None:
+        if not data.allowed_durations:
+            raise HTTPException(status_code=400, detail="Debe existir al menos una duración habilitada")
+        for d in data.allowed_durations:
+            if d < 15 or d > 360:
+                raise HTTPException(status_code=400, detail="Las duraciones deben ser entre 15 y 360 minutos")
+        s["allowed_durations"] = sorted(list(set(data.allowed_durations)))
+        if s.get("default_duration") not in s["allowed_durations"]:
+            s["default_duration"] = s["allowed_durations"][0]
+
+    if data.default_duration is not None:
+        curr_allowed = s.get("allowed_durations") or [60]
+        if data.default_duration not in curr_allowed:
+            raise HTTPException(
+                status_code=400,
+                detail="La duración predeterminada debe estar entre las duraciones permitidas"
+            )
+        s["default_duration"] = data.default_duration
+
+    if data.slot_step_minutes is not None:
+        s["slot_step_minutes"] = data.slot_step_minutes
+
+    club.settings = s
+    await db.commit()
+
+    allowed = s.get("allowed_durations") or [60]
+    default_dur = s.get("default_duration") or (allowed[0] if allowed else 60)
+    return ClubSettingsResponse(
+        allowed_durations=allowed,
+        default_duration=default_dur,
+        slot_step_minutes=s.get("slot_step_minutes"),
+        currency=s.get("currency", "COP"),
+    )
+
+
+# ---------------------------------------------------------
 # COURTS CRUD
 # ---------------------------------------------------------
 @router.get("/{club_id}/courts", response_model=list[CourtAdminResponse])
@@ -97,27 +169,41 @@ async def list_courts(
     query = (
         select(CourtModel)
         .where(CourtModel.club_id == club_id, CourtModel.deleted_at.is_(None))
+        .options(selectinload(CourtModel.pricing_rules))
         .order_by(CourtModel.position, CourtModel.name)
     )
     result = await db.scalars(query)
     courts = result.all()
-    return [
-        CourtAdminResponse(
-            id=c.id,
-            club_id=c.club_id,
-            name=c.name,
-            sport=c.sport,
-            surface=c.surface,
-            player_format=c.player_format,
-            is_covered=c.is_covered,
-            has_lighting=c.has_lighting,
-            is_active=c.is_active,
-            position=c.position,
-            shape=c.shape,
-            created_at=c.created_at,
+
+    # Default pricing rule if court has no direct rule
+    default_price_query = select(PricingRuleModel.price_cents).where(
+        PricingRuleModel.club_id == club_id,
+        PricingRuleModel.court_id.is_(None),
+    )
+    default_club_price = await db.scalar(default_price_query)
+
+    responses = []
+    for c in courts:
+        court_rule = next((pr for pr in c.pricing_rules if pr.court_id == c.id), None)
+        court_price = court_rule.price_cents if court_rule else (default_club_price or 6000000)
+        responses.append(
+            CourtAdminResponse(
+                id=c.id,
+                club_id=c.club_id,
+                name=c.name,
+                sport=c.sport,
+                surface=c.surface,
+                player_format=c.player_format,
+                is_covered=c.is_covered,
+                has_lighting=c.has_lighting,
+                is_active=c.is_active,
+                position=c.position,
+                shape=c.shape,
+                price_per_hour_cents=court_price,
+                created_at=c.created_at,
+            )
         )
-        for c in courts
-    ]
+    return responses
 
 
 @router.post(
@@ -131,8 +217,9 @@ async def create_court(
     db: Annotated[AsyncSession, Depends(get_db)] = None,
 ) -> CourtAdminResponse:
     club_id, _ = auth_context
+    court_id = uuid6.uuid7()
     court = CourtModel(
-        id=uuid6.uuid7(),
+        id=court_id,
         club_id=club_id,
         name=data.name.strip(),
         sport=data.sport.strip(),
@@ -145,6 +232,20 @@ async def create_court(
         shape=data.shape.model_dump() if data.shape else None,
     )
     db.add(court)
+
+    price_cents = data.price_per_hour_cents if data.price_per_hour_cents is not None else 6000000
+    rule = PricingRuleModel(
+        id=uuid6.uuid7(),
+        club_id=club_id,
+        court_id=court_id,
+        weekday_mask=127,
+        start_time=time(0, 0),
+        end_time=time(23, 59, 59),
+        price_cents=price_cents,
+        currency="COP",
+    )
+    db.add(rule)
+
     await db.commit()
     await db.refresh(court)
 
@@ -160,6 +261,7 @@ async def create_court(
         is_active=court.is_active,
         position=court.position,
         shape=court.shape,
+        price_per_hour_cents=price_cents,
         created_at=court.created_at,
     )
 
@@ -177,11 +279,42 @@ async def update_court(
         raise HTTPException(status_code=404, detail="Cancha no encontrada")
 
     update_dict = data.model_dump(exclude_unset=True)
+    price_to_update = update_dict.pop("price_per_hour_cents", None)
+
     if "shape" in update_dict and update_dict["shape"] is not None:
         update_dict["shape"] = data.shape.model_dump() if data.shape else None
 
     for key, value in update_dict.items():
         setattr(court, key, value)
+
+    price_cents = None
+    if price_to_update is not None:
+        price_cents = price_to_update
+        rule_query = select(PricingRuleModel).where(
+            PricingRuleModel.club_id == club_id,
+            PricingRuleModel.court_id == court_id,
+        )
+        existing_rule = await db.scalar(rule_query)
+        if existing_rule:
+            existing_rule.price_cents = price_to_update
+        else:
+            new_rule = PricingRuleModel(
+                id=uuid6.uuid7(),
+                club_id=club_id,
+                court_id=court_id,
+                weekday_mask=127,
+                start_time=time(0, 0),
+                end_time=time(23, 59, 59),
+                price_cents=price_to_update,
+                currency="COP",
+            )
+            db.add(new_rule)
+    else:
+        rule_query = select(PricingRuleModel.price_cents).where(
+            PricingRuleModel.club_id == club_id,
+            PricingRuleModel.court_id == court_id,
+        )
+        price_cents = await db.scalar(rule_query)
 
     await db.commit()
     await db.refresh(court)
@@ -198,6 +331,7 @@ async def update_court(
         is_active=court.is_active,
         position=court.position,
         shape=court.shape,
+        price_per_hour_cents=price_cents or 6000000,
         created_at=court.created_at,
     )
 

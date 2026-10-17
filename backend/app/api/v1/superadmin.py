@@ -92,9 +92,12 @@ async def create_club(
         phone=data.phone,
         subscription_status=data.subscription_status,
         is_published=data.is_published,
-        settings={"currency": data.currency.upper(), "email": data.email}
-        if data.email
-        else {"currency": data.currency.upper()},
+        settings={
+            "currency": data.currency.upper(),
+            "allowed_durations": [60],
+            "default_duration": 60,
+            **({"email": data.email} if data.email else {}),
+        },
     )
     db.add(club)
 

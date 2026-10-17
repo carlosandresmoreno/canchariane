@@ -30,7 +30,13 @@ async def seed_demo_club():
                 phone="+57 310 987 6543",
                 is_published=True,
                 subscription_status="active",
-                settings={"deposit_percentage": 0, "payment_mode": "on_site"}
+                settings={
+                    "deposit_percentage": 0,
+                    "payment_mode": "on_site",
+                    "allowed_durations": [30, 60, 90, 120],
+                    "default_duration": 60,
+                    "currency": "COP"
+                }
             )
             session.add(club)
 
@@ -149,6 +155,12 @@ async def seed_demo_club():
 
             await session.flush()
             print("Club 'club-alpha' and layout seeded.")
+        else:
+            s = dict(club.settings or {})
+            if "allowed_durations" not in s:
+                s["allowed_durations"] = [30, 60, 90, 120]
+                s["default_duration"] = 60
+                club.settings = s
 
         # 1. Superadmin User (Plataforma / Desarrollador)
         superadmin_email = "superadmin@canchariane.com"

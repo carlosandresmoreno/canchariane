@@ -109,25 +109,38 @@ async def get_club_by_slug(
         .options(
             selectinload(ClubModel.courts),
             selectinload(ClubModel.business_hours),
+            selectinload(ClubModel.pricing_rules),
         )
     )
     club = await db.scalar(query)
     if not club:
         raise HTTPException(status_code=404, detail="Club no encontrado")
 
-    active_courts = [
-        CourtPublicDTO(
-            id=c.id,
-            name=c.name,
-            sport=c.sport,
-            surface=c.surface,
-            player_format=c.player_format,
-            is_covered=c.is_covered,
-            has_lighting=c.has_lighting,
-        )
-        for c in club.courts
-        if c.is_active and c.deleted_at is None
-    ]
+    active_courts = []
+    for c in club.courts:
+        if c.is_active and c.deleted_at is None:
+            court_price = None
+            for pr in (club.pricing_rules or []):
+                if pr.court_id == c.id:
+                    court_price = pr.price_cents
+                    break
+            if court_price is None:
+                for pr in (club.pricing_rules or []):
+                    if pr.court_id is None:
+                        court_price = pr.price_cents
+                        break
+            active_courts.append(
+                CourtPublicDTO(
+                    id=c.id,
+                    name=c.name,
+                    sport=c.sport,
+                    surface=c.surface,
+                    player_format=c.player_format,
+                    is_covered=c.is_covered,
+                    has_lighting=c.has_lighting,
+                    price_per_hour_cents=court_price or 6000000,
+                )
+            )
 
     hours = [
         BusinessHoursPublicDTO(
@@ -139,6 +152,11 @@ async def get_club_by_slug(
         for h in sorted(club.business_hours, key=lambda x: x.weekday)
     ]
 
+    s = club.settings or {}
+    allowed_durations = s.get("allowed_durations") or [60]
+    default_duration = s.get("default_duration") or (allowed_durations[0] if allowed_durations else 60)
+    slot_step_minutes = s.get("slot_step_minutes")
+
     return ClubPublicDetail(
         id=club.id,
         slug=club.slug,
@@ -149,6 +167,9 @@ async def get_club_by_slug(
         logo_url=club.logo_url,
         courts=active_courts,
         business_hours=hours,
+        allowed_durations=allowed_durations,
+        default_duration=default_duration,
+        slot_step_minutes=slot_step_minutes,
     )
 
 
@@ -384,9 +405,20 @@ async def get_club_availability(
     ]
 
     # 6. Execute pure domain compute_slots
+    club_settings = club.settings or {}
+    allowed_durations = club_settings.get("allowed_durations") or [60]
+    if duration not in allowed_durations:
+        if duration == 60 and 60 not in allowed_durations:
+            duration = club_settings.get("default_duration") or allowed_durations[0]
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Este club no permite turnos de {duration} minutos. Opciones disponibles: {allowed_durations}",
+            )
+
     step_minutes = step
     if step_minutes is None:
-        step_minutes = club.settings.get("slot_step_minutes") if club.settings else None
+        step_minutes = club_settings.get("slot_step_minutes")
         if not step_minutes:
             step_minutes = duration
 
@@ -414,6 +446,7 @@ async def get_club_availability(
             local_start=s.local_start.strftime("%H:%M"),
             local_end=s.local_end.strftime("%H:%M"),
             price_cents=s.price.cents,
+            hourly_rate_cents=s.hourly_rate.cents if s.hourly_rate else None,
             currency=s.price.currency,
         )
         for s in slots
@@ -461,6 +494,15 @@ async def create_hold(
             currency = rule.currency
             if rule.court_id == court.id:
                 break
+
+    # 3.4 Check allowed durations
+    club_settings = club.settings or {}
+    allowed_durations = club_settings.get("allowed_durations") or [60]
+    if data.duration_minutes not in allowed_durations:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Este club no permite turnos de {data.duration_minutes} minutos. Opciones disponibles: {allowed_durations}",
+        )
 
     # Scale price proportionally with duration relative to 60-min standard rate
     if data.duration_minutes != 60 and price_cents > 0:

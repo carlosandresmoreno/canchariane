@@ -80,6 +80,14 @@ import { AdminCourt, AdminCourtCreate } from '../../services/club-admin.service'
                 </div>
               </div>
 
+              <!-- Price Badge -->
+              <div class="flex items-center justify-between p-3 rounded-2xl bg-blue-50/70 border border-blue-200/80">
+                <span class="text-[10px] uppercase font-mono tracking-wider text-slate-500">Tarifa Base (1 hora)</span>
+                <span class="font-serif italic font-bold text-base text-[#0056FB]">
+                  {{ formatCents(court.price_per_hour_cents) }}
+                </span>
+              </div>
+
               <!-- Features -->
               <div class="flex items-center gap-3 text-xs text-slate-600 font-mono">
                 <span class="flex items-center gap-1.5" [class.text-[#0056FB]]="court.is_covered">
@@ -241,6 +249,27 @@ import { AdminCourt, AdminCourtCreate } from '../../services/club-admin.service'
                 </div>
               </div>
 
+              <div>
+                <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">
+                  Precio Base por Hora (COP) *
+                </label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-sm">$</span>
+                  <input
+                    type="number"
+                    required
+                    [(ngModel)]="courtPriceCop"
+                    name="courtPriceCop"
+                    step="5000"
+                    placeholder="65000"
+                    class="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-sm focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
+                  />
+                </div>
+                <p class="text-[11px] text-slate-400 font-mono mt-1">
+                  Tarifa base de 1 hora. Para reservas de 30m, 90m, 2h, etc., el sistema calculará el valor proporcional.
+                </p>
+              </div>
+
               <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                 <div class="flex items-center gap-2">
                   <input
@@ -300,6 +329,7 @@ export class ClubCourtsManagerComponent {
   readonly showModal = signal<boolean>(false);
   readonly isEditing = signal<boolean>(false);
   selectedCourtId: string | null = null;
+  courtPriceCop = 65000;
 
   form: AdminCourtCreate = {
     name: '',
@@ -385,6 +415,7 @@ export class ClubCourtsManagerComponent {
   openCreateModal(): void {
     this.isEditing.set(false);
     this.selectedCourtId = null;
+    this.courtPriceCop = 65000;
     this.form = {
       name: '',
       sport: 'football',
@@ -400,6 +431,7 @@ export class ClubCourtsManagerComponent {
   openEditModal(court: AdminCourt): void {
     this.isEditing.set(true);
     this.selectedCourtId = court.id;
+    this.courtPriceCop = court.price_per_hour_cents ? Math.round(court.price_per_hour_cents / 100) : 65000;
     this.form = {
       name: court.name,
       sport: court.sport,
@@ -416,8 +448,16 @@ export class ClubCourtsManagerComponent {
     if (!this.form.name.trim()) return;
     this.saveCourt.emit({
       courtId: this.selectedCourtId ?? undefined,
-      data: { ...this.form }
+      data: {
+        ...this.form,
+        price_per_hour_cents: Math.round(Number(this.courtPriceCop) * 100)
+      }
     });
     this.showModal.set(false);
+  }
+
+  formatCents(cents?: number): string {
+    if (!cents) return '$0 COP';
+    return '$' + (cents / 100).toLocaleString('es-CO') + ' COP';
   }
 }

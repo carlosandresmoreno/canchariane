@@ -163,7 +163,7 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
               class="px-3.5 py-2 rounded-xl hover:bg-slate-100 transition-all flex items-center gap-2 shrink-0 font-medium"
             >
               <span>⏰</span>
-              <span>Horarios</span>
+              <span>Horarios & Duraciones</span>
             </button>
 
             <button
@@ -253,11 +253,114 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
         }
 
         @if (activeTab() === 'hours' && isOwnerOrAdmin()) {
-          <app-club-business-hours-manager
-            [hours]="businessHours()"
-            [isSaving]="isSavingHours()"
-            (save)="handleSaveHours($event)"
-          />
+          <div class="space-y-6">
+            <!-- Rental Durations & Booking Step Policy Card -->
+            <div class="p-6 sm:p-7 rounded-3xl bg-white border border-slate-200/90 shadow-xs space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="font-serif italic text-xl text-slate-900">Duraciones de Alquiler & Lapsos</h2>
+                    <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0056FB] border border-blue-200 text-[10px] font-mono tracking-wider uppercase font-medium">
+                      Políticas de Reserva
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500 mt-1">
+                    Controla qué opciones de duración ofrece tu club a los clientes en el portal público (ej. solo por horas, o permitir 30m, 90m, etc.).
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  [disabled]="isSavingSettings()"
+                  (click)="handleSaveSettings()"
+                  class="px-5 py-2.5 rounded-xl bg-[#0056FB] hover:bg-[#0048d6] disabled:opacity-50 text-white font-mono text-xs font-semibold tracking-wider flex items-center justify-center gap-2 shadow-xs transition-all active:scale-95 shrink-0"
+                >
+                  @if (isSavingSettings()) {
+                    <span class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span>Guardando...</span>
+                  } @else {
+                    <span>💾 Guardar Políticas</span>
+                  }
+                </button>
+              </div>
+
+              <!-- Durations Allowed Selector -->
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <label class="text-[11px] font-mono uppercase tracking-wider text-slate-600 font-semibold block">
+                    1. Duraciones Habilitadas para Alquiler
+                  </label>
+                  <span class="text-xs text-slate-400 font-mono">
+                    {{ settingsAllowedDurations().length }} de {{ allDurationChoices.length }} activas
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                  @for (choice of allDurationChoices; track choice.minutes) {
+                    @let isEnabled = settingsAllowedDurations().includes(choice.minutes);
+                    <button
+                      type="button"
+                      (click)="toggleDuration(choice.minutes)"
+                      class="p-4 rounded-2xl border text-left transition-all relative flex flex-col justify-between"
+                      [ngClass]="isEnabled
+                        ? 'bg-blue-50/70 border-[#0056FB] text-slate-900 shadow-xs ring-1 ring-[#0056FB]/20'
+                        : 'bg-slate-50/50 border-slate-200 text-slate-400 hover:border-slate-300 hover:bg-slate-50'"
+                    >
+                      <div class="flex items-center justify-between w-full mb-1">
+                        <span class="text-sm font-semibold tracking-tight">{{ choice.label }}</span>
+                        <span class="text-xs font-mono font-bold" [class.text-[#0056FB]]="isEnabled" [class.text-slate-300]="!isEnabled">
+                          {{ isEnabled ? '✓ Habilitada' : '— Desactivada' }}
+                        </span>
+                      </div>
+                      <span class="text-[10px] font-mono uppercase tracking-wider opacity-70">{{ choice.sub }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <!-- Default Duration & Step Settings -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-3 border-t border-slate-100">
+                <div>
+                  <label class="text-[11px] font-mono uppercase tracking-wider text-slate-600 font-semibold block mb-1.5">
+                    2. Duración Predeterminada al Reservar
+                  </label>
+                  <select
+                    [ngModel]="settingsDefaultDuration()"
+                    (ngModelChange)="settingsDefaultDuration.set(+$event)"
+                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
+                  >
+                    @for (d of settingsAllowedDurations(); track d) {
+                      <option [value]="d">{{ d }} minutos ({{ d === 60 ? '1 hora' : d === 90 ? '1.5 h' : d === 120 ? '2 h' : d === 30 ? '0.5 h' : (d/60) + ' h' }})</option>
+                    }
+                  </select>
+                  <p class="text-[11px] text-slate-400 mt-1">La opción preseleccionada cuando un cliente ingresa al portal.</p>
+                </div>
+
+                <div>
+                  <label class="text-[11px] font-mono uppercase tracking-wider text-slate-600 font-semibold block mb-1.5">
+                    3. Lapsos de Inicio Predeterminados
+                  </label>
+                  <select
+                    [ngModel]="settingsSlotStep()"
+                    (ngModelChange)="settingsSlotStep.set($event)"
+                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
+                  >
+                    <option [ngValue]="null">En punto según duración (Recomendado: 06:00, 07:00, 08:00...)</option>
+                    <option [ngValue]="30">Cada 30 minutos (06:00, 06:30, 07:00, 07:30...)</option>
+                    <option [ngValue]="60">Forzar cada hora en punto (60m)</option>
+                  </select>
+                  <p class="text-[11px] text-slate-400 mt-1">Controla cómo se generan los intervalos de horario en la parrilla.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Business Hours Component -->
+            <app-club-business-hours-manager
+              [hours]="businessHours()"
+              [isSaving]="isSavingHours()"
+              (save)="handleSaveHours($event)"
+            />
+          </div>
         }
 
         @if (activeTab() === 'staff' && isOwnerOrAdmin()) {
@@ -902,6 +1005,20 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   readonly businessHours = signal<BusinessHoursAdminResponse[]>([]);
   readonly isSavingHours = signal<boolean>(false);
 
+  // Rental Durations & Booking Settings
+  readonly isSavingSettings = signal<boolean>(false);
+  readonly settingsAllowedDurations = signal<number[]>([60]);
+  readonly settingsDefaultDuration = signal<number>(60);
+  readonly settingsSlotStep = signal<number | null>(null);
+
+  readonly allDurationChoices = [
+    { minutes: 30, label: '30 min', sub: 'Media hora' },
+    { minutes: 60, label: '60 min', sub: '1 hora (Estándar)' },
+    { minutes: 90, label: '90 min', sub: '1.5 horas (Pádel / Tenis)' },
+    { minutes: 120, label: '120 min', sub: '2 horas (Partidos largos)' },
+    { minutes: 180, label: '180 min', sub: '3 horas (Torneos / Eventos)' }
+  ];
+
   readonly selectedBooking = signal<AdminBooking | null>(null);
   readonly selectedBlock = signal<AdminBlock | null>(null);
   readonly confirmingCancelBooking = signal<boolean>(false);
@@ -1056,6 +1173,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
       this.loadLayout(clubId);
       this.loadStaff(clubId);
       this.loadBusinessHours(clubId);
+      this.loadClubSettings(clubId);
     }
   }
 
@@ -1154,7 +1272,8 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   }
 
   onDurationChange(): void {
-    const baseHourly = 8000000;
+    const court = this.courts().find(c => c.id === this.modalCourtId);
+    const baseHourly = court?.price_per_hour_cents || 6000000;
     this.modalPriceCents = Math.round((baseHourly * (Number(this.modalDurationMinutes) || 60)) / 60);
   }
 
@@ -1380,7 +1499,8 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
       player_format: event.data.player_format,
       is_covered: !!event.data.is_covered,
       has_lighting: !!event.data.has_lighting,
-      position: Number(event.data.position) || 1
+      position: Number(event.data.position) || 1,
+      price_per_hour_cents: event.data.price_per_hour_cents
     };
 
     if (event.courtId) {
@@ -1470,6 +1590,64 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
       next: (hours) => this.businessHours.set(hours),
       error: (e) => console.error('Error fetching business hours', e)
     });
+  }
+
+  loadClubSettings(clubId: string): void {
+    this.adminService.getSettings(clubId).subscribe({
+      next: (s) => {
+        this.settingsAllowedDurations.set(s.allowed_durations || [60]);
+        this.settingsDefaultDuration.set(s.default_duration || 60);
+        this.settingsSlotStep.set(s.slot_step_minutes ?? null);
+      },
+      error: (e) => console.error('Error fetching club settings', e)
+    });
+  }
+
+  toggleDuration(minutes: number): void {
+    const current = [...this.settingsAllowedDurations()];
+    const index = current.indexOf(minutes);
+    if (index >= 0) {
+      if (current.length === 1) {
+        alert('Debe haber al menos una duración habilitada para reservas.');
+        return;
+      }
+      current.splice(index, 1);
+    } else {
+      current.push(minutes);
+      current.sort((a, b) => a - b);
+    }
+    this.settingsAllowedDurations.set(current);
+    if (!current.includes(this.settingsDefaultDuration())) {
+      this.settingsDefaultDuration.set(current[0]);
+    }
+  }
+
+  handleSaveSettings(): void {
+    const clubId = this.getActiveClubId();
+    if (!clubId) return;
+
+    this.errorMessage.set(null);
+    this.isSavingSettings.set(true);
+
+    this.adminService
+      .updateSettings(clubId, {
+        allowed_durations: this.settingsAllowedDurations(),
+        default_duration: this.settingsDefaultDuration(),
+        slot_step_minutes: this.settingsSlotStep()
+      })
+      .subscribe({
+        next: (updated) => {
+          this.isSavingSettings.set(false);
+          this.settingsAllowedDurations.set(updated.allowed_durations);
+          this.settingsDefaultDuration.set(updated.default_duration);
+          this.settingsSlotStep.set(updated.slot_step_minutes ?? null);
+          this.feedbackMessage.set('Políticas de duración y reservas guardadas exitosamente.');
+        },
+        error: (err) => {
+          this.isSavingSettings.set(false);
+          this.errorMessage.set(this.extractErrorMessage(err));
+        }
+      });
   }
 
   handleSaveHours(hours: BusinessHourItem[]): void {

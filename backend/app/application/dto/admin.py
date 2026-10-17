@@ -75,6 +75,7 @@ class CourtCreateRequest(BaseModel):
     has_lighting: bool = True
     position: int = 0
     shape: ShapeUnion | None = None
+    price_per_hour_cents: int = Field(default=6000000, ge=0)
 
 
 class CourtUpdateRequest(BaseModel):
@@ -89,6 +90,7 @@ class CourtUpdateRequest(BaseModel):
     is_active: bool | None = None
     position: int | None = None
     shape: ShapeUnion | None = None
+    price_per_hour_cents: int | None = Field(default=None, ge=0)
 
 
 class CourtAdminResponse(BaseModel):
@@ -103,6 +105,7 @@ class CourtAdminResponse(BaseModel):
     is_active: bool
     position: int
     shape: dict[str, Any] | None
+    price_per_hour_cents: int | None = None
     created_at: datetime
 
 
@@ -251,4 +254,18 @@ class ClubStaffCreateRequest(BaseModel):
         if isinstance(v, str) and not v.strip():
             return None
         return v.strip() if isinstance(v, str) else v
+
+
+class ClubSettingsResponse(BaseModel):
+    allowed_durations: list[int]
+    default_duration: int
+    slot_step_minutes: int | None = None
+    currency: str = "COP"
+
+
+class ClubSettingsUpdateRequest(BaseModel):
+    allowed_durations: list[int] | None = None
+    default_duration: int | None = None
+    slot_step_minutes: int | None = None
+
 

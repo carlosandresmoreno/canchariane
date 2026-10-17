@@ -129,28 +129,43 @@ interface DayOption {
             </div>
 
             <!-- Duration Selector -->
-            <div>
-              <div class="flex items-center justify-between mb-3">
-                <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">2. Duración del Turno</span>
-                <span class="text-xs text-slate-500 font-mono">{{ selectedDuration() }} minutos</span>
-              </div>
+            @if (durationOptions().length > 1) {
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">2. Duración del Turno</span>
+                  <span class="text-xs text-slate-500 font-mono">{{ selectedDuration() }} minutos</span>
+                </div>
 
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                @for (opt of durationOptions; track opt.minutes) {
-                  <button
-                    type="button"
-                    (click)="selectDuration(opt.minutes)"
-                    class="p-3.5 rounded-2xl border text-left transition-all duration-300"
-                    [ngClass]="selectedDuration() === opt.minutes 
-                      ? 'bg-[#0056FB] border-[#0056FB] text-white shadow-md' 
-                      : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/70 shadow-xs'"
-                  >
-                    <div class="text-sm font-semibold tracking-tight">{{ opt.label }}</div>
-                    <div class="text-[10px] font-mono uppercase tracking-wider opacity-80 mt-0.5">{{ opt.sub }}</div>
-                  </button>
-                }
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  @for (opt of durationOptions(); track opt.minutes) {
+                    <button
+                      type="button"
+                      (click)="selectDuration(opt.minutes)"
+                      class="p-3.5 rounded-2xl border text-left transition-all duration-300"
+                      [ngClass]="selectedDuration() === opt.minutes 
+                        ? 'bg-[#0056FB] border-[#0056FB] text-white shadow-md' 
+                        : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/70 shadow-xs'"
+                    >
+                      <div class="text-sm font-semibold tracking-tight">{{ opt.label }}</div>
+                      <div class="text-[10px] font-mono uppercase tracking-wider opacity-80 mt-0.5">{{ opt.sub }}</div>
+                    </button>
+                  }
+                </div>
               </div>
-            </div>
+            } @else if (durationOptions().length === 1) {
+              <div class="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/80 flex items-center justify-between text-xs text-slate-700">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-base">⏱️</span>
+                  <div>
+                    <span class="font-semibold text-slate-900 block">Duración establecida por el club</span>
+                    <span class="text-[11px] text-slate-500 font-mono">{{ durationOptions()[0].label }} • {{ durationOptions()[0].sub }}</span>
+                  </div>
+                </div>
+                <span class="font-mono text-[10px] uppercase tracking-wider bg-white px-2.5 py-1 rounded-full border border-blue-200 text-[#0056FB] font-semibold">
+                  Turno Fijo
+                </span>
+              </div>
+            }
 
             <!-- Hour Selector with Interval Toggle -->
             <div>
@@ -266,9 +281,16 @@ interface DayOption {
                         </div>
                         <div>
                           @if (isAvailable && slot) {
-                            <span class="font-mono text-xs font-semibold text-[#0056FB] bg-[#EFF6FF] px-2.5 py-1 rounded-full border border-[#0056FB]/30">
-                              {{ formatCents(slot.price_cents) }}
-                            </span>
+                            <div class="text-right">
+                              <span class="font-mono text-xs font-semibold text-[#0056FB] bg-[#EFF6FF] px-2.5 py-1 rounded-full border border-[#0056FB]/30 block">
+                                {{ formatCents(slot.price_cents) }}
+                              </span>
+                              @if (slot.hourly_rate_cents) {
+                                <span class="text-[10px] font-mono text-slate-400 mt-1 block">
+                                  {{ formatCents(slot.hourly_rate_cents) }}/h
+                                </span>
+                              }
+                            </div>
                           } @else {
                             <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
                               Ocupada
@@ -300,10 +322,17 @@ interface DayOption {
 
                 <div class="flex items-center justify-between sm:justify-end gap-5 w-full sm:w-auto border-t sm:border-t-0 border-slate-100 pt-3 sm:pt-0">
                   <div class="text-left sm:text-right">
-                    <div class="text-[10px] uppercase font-mono tracking-wider text-slate-400">Tarifa Total</div>
+                    <div class="text-[10px] uppercase font-mono tracking-wider text-slate-400">
+                      Tarifa ({{ formatDurationText(selectedDuration()) }})
+                    </div>
                     <div class="font-serif italic text-2xl text-slate-900 leading-none">
                       {{ formatCents(selectedSlot()?.price_cents) }}
                     </div>
+                    @if (selectedSlot()?.hourly_rate_cents) {
+                      <div class="text-[10px] font-mono text-slate-400 mt-0.5">
+                        Base: {{ formatCents(selectedSlot()?.hourly_rate_cents) }} / hora
+                      </div>
+                    }
                   </div>
 
                   <button
@@ -395,10 +424,23 @@ interface DayOption {
                 />
               </div>
 
-              <!-- Price Summary -->
-              <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                <span class="text-xs text-slate-600 font-mono">Total a Pagar en Sitio:</span>
-                <span class="font-serif italic text-2xl text-slate-900">{{ formatCents(hold()?.price_cents) }}</span>
+              <!-- Price Breakdown Card -->
+              <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                <div class="flex items-center justify-between text-xs text-slate-500 font-mono">
+                  <span>Tarifa base (1 hora):</span>
+                  <span>{{ formatCents(selectedSlot()?.hourly_rate_cents) }}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs text-slate-500 font-mono">
+                  <span>Tiempo reservado:</span>
+                  <span>{{ formatDurationText(selectedDuration()) }}</span>
+                </div>
+                <div class="border-t border-slate-200/80 pt-2 flex items-center justify-between">
+                  <div>
+                    <span class="text-xs font-semibold text-slate-700 block">Total a Pagar en Sitio</span>
+                    <span class="text-[10px] text-slate-400 font-mono">Sin cargos ocultos</span>
+                  </div>
+                  <span class="font-serif italic text-2xl text-slate-900">{{ formatCents(hold()?.price_cents) }}</span>
+                </div>
               </div>
 
               <!-- Action Buttons -->
@@ -464,13 +506,19 @@ interface DayOption {
                 </div>
                 <div>
                   <span class="text-slate-400 uppercase font-mono text-[10px] block">Duración</span>
-                  <span class="font-semibold text-slate-900 text-sm">{{ selectedDuration() }} min</span>
+                  <span class="font-semibold text-slate-900 text-sm">{{ formatDurationText(selectedDuration()) }}</span>
                 </div>
                 <div>
                   <span class="text-slate-400 uppercase font-mono text-[10px] block">Liquidación</span>
                   <span class="font-mono text-[11px] text-[#0056FB] uppercase bg-[#EFF6FF] px-2 py-0.5 rounded border border-[#0056FB]/30 inline-block">{{ confirmedBooking()?.payment_status }}</span>
                 </div>
-                <div class="col-span-2">
+                @if (selectedSlot()?.hourly_rate_cents) {
+                  <div>
+                    <span class="text-slate-400 uppercase font-mono text-[10px] block">Tarifa por Hora</span>
+                    <span class="font-mono text-xs font-medium text-slate-600">{{ formatCents(selectedSlot()?.hourly_rate_cents) }}/h</span>
+                  </div>
+                }
+                <div [class]="selectedSlot()?.hourly_rate_cents ? '' : 'col-span-2'">
                   <span class="text-slate-400 uppercase font-mono text-[10px] block">Importe Total</span>
                   <span class="font-serif italic text-2xl text-slate-900">{{ formatCents(confirmedBooking()?.price_cents) }}</span>
                 </div>
@@ -543,12 +591,21 @@ export class PublicBookingWizardComponent implements OnInit {
   readonly selectedDuration = signal<number>(60);
   readonly stepMode = signal<'exact' | 'half'>('exact');
 
-  readonly durationOptions = [
+  readonly allDurationOptions = [
+    { minutes: 30, label: '30 min', sub: 'Media hora' },
     { minutes: 60, label: '60 min', sub: '1 hora (Estándar)' },
     { minutes: 90, label: '90 min', sub: '1.5 horas' },
     { minutes: 120, label: '120 min', sub: '2 horas' },
-    { minutes: 30, label: '30 min', sub: 'Media hora' }
+    { minutes: 180, label: '180 min', sub: '3 horas' }
   ];
+
+  readonly durationOptions = computed(() => {
+    const c = this.club();
+    const allowed = c?.allowed_durations && c.allowed_durations.length > 0
+      ? c.allowed_durations
+      : [60];
+    return this.allDurationOptions.filter((opt) => allowed.includes(opt.minutes));
+  });
 
   // Flow Signals
   readonly currentStep = signal<1 | 2 | 3>(1);
@@ -623,7 +680,17 @@ export class PublicBookingWizardComponent implements OnInit {
   loadClubAndLayout(): void {
     const clubSlug = this.slug();
     this.publicService.getClub(clubSlug).subscribe({
-      next: (c) => this.club.set(c),
+      next: (c) => {
+        this.club.set(c);
+        if (c.allowed_durations && c.allowed_durations.length > 0) {
+          const defaultDur = c.default_duration || c.allowed_durations[0];
+          this.selectedDuration.set(defaultDur);
+        }
+        if (c.slot_step_minutes) {
+          this.stepMode.set(c.slot_step_minutes === 30 ? 'half' : 'exact');
+        }
+        this.loadAvailability();
+      },
       error: () => console.error('Error fetching club')
     });
 
@@ -779,6 +846,19 @@ export class PublicBookingWizardComponent implements OnInit {
   formatCents(cents?: number): string {
     if (!cents) return '$0 COP';
     return '$' + (cents / 100).toLocaleString('es-CO') + ' COP';
+  }
+
+  formatDurationText(minutes?: number): string {
+    if (!minutes) return '1 hora';
+    if (minutes === 30) return '30 min (media hora)';
+    if (minutes === 60) return '1 hora';
+    if (minutes === 90) return '1 hora y media (90 min)';
+    if (minutes === 120) return '2 horas';
+    if (minutes === 180) return '3 horas';
+    const hrs = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (mins === 0) return `${hrs} horas`;
+    return `${hrs} h ${mins} min`;
   }
 
   getWhatsAppShareUrl(): string {

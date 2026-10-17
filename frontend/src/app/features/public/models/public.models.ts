@@ -8,6 +8,9 @@ export interface PublicClub {
   phone?: string | null;
   logo_url?: string | null;
   courts: PublicCourt[];
+  allowed_durations?: number[];
+  default_duration?: number;
+  slot_step_minutes?: number | null;
 }
 
 export interface PublicCourt {
@@ -18,6 +21,7 @@ export interface PublicCourt {
   player_format: string;
   is_covered: boolean;
   has_lighting: boolean;
+  price_per_hour_cents?: number;
 }
 
 export interface PublicSlot {
@@ -33,6 +37,7 @@ export interface PublicSlot {
   local_end_time: string;   // "15:30"
   duration_minutes: number;
   price_cents: number;
+  hourly_rate_cents?: number;
   currency: string;
   is_available: boolean;
 }

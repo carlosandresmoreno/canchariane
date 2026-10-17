@@ -22,6 +22,7 @@ class CourtPublicDTO(BaseModel):
     player_format: str
     is_covered: bool
     has_lighting: bool
+    price_per_hour_cents: int | None = None
 
 
 class BusinessHoursPublicDTO(BaseModel):
@@ -41,6 +42,9 @@ class ClubPublicDetail(BaseModel):
     logo_url: str | None
     courts: list[CourtPublicDTO]
     business_hours: list[BusinessHoursPublicDTO]
+    allowed_durations: list[int] = Field(default_factory=lambda: [60])
+    default_duration: int = 60
+    slot_step_minutes: int | None = None
 
 
 class SlotPublicDTO(BaseModel):
@@ -51,6 +55,7 @@ class SlotPublicDTO(BaseModel):
     local_start: str  # ISO string or HH:MM
     local_end: str
     price_cents: int
+    hourly_rate_cents: int | None = None
     currency: str
 
 

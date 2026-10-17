@@ -25,3 +25,4 @@ class Slot:
     local_end: datetime  # Local representation in club timezone
     price: Money
     status: str = "available"
+    hourly_rate: Money | None = None

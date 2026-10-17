@@ -13,6 +13,7 @@ export interface AdminCourt {
   is_active: boolean;
   position: number;
   shape?: any;
+  price_per_hour_cents?: number;
 }
 
 export interface AdminCourtCreate {
@@ -23,6 +24,7 @@ export interface AdminCourtCreate {
   is_covered: boolean;
   has_lighting: boolean;
   position?: number;
+  price_per_hour_cents?: number;
 }
 
 export interface AdminBooking {
@@ -254,6 +256,15 @@ export class ClubAdminService {
     return this.http.put<BusinessHoursAdminResponse[]>(`${this.baseUrl}/${clubId}/business-hours`, { hours });
   }
 
+  // --- Booking Durations & Settings ---
+  getSettings(clubId: string): Observable<ClubBookingSettings> {
+    return this.http.get<ClubBookingSettings>(`${this.baseUrl}/${clubId}/settings`);
+  }
+
+  updateSettings(clubId: string, settings: Partial<ClubBookingSettings>): Observable<ClubBookingSettings> {
+    return this.http.patch<ClubBookingSettings>(`${this.baseUrl}/${clubId}/settings`, settings);
+  }
+
   // --- Reports & KPIs ---
   getOccupancyReport(clubId: string, startDate: string, endDate: string): Observable<any> {
     const params = new HttpParams().set('start_date', startDate).set('end_date', endDate);
@@ -270,3 +281,11 @@ export class ClubAdminService {
     return new EventSource(`${this.baseUrl}/${clubId}/events`);
   }
 }
+
+export interface ClubBookingSettings {
+  allowed_durations: number[];
+  default_duration: number;
+  slot_step_minutes?: number | null;
+  currency?: string;
+}
+

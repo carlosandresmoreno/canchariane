@@ -72,6 +72,7 @@ export class PublicBookingService {
           local_end_time: s.local_end,
           duration_minutes: finalDuration,
           price_cents: s.price_cents,
+          hourly_rate_cents: s.hourly_rate_cents,
           currency: s.currency,
           is_available: true
         }))
