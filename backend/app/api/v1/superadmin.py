@@ -16,8 +16,10 @@ from app.application.dto.superadmin import (
     SuperadminMembershipResponse,
     SuperadminStatsResponse,
 )
+from datetime import time
 from app.infrastructure.db.models import (
     BookingModel,
+    BusinessHoursModel,
     ClubMemberModel,
     ClubModel,
     CourtModel,
@@ -95,6 +97,18 @@ async def create_club(
         else {"currency": data.currency.upper()},
     )
     db.add(club)
+
+    # Initialize standard default business hours (Monday-Sunday 06:00-23:00)
+    for weekday in range(7):
+        bh = BusinessHoursModel(
+            id=uuid6.uuid7(),
+            club_id=club.id,
+            weekday=weekday,
+            opens_at=time(6, 0),
+            closes_at=time(23, 0),
+            closes_next_day=False,
+        )
+        db.add(bh)
 
     # Optional initial administrator assignment
     members_count = 0

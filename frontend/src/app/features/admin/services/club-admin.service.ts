@@ -94,6 +94,21 @@ export interface ClubStaffCreate {
   phone?: string;
 }
 
+export interface BusinessHourItem {
+  weekday: number; // 0=Lunes ... 6=Domingo
+  opens_at: string; // "06:00"
+  closes_at: string; // "23:00"
+  closes_next_day?: boolean;
+}
+
+export interface BusinessHoursAdminResponse {
+  id: string;
+  weekday: number;
+  opens_at: string;
+  closes_at: string;
+  closes_next_day: boolean;
+}
+
 export interface CourtLayoutItem {
   court_id: string;
   shape: {
@@ -228,6 +243,15 @@ export class ClubAdminService {
 
   deleteBlock(clubId: string, blockId: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${clubId}/blocks/${blockId}`);
+  }
+
+  // --- Business Hours / Horarios de Atención ---
+  getBusinessHours(clubId: string): Observable<BusinessHoursAdminResponse[]> {
+    return this.http.get<BusinessHoursAdminResponse[]>(`${this.baseUrl}/${clubId}/business-hours`);
+  }
+
+  updateBusinessHours(clubId: string, hours: BusinessHourItem[]): Observable<BusinessHoursAdminResponse[]> {
+    return this.http.put<BusinessHoursAdminResponse[]>(`${this.baseUrl}/${clubId}/business-hours`, { hours });
   }
 
   // --- Reports & KPIs ---

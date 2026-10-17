@@ -118,10 +118,16 @@ export class PublicBookingService {
   }
 
   cancelBooking(code: string, reason?: string, phone?: string): Observable<PublicBookingResponse> {
+    const payload: { reason?: string; phone?: string } = {
+      reason: reason || 'Cancelada por el cliente'
+    };
+    if (phone) {
+      payload.phone = phone;
+    }
     return this.http
       .post<any>(
         `${this.baseUrl}/bookings/by-code/${code.toUpperCase().trim()}/cancel`,
-        { phone: phone || '+573001234567', reason }
+        payload
       )
       .pipe(
         map((b) => ({

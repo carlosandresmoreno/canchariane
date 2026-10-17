@@ -656,7 +656,7 @@ async def cancel_booking_by_code(
     if not booking:
         raise HTTPException(status_code=404, detail="Reserva no encontrada")
 
-    if not booking.customer_phone.endswith(data.phone.strip()[-4:]):
+    if data.phone and not booking.customer_phone.endswith(data.phone.strip()[-4:]):
         raise HTTPException(status_code=400, detail="El teléfono no coincide con la reserva")
 
     if booking.status in ["cancelled", "expired", "completed"]:

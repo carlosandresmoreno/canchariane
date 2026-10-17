@@ -100,5 +100,5 @@ class BookingPublicDTO(BaseModel):
 
 
 class CancelBookingRequest(BaseModel):
-    phone: str = Field(min_length=7, max_length=20)
+    phone: str | None = Field(default=None, max_length=20)
     reason: str | None = None

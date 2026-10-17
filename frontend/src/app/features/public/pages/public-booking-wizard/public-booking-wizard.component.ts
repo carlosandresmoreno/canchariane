@@ -440,6 +440,16 @@ interface DayOption {
                   Guardar (.ics)
                 </button>
               </div>
+
+              <div class="pt-1">
+                <a
+                  [routerLink]="['/lookup']"
+                  [queryParams]="{ code: confirmedBooking()?.code }"
+                  class="w-full py-2.5 px-4 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 text-xs font-mono uppercase tracking-wider transition-all block text-center"
+                >
+                  🔍 Consultar o Cancelar este turno
+                </a>
+              </div>
             </div>
 
             <div class="pt-4">

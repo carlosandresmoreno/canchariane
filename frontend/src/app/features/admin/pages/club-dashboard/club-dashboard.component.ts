@@ -18,6 +18,8 @@ import {
   AdminCourt,
   AdminCourtCreate,
   AdminCreateBlock,
+  BusinessHourItem,
+  BusinessHoursAdminResponse,
   ClubAdminService,
   ClubDashboardInfo,
   ClubLayout,
@@ -28,10 +30,11 @@ import {
 import { ClubTimelineViewComponent } from '../../components/timeline-view/club-timeline-view.component';
 import { ClubCourtsManagerComponent } from '../../components/courts-manager/club-courts-manager.component';
 import { ClubLayoutEditorComponent } from '../../components/layout-editor/club-layout-editor.component';
+import { ClubBusinessHoursManagerComponent } from '../../components/business-hours-manager/club-business-hours-manager.component';
 import { ClubStaffManagerComponent } from '../../components/staff-manager/club-staff-manager.component';
 import { ClubStatsViewComponent } from '../../components/stats-view/club-stats-view.component';
 
-export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'staff' | 'stats';
+export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'staff' | 'stats';
 
 @Component({
   selector: 'app-club-dashboard',
@@ -42,6 +45,7 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'staff' | 'st
     ClubTimelineViewComponent,
     ClubCourtsManagerComponent,
     ClubLayoutEditorComponent,
+    ClubBusinessHoursManagerComponent,
     ClubStaffManagerComponent,
     ClubStatsViewComponent
   ],
@@ -151,6 +155,19 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'staff' | 'st
 
             <button
               type="button"
+              (click)="activeTab.set('hours')"
+              [class.bg-[#0056FB]]="activeTab() === 'hours'"
+              [class.text-white]="activeTab() === 'hours'"
+              [class.shadow-xs]="activeTab() === 'hours'"
+              [class.text-slate-600]="activeTab() !== 'hours'"
+              class="px-3.5 py-2 rounded-xl hover:bg-slate-100 transition-all flex items-center gap-2 shrink-0 font-medium"
+            >
+              <span>⏰</span>
+              <span>Horarios</span>
+            </button>
+
+            <button
+              type="button"
               (click)="activeTab.set('staff')"
               [class.bg-[#0056FB]]="activeTab() === 'staff'"
               [class.text-white]="activeTab() === 'staff'"
@@ -232,6 +249,14 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'staff' | 'st
             [initialLayout]="layoutData()"
             [isSaving]="isSavingLayout()"
             (saveLayout)="handleSaveLayout($event)"
+          />
+        }
+
+        @if (activeTab() === 'hours' && isOwnerOrAdmin()) {
+          <app-club-business-hours-manager
+            [hours]="businessHours()"
+            [isSaving]="isSavingHours()"
+            (save)="handleSaveHours($event)"
           />
         }
 
@@ -370,7 +395,7 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'staff' | 'st
               </div>
               <button
                 type="button"
-                (click)="selectedBooking.set(null)"
+                (click)="closeBookingDetails()"
                 class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-800 transition-colors text-sm"
               >
                 ✕
@@ -399,29 +424,84 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'staff' | 'st
             </div>
 
             <!-- Quick Action Buttons -->
-            <div class="space-y-2 pt-2">
-              <button
-                type="button"
-                (click)="updateStatus('completed')"
-                class="w-full py-3 rounded-xl bg-[#0056FB] hover:bg-[#0048d6] text-white font-mono uppercase tracking-wider text-xs transition-colors shadow-md"
-              >
-                ✓ Marcar como Completada
-              </button>
-              <button
-                type="button"
-                (click)="updateStatus('no_show')"
-                class="w-full py-3 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-mono uppercase tracking-wider text-xs transition-colors shadow-xs"
-              >
-                ⚠ Marcar No-Show
-              </button>
-              <button
-                type="button"
-                (click)="updateStatus('cancelled')"
-                class="w-full py-3 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 font-mono uppercase tracking-wider text-xs transition-colors"
-              >
-                ✕ Cancelar Reserva
-              </button>
-            </div>
+            @if (selectedBooking()?.status !== 'cancelled') {
+              @if (!confirmingCancelBooking()) {
+                <div class="space-y-2 pt-2">
+                  <button
+                    type="button"
+                    (click)="updateStatus('completed')"
+                    class="w-full py-3 rounded-xl bg-[#0056FB] hover:bg-[#0048d6] text-white font-mono uppercase tracking-wider text-xs transition-colors shadow-md"
+                  >
+                    ✓ Marcar como Completada
+                  </button>
+                  <button
+                    type="button"
+                    (click)="updateStatus('no_show')"
+                    class="w-full py-3 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-mono uppercase tracking-wider text-xs transition-colors shadow-xs"
+                  >
+                    ⚠ Marcar No-Show
+                  </button>
+                  <button
+                    type="button"
+                    (click)="confirmingCancelBooking.set(true)"
+                    class="w-full py-3 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 font-mono uppercase tracking-wider text-xs transition-colors"
+                  >
+                    ✕ Cancelar Reserva
+                  </button>
+                </div>
+              } @else {
+                <!-- Confirmation Box Before Cancelling -->
+                <div class="p-5 rounded-2xl bg-rose-50/80 border border-rose-200 space-y-3 animate-in fade-in">
+                  <div class="flex items-center gap-2 text-rose-800 font-semibold text-xs font-mono uppercase tracking-wider">
+                    <span>⚠️</span>
+                    <span>Confirmación de Cancelación</span>
+                  </div>
+                  <p class="text-xs text-rose-950 font-sans leading-relaxed">
+                    ¿Estás seguro de cancelar la reserva de <strong>{{ selectedBooking()?.customer_name }}</strong>? La cancha <strong>{{ selectedBooking()?.court_name }}</strong> quedará liberada inmediatamente.
+                  </p>
+                  <div class="space-y-1">
+                    <label class="text-[10px] font-mono uppercase text-slate-500 block">Motivo de cancelación (opcional):</label>
+                    <input
+                      type="text"
+                      [(ngModel)]="adminCancelReason"
+                      placeholder="Ej: Solicitado por el cliente en llamada"
+                      class="w-full px-3 py-2 rounded-xl border border-rose-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 font-sans"
+                    />
+                  </div>
+                  <div class="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      [disabled]="isUpdatingBookingStatus()"
+                      (click)="confirmCancelBooking()"
+                      class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-mono uppercase tracking-wider text-xs font-semibold transition-colors shadow-xs flex items-center justify-center gap-2"
+                    >
+                      @if (isUpdatingBookingStatus()) {
+                        <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                        <span>Cancelando...</span>
+                      } @else {
+                        <span>Confirmar Cancelación</span>
+                      }
+                    </button>
+                    <button
+                      type="button"
+                      (click)="confirmingCancelBooking.set(false)"
+                      class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-mono transition-colors"
+                    >
+                      Volver
+                    </button>
+                  </div>
+                </div>
+              }
+            } @else {
+              <div class="p-4 rounded-2xl bg-slate-100 text-slate-500 font-mono text-xs text-center border border-slate-200">
+                Esta reserva se encuentra cancelada.
+                @if (selectedBooking()?.cancellation_reason) {
+                  <span class="block text-[11px] text-slate-400 mt-1 italic">
+                    Motivo: {{ selectedBooking()?.cancellation_reason }}
+                  </span>
+                }
+              </div>
+            }
           </div>
         </div>
       }
@@ -802,9 +882,14 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   readonly blocks = signal<AdminBlock[]>([]);
   readonly staffList = signal<ClubStaffMember[]>([]);
   readonly layoutData = signal<ClubLayout | null>(null);
+  readonly businessHours = signal<BusinessHoursAdminResponse[]>([]);
+  readonly isSavingHours = signal<boolean>(false);
 
   readonly selectedBooking = signal<AdminBooking | null>(null);
   readonly selectedBlock = signal<AdminBlock | null>(null);
+  readonly confirmingCancelBooking = signal<boolean>(false);
+  readonly isUpdatingBookingStatus = signal<boolean>(false);
+  adminCancelReason = '';
   readonly showCreateBookingModal = signal<boolean>(false);
   readonly showCreateBlockModal = signal<boolean>(false);
   readonly showShareModal = signal<boolean>(false);
@@ -952,6 +1037,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     if (this.isOwnerOrAdmin()) {
       this.loadLayout(clubId);
       this.loadStaff(clubId);
+      this.loadBusinessHours(clubId);
     }
   }
 
@@ -1046,7 +1132,15 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   }
 
   openBookingDetails(b: AdminBooking): void {
+    this.confirmingCancelBooking.set(false);
+    this.adminCancelReason = '';
     this.selectedBooking.set(b);
+  }
+
+  closeBookingDetails(): void {
+    this.confirmingCancelBooking.set(false);
+    this.adminCancelReason = '';
+    this.selectedBooking.set(null);
   }
 
   openNewBlockModal(options?: { courtId?: string; hourStr?: string }): void {
@@ -1222,6 +1316,31 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  confirmCancelBooking(): void {
+    const b = this.selectedBooking();
+    const clubId = this.getActiveClubId();
+    if (!b || !clubId) return;
+
+    this.isUpdatingBookingStatus.set(true);
+    this.errorMessage.set(null);
+
+    const reason = this.adminCancelReason.trim() || 'Cancelada por el personal del club';
+    this.adminService.updateBookingStatus(clubId, b.id, 'cancelled', reason).subscribe({
+      next: () => {
+        this.isUpdatingBookingStatus.set(false);
+        this.confirmingCancelBooking.set(false);
+        this.adminCancelReason = '';
+        this.selectedBooking.set(null);
+        this.feedbackMessage.set(`Reserva de ${b.customer_name} cancelada exitosamente.`);
+        this.loadBookings(clubId);
+      },
+      error: (err) => {
+        this.isUpdatingBookingStatus.set(false);
+        this.errorMessage.set(this.extractErrorMessage(err));
+      }
+    });
+  }
+
   handleSaveCourt(event: { courtId?: string; data: AdminCourtCreate }): void {
     const clubId = this.getActiveClubId();
     if (!clubId) return;
@@ -1314,6 +1433,33 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isSavingLayout.set(false);
+        this.errorMessage.set(this.extractErrorMessage(err));
+      }
+    });
+  }
+
+  loadBusinessHours(clubId: string): void {
+    this.adminService.getBusinessHours(clubId).subscribe({
+      next: (hours) => this.businessHours.set(hours),
+      error: (e) => console.error('Error fetching business hours', e)
+    });
+  }
+
+  handleSaveHours(hours: BusinessHourItem[]): void {
+    const clubId = this.getActiveClubId();
+    if (!clubId) return;
+
+    this.errorMessage.set(null);
+    this.isSavingHours.set(true);
+
+    this.adminService.updateBusinessHours(clubId, hours).subscribe({
+      next: (updated) => {
+        this.isSavingHours.set(false);
+        this.businessHours.set(updated);
+        this.feedbackMessage.set('Horarios de atención guardados y sincronizados correctamente.');
+      },
+      error: (err) => {
+        this.isSavingHours.set(false);
         this.errorMessage.set(this.extractErrorMessage(err));
       }
     });

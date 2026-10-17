@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { PublicBookingService } from '../../services/public-booking.service';
 import { PublicBookingResponse } from '../../models/public.models';
@@ -189,8 +189,9 @@ import { PublicBookingResponse } from '../../models/public.models';
     </div>
   `
 })
-export class BookingLookupComponent {
+export class BookingLookupComponent implements OnInit {
   private readonly publicService = inject(PublicBookingService);
+  private readonly route = inject(ActivatedRoute);
 
   searchCode = '';
   readonly isSearching = signal<boolean>(false);
@@ -198,6 +199,14 @@ export class BookingLookupComponent {
   readonly showCancelConfirm = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
   readonly booking = signal<PublicBookingResponse | null>(null);
+
+  ngOnInit(): void {
+    const codeParam = this.route.snapshot.queryParamMap.get('code');
+    if (codeParam) {
+      this.searchCode = codeParam.trim().toUpperCase();
+      this.searchBooking();
+    }
+  }
 
   searchBooking(): void {
     const code = this.searchCode.trim().toUpperCase();
