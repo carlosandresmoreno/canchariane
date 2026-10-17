@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 import asyncpg
 import uuid6
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response, status
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -454,6 +454,20 @@ async def create_hold(
             currency = rule.currency
             if rule.court_id == court.id:
                 break
+
+    # 3.5 Check if court is blocked for maintenance, tournament, etc.
+    block_conflict_query = select(BlockModel).where(
+        BlockModel.club_id == club.id,
+        or_(BlockModel.court_id == court.id, BlockModel.court_id.is_(None)),
+        BlockModel.period.op("&&")(period_range),
+    )
+    block_conflict = await db.scalar(block_conflict_query)
+    if block_conflict:
+        reason_str = f": {block_conflict.reason}" if block_conflict.reason else ""
+        raise HTTPException(
+            status_code=409,
+            detail=f"La cancha no está disponible en este horario por mantenimiento o evento{reason_str}.",
+        )
 
     # 4. Attempt atomic hold insert directly guarded by GiST constraint
     hold_id = uuid6.uuid7()

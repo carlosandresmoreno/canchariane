@@ -27,6 +27,13 @@ export const routes: Routes = [
       import('./features/auth/pages/login/login.component').then((m) => m.LoginComponent)
   },
   {
+    path: 'auth/login-superadmin',
+    loadComponent: () =>
+      import('./features/auth/pages/login-superadmin/login-superadmin.component').then(
+        (m) => m.LoginSuperadminComponent
+      )
+  },
+  {
     path: 'admin',
     canActivate: [authGuard],
     loadComponent: () =>

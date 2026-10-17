@@ -38,6 +38,8 @@ export interface SuperadminClubCreate {
   phone?: string;
   email?: string;
   admin_user_email?: string;
+  admin_user_password?: string;
+  admin_user_name?: string;
 }
 
 export interface SuperadminClubUpdate {
@@ -99,10 +101,18 @@ export class SuperadminService {
     return this.http.patch<SuperadminClub>(`${this.baseUrl}/clubs/${clubId}`, payload);
   }
 
-  addMember(clubId: string, userEmail: string, role: string): Observable<SuperadminMembership> {
+  addMember(
+    clubId: string,
+    userEmail: string,
+    role: string,
+    userPassword?: string,
+    userFullName?: string
+  ): Observable<SuperadminMembership> {
     return this.http.post<SuperadminMembership>(`${this.baseUrl}/clubs/${clubId}/members`, {
       user_email: userEmail,
-      role
+      role,
+      user_password: userPassword || undefined,
+      user_full_name: userFullName || undefined
     });
   }
 

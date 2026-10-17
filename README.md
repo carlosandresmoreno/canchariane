@@ -154,4 +154,15 @@ Validado mediante `EXPLAIN (ANALYZE, BUFFERS)` en `scripts/seed_benchmark.py`:
 - **Cálculo de Disponibilidad de 1 Día**: p50 = 19.82 ms | p95 = 26.81 ms
 - **Reporte Agregado de Ocupación (30 Días)**: p50 = 27.88 ms | p95 = 36.04 ms
 - **Reporte Agregado de Ingresos (30 Días)**: p50 = 26.60 ms | p95 = 27.09 ms
-- **Tasa de Inserción Masiva**: 28.408 filas/segundo
+---
+
+## 6. Cuentas de Acceso Iniciales (Semillas)
+
+Al levantar el entorno con Docker o ejecutar `python scripts/seed_demo_club.py`, se crean automáticamente los 3 perfiles con sus accesos correspondientes:
+
+| Rol / Perfil | Correo | Contraseña | Ruta de Acceso | Alcance |
+| :--- | :--- | :--- | :--- | :--- |
+| **👑 Superadmin** | `superadmin@canchariane.com` | `Superadmin123!` | `/auth/login-superadmin` | Consola de desarrolladores: Gestión global de clubes, tenants, suscripciones y páginas públicas. |
+| **🏢 Administrador** | `admin@canchariane.com` | `Admin123!` | `/auth/login` | Gestión de sede/club: Configuración de canchas, editor de mapa interactivo, personal y métricas. |
+| **📋 Recepcionista** | `recepcion@canchariane.com` *(o `staff@canchariane.com`)* | `Recepcion123!` *(o `Staff123!`)* | `/auth/login` | Mostrador de sede: Agenda diaria de turnos, confirmación de pagos y reservas en sitio. |
+

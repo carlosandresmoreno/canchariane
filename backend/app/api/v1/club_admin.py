@@ -9,7 +9,7 @@ import asyncpg
 import uuid6
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fastapi.responses import StreamingResponse
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -25,6 +25,8 @@ from app.application.dto.admin import (
     BusinessHoursUpdateRequest,
     ClubLayoutResponse,
     ClubLayoutUpdateRequest,
+    ClubStaffCreateRequest,
+    ClubStaffMemberResponse,
     CourtAdminResponse,
     CourtCreateRequest,
     CourtLayoutItem,
@@ -51,10 +53,13 @@ from app.infrastructure.db.models import (
     BookingModel,
     BusinessHoursModel,
     ClubLayoutModel,
+    ClubMemberModel,
     ClubModel,
     CourtModel,
     PricingRuleModel,
+    UserModel,
 )
+from app.infrastructure.security.password import hash_password
 
 router = APIRouter(prefix="/clubs", tags=["Club Admin"])
 
@@ -287,6 +292,7 @@ async def list_blocks(
     query = select(BlockModel).where(BlockModel.club_id == club_id)
     if court_id:
         query = query.where(BlockModel.court_id == court_id)
+    query = query.order_by(BlockModel.period)
     records = (await db.scalars(query)).all()
     return [
         BlockAdminResponse(
@@ -310,7 +316,7 @@ async def list_blocks(
 )
 async def create_block(
     data: BlockCreateRequest,
-    auth_context: Annotated[tuple[UUID, UserContext], Depends(require_club_role("admin"))],
+    auth_context: Annotated[tuple[UUID, UserContext], Depends(require_club_role("staff"))],
     db: Annotated[AsyncSession, Depends(get_db)] = None,
 ) -> BlockAdminResponse:
     club_id, user = auth_context
@@ -355,7 +361,7 @@ async def create_block(
 @router.delete("/{club_id}/blocks/{block_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_block(
     block_id: UUID,
-    auth_context: Annotated[tuple[UUID, UserContext], Depends(require_club_role("admin"))],
+    auth_context: Annotated[tuple[UUID, UserContext], Depends(require_club_role("staff"))],
     db: Annotated[AsyncSession, Depends(get_db)] = None,
 ) -> None:
     club_id, _ = auth_context
@@ -530,6 +536,21 @@ async def create_manual_booking(
     period_start = data.period_start.astimezone(UTC)
     period_end = period_start + timedelta(minutes=data.duration_minutes)
     period_range = asyncpg.Range(period_start, period_end, lower_inc=True, upper_inc=False)
+
+    # Check if court is blocked by maintenance, tournament, etc.
+    block_conflict = await db.scalar(
+        select(BlockModel).where(
+            BlockModel.club_id == club_id,
+            or_(BlockModel.court_id == court.id, BlockModel.court_id.is_(None)),
+            BlockModel.period.op("&&")(period_range),
+        )
+    )
+    if block_conflict:
+        reason_str = f": {block_conflict.reason}" if block_conflict.reason else ""
+        raise HTTPException(
+            status_code=409,
+            detail=f"La cancha está bloqueada en este horario por {block_conflict.kind}{reason_str}.",
+        )
 
     booking_id = uuid6.uuid7()
     code = BookingCode.generate().value
@@ -1044,3 +1065,129 @@ async def get_club_revenue_report(
         daily=daily_reports,
         by_court=by_court_reports,
     )
+
+
+# ---------------------------------------------------------
+# STAFF / RECEPCIONISTAS CRUD
+# ---------------------------------------------------------
+@router.get("/{club_id}/staff", response_model=list[ClubStaffMemberResponse])
+async def list_club_staff(
+    auth_context: Annotated[tuple[UUID, UserContext], Depends(require_club_role("staff"))],
+    db: Annotated[AsyncSession, Depends(get_db)] = None,
+) -> list[ClubStaffMemberResponse]:
+    """Lists receptionists and administrators of this club."""
+    club_id, _ = auth_context
+    query = (
+        select(ClubMemberModel)
+        .options(selectinload(ClubMemberModel.user))
+        .where(ClubMemberModel.club_id == club_id)
+        .order_by(ClubMemberModel.created_at.desc())
+    )
+    res = await db.scalars(query)
+    members = res.all()
+    return [
+        ClubStaffMemberResponse(
+            id=m.id,
+            user_id=m.user_id,
+            club_id=m.club_id,
+            role=m.role,
+            is_active=m.is_active,
+            user_email=m.user.email if m.user else "",
+            user_full_name=m.user.full_name if m.user else "Usuario",
+            user_phone=m.user.phone if m.user else None,
+            created_at=m.created_at,
+        )
+        for m in members
+        if m.user
+    ]
+
+
+@router.post(
+    "/{club_id}/staff",
+    response_model=ClubStaffMemberResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_club_staff(
+    data: ClubStaffCreateRequest,
+    auth_context: Annotated[tuple[UUID, UserContext], Depends(require_club_role("admin"))],
+    db: Annotated[AsyncSession, Depends(get_db)] = None,
+) -> ClubStaffMemberResponse:
+    """Allows a club admin/owner to register or assign a receptionist/admin to their club."""
+    club_id, _ = auth_context
+    clean_email = data.email.lower().strip()
+
+    user = await db.scalar(select(UserModel).where(UserModel.email == clean_email))
+    if not user:
+        user = UserModel(
+            id=uuid6.uuid7(),
+            email=clean_email,
+            password_hash=hash_password(data.password),
+            full_name=data.full_name.strip(),
+            phone=data.phone.strip() if data.phone else None,
+            is_superadmin=False,
+        )
+        db.add(user)
+        await db.flush()
+
+    # Check if membership already exists
+    membership = await db.scalar(
+        select(ClubMemberModel).where(
+            ClubMemberModel.club_id == club_id,
+            ClubMemberModel.user_id == user.id,
+        )
+    )
+    if membership:
+        membership.role = data.role
+        membership.is_active = True
+    else:
+        membership = ClubMemberModel(
+            id=uuid6.uuid7(),
+            user_id=user.id,
+            club_id=club_id,
+            role=data.role,
+            is_active=True,
+        )
+        db.add(membership)
+
+    await db.commit()
+    await db.refresh(membership)
+    await db.refresh(user)
+
+    return ClubStaffMemberResponse(
+        id=membership.id,
+        user_id=user.id,
+        club_id=club_id,
+        role=membership.role,
+        is_active=membership.is_active,
+        user_email=user.email,
+        user_full_name=user.full_name,
+        user_phone=user.phone,
+        created_at=membership.created_at,
+    )
+
+
+@router.delete(
+    "/{club_id}/staff/{member_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_club_staff(
+    member_id: UUID,
+    auth_context: Annotated[tuple[UUID, UserContext], Depends(require_club_role("admin"))],
+    db: Annotated[AsyncSession, Depends(get_db)] = None,
+) -> Response:
+    """Removes a receptionist/staff member from this club."""
+    club_id, user_ctx = auth_context
+    membership = await db.get(ClubMemberModel, member_id)
+    if not membership or membership.club_id != club_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Miembro no encontrado")
+
+    if membership.user_id == user_ctx.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No puedes remover tu propia membresía de administrador",
+        )
+
+    await db.delete(membership)
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+

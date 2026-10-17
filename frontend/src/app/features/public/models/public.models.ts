@@ -106,11 +106,13 @@ export interface CourtLayoutItem {
 }
 
 export interface DecorationItem {
-  id: string;
-  type: string;
+  id?: string;
+  type?: string;
   label?: string | null;
-  x: number;
-  y: number;
+  icon?: string | null;
+  shape?: any;
+  x?: number;
+  y?: number;
   w?: number | null;
   h?: number | null;
   rotation?: number;

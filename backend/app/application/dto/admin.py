@@ -2,11 +2,12 @@ from datetime import date, datetime, time
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 # --- Geometric Shapes ---
 class RectShape(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     kind: Literal["rect"] = "rect"
     x: float = Field(ge=0, le=1000)
     y: float = Field(ge=0, le=1000)
@@ -16,6 +17,7 @@ class RectShape(BaseModel):
 
 
 class PolygonShape(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     kind: Literal["polygon"] = "polygon"
     points: list[tuple[float, float]] = Field(min_length=3, max_length=24)
 
@@ -29,17 +31,21 @@ ShapeUnion = Annotated[RectShape | PolygonShape, Field(discriminator="kind")]
 
 
 class DecorationItem(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     label: str
     shape: ShapeUnion
     icon: str | None = None
 
 
 class CourtLayoutItem(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     court_id: UUID
     shape: ShapeUnion
 
 
 class ClubLayoutUpdateRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
     name: str = "Planta Principal"
     view_box_w: int = 1000
     view_box_h: int = 1000
@@ -59,6 +65,8 @@ class ClubLayoutResponse(BaseModel):
 
 # --- Courts ---
 class CourtCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
     name: str = Field(min_length=1, max_length=100)
     sport: str = Field(min_length=2, max_length=50)
     surface: str = "synthetic_grass"
@@ -70,6 +78,8 @@ class CourtCreateRequest(BaseModel):
 
 
 class CourtUpdateRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
     name: str | None = None
     sport: str | None = None
     surface: str | None = None
@@ -210,3 +220,35 @@ class AdminBookingResponse(BaseModel):
     payment_status: str
     cancellation_reason: str | None
     created_at: datetime
+
+
+class ClubStaffMemberResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    club_id: UUID
+    role: str
+    is_active: bool
+    user_email: str
+    user_full_name: str
+    user_phone: str | None = None
+    created_at: datetime
+
+
+class ClubStaffCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    email: EmailStr
+    full_name: str = Field(min_length=2, max_length=120)
+    role: Literal["staff", "admin"] = "staff"
+    password: str = Field(default="StaffPassword123!", min_length=6)
+    phone: str | None = None
+
+    @field_validator("phone", mode="before")
+    @classmethod
+    def empty_phone_to_none(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        if isinstance(v, str) and not v.strip():
+            return None
+        return v.strip() if isinstance(v, str) else v
+

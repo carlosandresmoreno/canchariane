@@ -150,21 +150,45 @@ async def seed_demo_club():
             await session.flush()
             print("Club 'club-alpha' and layout seeded.")
 
-        # Ensure Admin User
+        # 1. Superadmin User (Plataforma / Desarrollador)
+        superadmin_email = "superadmin@canchariane.com"
+        superadmin_user = await session.scalar(select(UserModel).where(UserModel.email == superadmin_email))
+        if not superadmin_user:
+            superadmin_user = UserModel(
+                id=uuid6.uuid7(),
+                email=superadmin_email,
+                password_hash=hash_password("Superadmin123!"),
+                full_name="Superadministrador (Plataforma)",
+                phone="+57 300 000 0001",
+                is_superadmin=True
+            )
+            session.add(superadmin_user)
+            await session.flush()
+            print("Superadmin user 'superadmin@canchariane.com' created.")
+        else:
+            superadmin_user.is_superadmin = True
+            superadmin_user.password_hash = hash_password("Superadmin123!")
+            print("Superadmin user 'superadmin@canchariane.com' updated.")
+
+        # 2. Club Admin User (Dueño / Administrador de Sede)
         admin_email = "admin@canchariane.com"
         admin_user = await session.scalar(select(UserModel).where(UserModel.email == admin_email))
         if not admin_user:
             admin_user = UserModel(
                 id=uuid6.uuid7(),
                 email=admin_email,
-                password_hash=hash_password("AdminPassword123!"),
-                full_name="Carlos Moreno (Administrador)",
+                password_hash=hash_password("Admin123!"),
+                full_name="Carlos Moreno (Administrador de Club)",
                 phone="+57 300 123 4567",
-                is_superadmin=True
+                is_superadmin=False
             )
             session.add(admin_user)
             await session.flush()
             print("Admin user 'admin@canchariane.com' created.")
+        else:
+            admin_user.is_superadmin = False
+            admin_user.password_hash = hash_password("Admin123!")
+            print("Admin user 'admin@canchariane.com' updated.")
 
         admin_mem = await session.scalar(
             select(ClubMemberModel).where(
@@ -181,22 +205,69 @@ async def seed_demo_club():
                 is_active=True
             ))
             print(f"Admin membership granted for club {club.slug}.")
+        else:
+            admin_mem.role = "admin"
+            admin_mem.is_active = True
 
-        # Ensure Staff User
+        # 3. Club Receptionist Users (Atención de Mostrador)
+        # 3a. recepcion@canchariane.com
+        recep_email = "recepcion@canchariane.com"
+        recep_user = await session.scalar(select(UserModel).where(UserModel.email == recep_email))
+        if not recep_user:
+            recep_user = UserModel(
+                id=uuid6.uuid7(),
+                email=recep_email,
+                password_hash=hash_password("Recepcion123!"),
+                full_name="Recepcionista de Mostrador",
+                phone="+57 311 987 6543",
+                is_superadmin=False
+            )
+            session.add(recep_user)
+            await session.flush()
+            print("Recepcionista user 'recepcion@canchariane.com' created.")
+        else:
+            recep_user.is_superadmin = False
+            recep_user.password_hash = hash_password("Recepcion123!")
+            print("Recepcionista user 'recepcion@canchariane.com' updated.")
+
+        recep_mem = await session.scalar(
+            select(ClubMemberModel).where(
+                ClubMemberModel.user_id == recep_user.id,
+                ClubMemberModel.club_id == club.id
+            )
+        )
+        if not recep_mem:
+            session.add(ClubMemberModel(
+                id=uuid6.uuid7(),
+                user_id=recep_user.id,
+                club_id=club.id,
+                role="staff",
+                is_active=True
+            ))
+            print(f"Recepcionista membership granted for club {club.slug}.")
+        else:
+            recep_mem.role = "staff"
+            recep_mem.is_active = True
+
+        # 3b. staff@canchariane.com (compatibilidad adicional)
         staff_email = "staff@canchariane.com"
         staff_user = await session.scalar(select(UserModel).where(UserModel.email == staff_email))
         if not staff_user:
             staff_user = UserModel(
                 id=uuid6.uuid7(),
                 email=staff_email,
-                password_hash=hash_password("StaffPassword123!"),
-                full_name="Recepcionista Turno Tarde",
-                phone="+57 311 987 6543",
+                password_hash=hash_password("Staff123!"),
+                full_name="Staff Turno Tarde",
+                phone="+57 312 345 6789",
                 is_superadmin=False
             )
             session.add(staff_user)
             await session.flush()
             print("Staff user 'staff@canchariane.com' created.")
+        else:
+            staff_user.is_superadmin = False
+            staff_user.password_hash = hash_password("Staff123!")
+            print("Staff user 'staff@canchariane.com' updated.")
 
         staff_mem = await session.scalar(
             select(ClubMemberModel).where(
@@ -213,11 +284,24 @@ async def seed_demo_club():
                 is_active=True
             ))
             print(f"Staff membership granted for club {club.slug}.")
+        else:
+            staff_mem.role = "staff"
+            staff_mem.is_active = True
 
         await session.commit()
-        print("Demo credentials ready:")
-        print(" -> Admin: admin@canchariane.com / AdminPassword123!")
-        print(" -> Staff: staff@canchariane.com / StaffPassword123!")
+        print("\n========================================================")
+        print(" Semillas de Usuarios Listas para Despliegue & Local:")
+        print(" 1. Superadmin (Plataforma):")
+        print("    -> Email: superadmin@canchariane.com / Superadmin123!")
+        print("    -> Ruta:  /auth/login-superadmin")
+        print(" 2. Administrador de Club:")
+        print("    -> Email: admin@canchariane.com / Admin123!")
+        print("    -> Ruta:  /auth/login")
+        print(" 3. Recepcionista de Club:")
+        print("    -> Email: recepcion@canchariane.com / Recepcion123!")
+        print("       (o staff@canchariane.com / Staff123!)")
+        print("    -> Ruta:  /auth/login")
+        print("========================================================\n")
 
 if __name__ == "__main__":
     asyncio.run(seed_demo_club())

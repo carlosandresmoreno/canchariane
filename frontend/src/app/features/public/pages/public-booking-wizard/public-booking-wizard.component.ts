@@ -57,12 +57,21 @@ interface DayOption {
             </div>
           </div>
 
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2.5">
             <a
               routerLink="/lookup"
-              class="text-xs font-mono uppercase tracking-wider text-slate-600 hover:text-slate-950 px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-slate-400 transition-all shadow-xs"
+              class="text-xs font-mono uppercase tracking-wider text-slate-600 hover:text-slate-950 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:border-slate-400 transition-all shadow-xs hidden sm:inline-flex"
             >
               Consultar Reserva
+            </a>
+            <a
+              [routerLink]="['/auth/login']"
+              [queryParams]="{ club: club()?.slug, type: 'club' }"
+              class="text-xs font-mono uppercase tracking-wider text-[#0056FB] hover:text-[#0048d6] px-3.5 py-2 rounded-xl bg-blue-50/70 hover:bg-blue-100/70 border border-blue-200 transition-all shadow-xs flex items-center gap-1.5 font-medium"
+              title="Acceso para recepcionistas y administración del club"
+            >
+              <span>Acceso Personal</span>
+              <span class="text-[10px]">➔</span>
             </a>
           </div>
         </div>
@@ -204,7 +213,7 @@ interface DayOption {
                         <div>
                           <div class="text-[10px] font-mono uppercase tracking-widest text-slate-400">{{ court.sport }}</div>
                           <h3 class="font-semibold text-slate-900 text-base mt-0.5">{{ court.name }}</h3>
-                          <p class="text-xs text-slate-500 mt-1 capitalize">{{ court.surface }} • {{ court.player_format }}</p>
+                          <p class="text-xs text-slate-500 mt-1 capitalize">{{ formatSurface(court.surface) }} • {{ formatPlayerFormat(court.player_format) }}</p>
                         </div>
                         <div>
                           @if (isAvailable && slot) {
@@ -610,7 +619,11 @@ export class PublicBookingWizardComponent implements OnInit {
         },
         error: (err) => {
           this.isHolding.set(false);
-          alert(err.error?.detail || 'El slot ya no está disponible. Selecciona otro.');
+          const detail = err.error?.detail;
+          const msg = typeof detail === 'string'
+            ? detail
+            : (Array.isArray(detail) ? detail.map((d: any) => d.msg).join(' | ') : 'El slot ya no está disponible. Selecciona otro.');
+          alert(msg);
           this.loadAvailability();
         }
       });
@@ -639,7 +652,11 @@ export class PublicBookingWizardComponent implements OnInit {
         },
         error: (err) => {
           this.isConfirming.set(false);
-          alert(err.error?.detail || 'No se pudo confirmar la reserva. Intenta de nuevo.');
+          const detail = err.error?.detail;
+          const msg = typeof detail === 'string'
+            ? detail
+            : (Array.isArray(detail) ? detail.map((d: any) => d.msg).join(' | ') : 'No se pudo confirmar la reserva. Intenta de nuevo.');
+          alert(msg);
         }
       });
   }
@@ -706,5 +723,35 @@ export class PublicBookingWizardComponent implements OnInit {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  formatPlayerFormat(fmt: string): string {
+    switch (fmt) {
+      case '5x5': return 'Fútbol 5 (5x5)';
+      case '6x6': return 'Fútbol 6 (6x6)';
+      case '7x7': return 'Fútbol 7 (7x7)';
+      case '8x8': return 'Fútbol 8 (8x8)';
+      case '9x9': return 'Fútbol 9 (9x9)';
+      case '11x11': return 'Fútbol 11 (11x11)';
+      case 'doubles': return 'Dobles';
+      case 'singles': return 'Individual';
+      case '3x3': return '3 vs 3';
+      case '2x2': return '2 vs 2';
+      case 'custom': return 'Libre';
+      default: return fmt;
+    }
+  }
+
+  formatSurface(surface: string): string {
+    switch (surface) {
+      case 'synthetic_grass': return 'Césped Sintético';
+      case 'turf': return 'Gramilla';
+      case 'clay': return 'Polvo de Ladrillo';
+      case 'hard_court': return 'Pista Dura';
+      case 'wood': return 'Madera';
+      case 'rubber': return 'Poliuretano';
+      case 'sand': return 'Arena';
+      default: return surface;
+    }
   }
 }

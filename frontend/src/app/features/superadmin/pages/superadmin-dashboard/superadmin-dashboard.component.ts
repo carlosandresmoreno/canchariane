@@ -327,6 +327,16 @@ import {
             </div>
 
             <form (ngSubmit)="submitCreateClub()" class="space-y-4">
+              @if (modalError()) {
+                <div class="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between font-mono animate-in fade-in">
+                  <div class="flex items-center gap-2">
+                    <span class="text-rose-500 font-bold">⚠️</span>
+                    <span>{{ modalError() }}</span>
+                  </div>
+                  <button type="button" (click)="modalError.set(null)" class="text-rose-500 hover:text-rose-900 font-bold">✕</button>
+                </div>
+              }
+
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Nombre del Club *</label>
@@ -416,19 +426,39 @@ import {
                 />
               </div>
 
-              <div class="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 space-y-2">
-                <label class="block text-[11px] font-mono uppercase tracking-wider text-[#0056FB] font-semibold">
-                  Asignar Administrador Inicial (Opcional)
-                </label>
-                <input
-                  type="email"
-                  [(ngModel)]="createForm.admin_user_email"
-                  name="admin_user_email"
-                  placeholder="admin@canchariane.com"
-                  class="w-full px-4 py-2.5 rounded-xl bg-white border border-blue-200 text-slate-900 placeholder-slate-400 text-sm font-mono focus:outline-none focus:border-[#0056FB] transition-colors"
-                />
-                <p class="text-[11px] text-slate-500 font-sans">
-                  Si especificas un correo de usuario existente, se le otorgará de inmediato el rol 'admin' sobre este club.
+              <div class="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 space-y-3">
+                <div class="flex items-center justify-between">
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-[#0056FB] font-semibold">
+                    Asignar Administrador Inicial (Opcional)
+                  </label>
+                  <span class="text-[10px] font-mono text-slate-400">Acceso a /auth/login</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[10px] font-mono uppercase text-slate-500 mb-1">Correo Electrónico</label>
+                    <input
+                      type="email"
+                      [(ngModel)]="createForm.admin_user_email"
+                      name="admin_user_email"
+                      placeholder="ej: admin@miclub.com"
+                      class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-blue-200 text-slate-900 placeholder-slate-400 text-sm font-mono focus:outline-none focus:border-[#0056FB] transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-mono uppercase text-slate-500 mb-1">Contraseña Inicial</label>
+                    <input
+                      type="password"
+                      [(ngModel)]="createForm.admin_user_password"
+                      name="admin_user_password"
+                      placeholder="Admin123! (por defecto)"
+                      class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-blue-200 text-slate-900 placeholder-slate-400 text-sm font-mono focus:outline-none focus:border-[#0056FB] transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <p class="text-[11px] text-slate-500 font-sans leading-relaxed">
+                  💡 Si el usuario es nuevo, se creará automáticamente con esta contraseña (o <strong>Admin123!</strong> si se deja en blanco) para entrar por <strong>/auth/login</strong>. Si ya existe en la plataforma, mantendrá su contraseña previa y se le vinculará como administrador de este club.
                 </p>
               </div>
 
@@ -474,6 +504,16 @@ import {
             </div>
 
             <form (ngSubmit)="submitEditClub()" class="space-y-4">
+              @if (modalError()) {
+                <div class="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between font-mono animate-in fade-in">
+                  <div class="flex items-center gap-2">
+                    <span class="text-rose-500 font-bold">⚠️</span>
+                    <span>{{ modalError() }}</span>
+                  </div>
+                  <button type="button" (click)="modalError.set(null)" class="text-rose-500 hover:text-rose-900 font-bold">✕</button>
+                </div>
+              }
+
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Nombre</label>
@@ -610,6 +650,16 @@ import {
             </div>
 
             <form (ngSubmit)="submitAssignMember()" class="space-y-4">
+              @if (modalError()) {
+                <div class="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between font-mono animate-in fade-in">
+                  <div class="flex items-center gap-2">
+                    <span class="text-rose-500 font-bold">⚠️</span>
+                    <span>{{ modalError() }}</span>
+                  </div>
+                  <button type="button" (click)="modalError.set(null)" class="text-rose-500 hover:text-rose-900 font-bold">✕</button>
+                </div>
+              }
+
               <div>
                 <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Correo del Usuario *</label>
                 <input
@@ -622,20 +672,34 @@ import {
                 />
               </div>
 
-              <div>
-                <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Rol en este Club</label>
-                <select
-                  [(ngModel)]="memberForm.role"
-                  name="memberRole"
-                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors font-mono"
-                >
-                  <option value="admin">Administrador (Control total del club)</option>
-                  <option value="staff">Staff / Recepcionista (Operación diaria)</option>
-                </select>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Rol en este Club</label>
+                  <select
+                    [(ngModel)]="memberForm.role"
+                    name="memberRole"
+                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors font-mono"
+                  >
+                    <option value="admin">Administrador (Control total del club)</option>
+                    <option value="staff">Staff / Recepcionista (Operación diaria)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">
+                    Contraseña Inicial (Si es nuevo)
+                  </label>
+                  <input
+                    type="password"
+                    [(ngModel)]="memberForm.password"
+                    name="memberPassword"
+                    placeholder="Admin123! o Staff123!"
+                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 text-sm font-mono focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
+                  />
+                </div>
               </div>
 
               <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-500 font-sans">
-                💡 Nota: El usuario debe estar previamente registrado en la base de datos.
+                💡 Si el usuario no existe aún en la plataforma, se creará su cuenta automáticamente con esta contraseña para ingresar por <strong>/auth/login</strong>.
               </div>
 
               <div class="flex items-center gap-3 pt-3">
@@ -674,6 +738,7 @@ export class SuperadminDashboardComponent implements OnInit {
   readonly editingClub = signal<SuperadminClub | null>(null);
   readonly managingMemberClub = signal<SuperadminClub | null>(null);
   readonly isSubmitting = signal<boolean>(false);
+  readonly modalError = signal<string | null>(null);
 
   searchQuery = '';
   selectedStatus = 'all';
@@ -689,7 +754,9 @@ export class SuperadminDashboardComponent implements OnInit {
     address: '',
     phone: '',
     email: '',
-    admin_user_email: 'admin@canchariane.com'
+    admin_user_email: '',
+    admin_user_password: '',
+    admin_user_name: ''
   };
 
   // Edit form state
@@ -707,7 +774,9 @@ export class SuperadminDashboardComponent implements OnInit {
   // Member assignment form
   memberForm = {
     email: '',
-    role: 'admin'
+    role: 'admin',
+    password: '',
+    fullName: ''
   };
 
   ngOnInit(): void {
@@ -752,7 +821,30 @@ export class SuperadminDashboardComponent implements OnInit {
       .replace(/^-+|-+$/g, '');
   }
 
+  extractErrorMessage(err: any): string {
+    if (!err) return 'Ocurrió un error inesperado';
+    if (typeof err === 'string') return err;
+    const detail = err.error?.detail ?? err.error?.message ?? err.message;
+    if (Array.isArray(detail)) {
+      return detail
+        .map((d: any) => {
+          const loc = Array.isArray(d.loc)
+            ? d.loc.filter((l: any) => l !== 'body').join('.')
+            : '';
+          const msg = d.msg || 'Dato inválido';
+          return loc ? `${loc}: ${msg}` : msg;
+        })
+        .join(' | ');
+    }
+    if (typeof detail === 'object' && detail !== null) {
+      return detail.msg || detail.message || JSON.stringify(detail);
+    }
+    if (typeof detail === 'string') return detail;
+    return 'Ocurrió un error al procesar la solicitud.';
+  }
+
   openCreateModal(): void {
+    this.modalError.set(null);
     this.createForm = {
       name: '',
       slug: '',
@@ -763,30 +855,53 @@ export class SuperadminDashboardComponent implements OnInit {
       address: '',
       phone: '',
       email: '',
-      admin_user_email: 'admin@canchariane.com'
+      admin_user_email: '',
+      admin_user_password: '',
+      admin_user_name: ''
     };
     this.showCreateModal.set(true);
   }
 
   submitCreateClub(): void {
-    if (!this.createForm.name || !this.createForm.slug) return;
+    if (!this.createForm.name?.trim() || !this.createForm.slug?.trim()) {
+      this.modalError.set('El nombre y el slug del club son campos obligatorios.');
+      return;
+    }
+    this.modalError.set(null);
     this.isSubmitting.set(true);
 
-    this.superadminService.createClub(this.createForm).subscribe({
+    const payload: SuperadminClubCreate = {
+      name: this.createForm.name.trim(),
+      slug: this.slugify(this.createForm.slug),
+      timezone: this.createForm.timezone?.trim() || 'America/Bogota',
+      currency: this.createForm.currency?.trim() || 'COP',
+      subscription_status: this.createForm.subscription_status || 'active',
+      is_published: !!this.createForm.is_published,
+      address: this.createForm.address?.trim() || undefined,
+      phone: this.createForm.phone?.trim() || undefined,
+      email: this.createForm.email?.trim() || undefined,
+      admin_user_email: this.createForm.admin_user_email?.trim() || undefined,
+      admin_user_password: this.createForm.admin_user_password?.trim() || undefined,
+      admin_user_name: this.createForm.admin_user_name?.trim() || undefined
+    };
+
+    this.superadminService.createClub(payload).subscribe({
       next: (created) => {
         this.isSubmitting.set(false);
+        this.modalError.set(null);
         this.showCreateModal.set(false);
         this.feedbackMessage.set(`Club '${created.name}' creado exitosamente con slug /c/${created.slug}.`);
         this.loadAllData();
       },
       error: (err) => {
         this.isSubmitting.set(false);
-        alert(err.error?.detail || 'Error al crear el club');
+        this.modalError.set(this.extractErrorMessage(err));
       }
     });
   }
 
   openEditModal(club: SuperadminClub): void {
+    this.modalError.set(null);
     this.editingClub.set(club);
     this.editForm = {
       name: club.name,
@@ -803,18 +918,31 @@ export class SuperadminDashboardComponent implements OnInit {
   submitEditClub(): void {
     const club = this.editingClub();
     if (!club) return;
+    this.modalError.set(null);
     this.isSubmitting.set(true);
 
-    this.superadminService.updateClub(club.id, this.editForm).subscribe({
+    const payload: SuperadminClubUpdate = {
+      name: this.editForm.name?.trim() || undefined,
+      slug: this.editForm.slug ? this.slugify(this.editForm.slug) : undefined,
+      timezone: this.editForm.timezone?.trim() || undefined,
+      subscription_status: this.editForm.subscription_status,
+      is_published: this.editForm.is_published,
+      address: this.editForm.address?.trim() || undefined,
+      phone: this.editForm.phone?.trim() || undefined,
+      email: this.editForm.email?.trim() || undefined
+    };
+
+    this.superadminService.updateClub(club.id, payload).subscribe({
       next: (updated) => {
         this.isSubmitting.set(false);
+        this.modalError.set(null);
         this.editingClub.set(null);
         this.feedbackMessage.set(`Club '${updated.name}' actualizado correctamente.`);
         this.loadAllData();
       },
       error: (err) => {
         this.isSubmitting.set(false);
-        alert(err.error?.detail || 'Error al actualizar el club');
+        this.modalError.set(this.extractErrorMessage(err));
       }
     });
   }
@@ -825,37 +953,52 @@ export class SuperadminDashboardComponent implements OnInit {
         this.loadClubs();
         this.loadStats();
       },
-      error: (err) => alert(err.error?.detail || 'Error al alternar publicación')
+      error: (err) => {
+        this.feedbackMessage.set(this.extractErrorMessage(err));
+      }
     });
   }
 
   openMemberModal(club: SuperadminClub): void {
+    this.modalError.set(null);
     this.managingMemberClub.set(club);
     this.memberForm = {
       email: '',
-      role: 'admin'
+      role: 'admin',
+      password: '',
+      fullName: ''
     };
   }
 
   submitAssignMember(): void {
     const club = this.managingMemberClub();
-    if (!club || !this.memberForm.email) return;
+    if (!club || !this.memberForm.email?.trim()) return;
+    this.modalError.set(null);
     this.isSubmitting.set(true);
 
-    this.superadminService.addMember(club.id, this.memberForm.email.trim(), this.memberForm.role).subscribe({
-      next: (res) => {
-        this.isSubmitting.set(false);
-        this.managingMemberClub.set(null);
-        this.feedbackMessage.set(
-          `Rol '${res.role}' asignado exitosamente a ${res.user_email} en ${club.name}.`
-        );
-        this.loadClubs();
-      },
-      error: (err) => {
-        this.isSubmitting.set(false);
-        alert(err.error?.detail || 'Error al asignar la membresía');
-      }
-    });
+    this.superadminService
+      .addMember(
+        club.id,
+        this.memberForm.email.trim(),
+        this.memberForm.role,
+        this.memberForm.password?.trim() || undefined,
+        this.memberForm.fullName?.trim() || undefined
+      )
+      .subscribe({
+        next: (res) => {
+          this.isSubmitting.set(false);
+          this.modalError.set(null);
+          this.managingMemberClub.set(null);
+          this.feedbackMessage.set(
+            `Rol '${res.role}' asignado exitosamente a ${res.user_email} en ${club.name}.`
+          );
+          this.loadClubs();
+        },
+        error: (err) => {
+          this.isSubmitting.set(false);
+          this.modalError.set(this.extractErrorMessage(err));
+        }
+      });
   }
 
   getSubscriptionBadgeClass(status: string): string {
@@ -873,6 +1016,6 @@ export class SuperadminDashboardComponent implements OnInit {
 
   logout(): void {
     this.authStore.clearSession();
-    this.router.navigate(['/auth/login']);
+    this.router.navigate(['/auth/login-superadmin']);
   }
 }

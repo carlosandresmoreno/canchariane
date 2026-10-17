@@ -233,7 +233,11 @@ export class BookingLookupComponent {
       },
       error: (err) => {
         this.isCancelling.set(false);
-        alert(err.error?.detail || 'Error al cancelar la reserva');
+        const detail = err.error?.detail;
+        const msg = typeof detail === 'string'
+          ? detail
+          : (Array.isArray(detail) ? detail.map((x: any) => x.msg).join(' | ') : 'Error al cancelar la reserva');
+        alert(msg);
       }
     });
   }

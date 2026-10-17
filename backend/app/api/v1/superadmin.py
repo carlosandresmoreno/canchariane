@@ -23,6 +23,7 @@ from app.infrastructure.db.models import (
     CourtModel,
     UserModel,
 )
+from app.infrastructure.security.password import hash_password
 
 router = APIRouter(prefix="/superadmin", tags=["Superadmin"])
 
@@ -98,10 +99,30 @@ async def create_club(
     # Optional initial administrator assignment
     members_count = 0
     if data.admin_user_email:
+        clean_email = data.admin_user_email.lower().strip()
         admin_user = await db.scalar(
-            select(UserModel).where(UserModel.email == data.admin_user_email.lower().strip())
+            select(UserModel).where(UserModel.email == clean_email)
         )
-        if admin_user:
+        if not admin_user:
+            admin_user = UserModel(
+                id=uuid6.uuid7(),
+                email=clean_email,
+                password_hash=hash_password(data.admin_user_password or "Admin123!"),
+                full_name=data.admin_user_name or f"Administrador {club.name}",
+                is_superadmin=False,
+            )
+            db.add(admin_user)
+            await db.flush()
+        elif data.admin_user_password:
+            admin_user.password_hash = hash_password(data.admin_user_password)
+
+        membership = await db.scalar(
+            select(ClubMemberModel).where(
+                ClubMemberModel.club_id == club.id,
+                ClubMemberModel.user_id == admin_user.id,
+            )
+        )
+        if not membership:
             membership = ClubMemberModel(
                 id=uuid6.uuid7(),
                 user_id=admin_user.id,
@@ -110,7 +131,11 @@ async def create_club(
                 is_active=True,
             )
             db.add(membership)
-            members_count = 1
+        else:
+            membership.role = "admin"
+            membership.is_active = True
+
+        members_count = 1
 
     await db.commit()
     await db.refresh(club)
@@ -340,10 +365,19 @@ async def add_club_member(
         select(UserModel).where(UserModel.email == data.user_email.lower().strip())
     )
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Usuario con correo '{data.user_email}' no encontrado",
+        default_name = "Administrador de Club" if data.role == "admin" else "Recepcionista de Sede"
+        default_pwd = "Admin123!" if data.role == "admin" else "Staff123!"
+        user = UserModel(
+            id=uuid6.uuid7(),
+            email=data.user_email.lower().strip(),
+            password_hash=hash_password(data.user_password or default_pwd),
+            full_name=data.user_full_name or default_name,
+            is_superadmin=False,
         )
+        db.add(user)
+        await db.flush()
+    elif data.user_password:
+        user.password_hash = hash_password(data.user_password)
 
     # Check if membership already exists
     membership = await db.scalar(

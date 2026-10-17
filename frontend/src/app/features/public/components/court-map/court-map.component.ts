@@ -102,11 +102,14 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
             fill="url(#arch-grid)"
           />
 
-          <!-- Decorations (Recepción, Cafetería, Parqueadero) -->
-          @for (dec of layout()?.decorations || []; track dec.id) {
+          <!-- Decorations (Recepción, Cafetería, Parqueadero, etc.) -->
+          @for (dec of layout()?.decorations || []; track dec.id || $index) {
             @let decShape = getDecorationShape(dec);
             @if (decShape) {
-              <g class="pointer-events-none">
+              <g
+                class="pointer-events-none"
+                [attr.transform]="'rotate(' + (dec.shape?.rotation || dec.rotation || 0) + ' ' + (decShape.x + decShape.w/2) + ' ' + (decShape.y + decShape.h/2) + ')'"
+              >
                 <rect
                   [attr.x]="decShape.x"
                   [attr.y]="decShape.y"
@@ -115,6 +118,7 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
                   fill="rgba(255, 255, 255, 0.95)"
                   stroke="rgba(203, 213, 225, 0.8)"
                   stroke-width="1"
+                  stroke-dasharray="4 2"
                   rx="8"
                 />
                 @if (dec.label) {
@@ -129,7 +133,7 @@ import { CourtLayoutItem, DecorationItem, PolygonShape, PublicClubLayout, Public
                     font-weight="500"
                     letter-spacing="0.05em"
                   >
-                    {{ dec.label }}
+                    {{ (dec.icon ? dec.icon + ' ' : '') + dec.label }}
                   </text>
                 }
               </g>

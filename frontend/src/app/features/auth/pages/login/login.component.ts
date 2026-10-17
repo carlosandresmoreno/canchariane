@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+  signal
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,41 +22,75 @@ import { AuthStore } from '../../../../core/state/auth.store';
       <!-- Clean Luminous Ambient Glow -->
       <div class="ambient-lighting"></div>
 
-      <div class="w-full max-w-md space-y-8 p-8 sm:p-10 rounded-3xl bg-white border border-slate-200/90 shadow-[0_20px_50px_rgba(15,23,42,0.06)] relative z-10">
-        <!-- Logo -->
-        <div class="text-center space-y-2">
-          <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto text-[#0056FB] font-serif italic text-2xl shadow-xs">
-            C
+      <div class="w-full max-w-md space-y-6 p-7 sm:p-9 rounded-3xl bg-white border border-slate-200/90 shadow-[0_20px_50px_rgba(15,23,42,0.06)] relative z-10">
+        <!-- Club Branding Header -->
+        <div class="text-center space-y-2.5">
+          <div class="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 text-[#0056FB] flex items-center justify-center mx-auto text-xl shadow-xs">
+            🏢
           </div>
-          <h1 class="text-3xl font-serif italic text-slate-900 tracking-tight">Acceso a Canchariane</h1>
-          <p class="text-xs text-slate-500 font-sans">Ingresa tus credenciales para administrar clubes y la plataforma</p>
+
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50/70 border border-blue-200 text-[#0056FB] text-[10px] font-mono tracking-wider uppercase">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#0056FB]"></span>
+            <span>Acceso Personal & Administración de Sede</span>
+          </div>
+
+          <h1 class="text-2xl sm:text-3xl font-serif italic text-slate-900 tracking-tight">
+            Acceso a Club Deportivo
+          </h1>
+
+          <p class="text-xs text-slate-500 font-sans leading-relaxed">
+            Ingreso para dueños del club, administradores y recepcionistas
+          </p>
+
+          @if (clubSlug()) {
+            <div class="mt-2 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-mono">
+              <span class="text-slate-400">Sede:</span>
+              <strong class="text-slate-900">/c/{{ clubSlug() }}</strong>
+            </div>
+          }
         </div>
 
+        <!-- Error Banner -->
         @if (errorMessage()) {
-          <div class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs text-center font-sans animate-in fade-in">
-            {{ errorMessage() }}
+          <div class="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-mono flex items-start gap-2.5 animate-in fade-in">
+            <span class="text-rose-500 font-bold shrink-0">⚠️</span>
+            <span class="flex-1 leading-relaxed">{{ errorMessage() }}</span>
           </div>
         }
 
+        <!-- Club Login Form -->
         <form (ngSubmit)="onLogin()" class="space-y-4">
           <div>
-            <label for="email" class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Correo Electrónico</label>
+            <label for="email" class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">
+              Correo Electrónico
+            </label>
             <input
               id="email"
               type="email"
               required
               [(ngModel)]="email"
               name="email"
-              placeholder="admin@canchariane.com"
+              placeholder="ejemplo@miclub.com"
               class="w-full px-4 py-3 rounded-xl bg-slate-50/70 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-[#0056FB] focus:ring-1 focus:ring-[#0056FB]/30 text-sm transition-colors font-mono"
             />
           </div>
 
           <div>
-            <label for="password" class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Contraseña</label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="password" class="block text-[11px] font-mono uppercase tracking-wider text-slate-500">
+                Contraseña
+              </label>
+              <button
+                type="button"
+                (click)="showPassword.set(!showPassword())"
+                class="text-[10px] font-mono text-slate-400 hover:text-slate-700 uppercase tracking-wider transition-colors"
+              >
+                {{ showPassword() ? 'Ocultar' : 'Mostrar' }}
+              </button>
+            </div>
             <input
               id="password"
-              type="password"
+              [type]="showPassword() ? 'text' : 'password'"
               required
               [(ngModel)]="password"
               name="password"
@@ -62,49 +102,31 @@ import { AuthStore } from '../../../../core/state/auth.store';
           <button
             type="submit"
             [disabled]="isLoading() || !email || !password"
-            class="w-full py-3.5 px-4 rounded-xl bg-[#0056FB] hover:bg-[#0048d6] disabled:opacity-40 text-white font-medium text-xs font-mono uppercase tracking-wider transition-all shadow-[0_4px_20px_rgba(0,86,251,0.3)] active:scale-[0.98] flex items-center justify-center gap-2 mt-6"
+            class="w-full py-3.5 px-4 rounded-xl bg-[#0056FB] hover:bg-[#0048d6] disabled:opacity-40 text-white font-medium text-xs font-mono uppercase tracking-wider transition-all shadow-[0_4px_20px_rgba(0,86,251,0.25)] active:scale-[0.98] flex items-center justify-center gap-2 mt-6"
           >
             @if (isLoading()) {
               <span class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               <span>Iniciando sesión...</span>
             } @else {
-              <span>Ingresar al Sistema</span>
+              <span>Ingresar al Panel del Club ➔</span>
             }
           </button>
         </form>
 
-        <!-- Quick Demo Credentials Box -->
-        <div class="p-4 rounded-2xl bg-slate-50/80 border border-slate-200 text-xs space-y-2.5">
-          <div class="text-slate-500 font-mono text-[10px] uppercase tracking-wider flex items-center justify-between">
-            <span>Acceso Demo 1-Clic:</span>
-            <span class="text-[#0056FB] font-semibold">Credenciales</span>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              (click)="fillCredentials('admin@canchariane.com', 'AdminPassword123!')"
-              class="py-2 px-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 hover:border-[#0056FB]/40 text-xs font-mono tracking-wider transition-colors shadow-xs text-center"
-            >
-              👑 Superadmin
-            </button>
-            <button
-              type="button"
-              (click)="fillCredentials('staff@canchariane.com', 'StaffPassword123!')"
-              class="py-2 px-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 hover:border-[#0056FB]/40 text-xs font-mono tracking-wider transition-colors shadow-xs text-center"
-            >
-              📋 Recepcionista
-            </button>
-          </div>
-        </div>
-
-        <div class="pt-4 border-t border-slate-100 text-center text-xs text-slate-400 font-sans">
-          Canchariane Engine v2.0 • Plataforma Multi-Club Deportiva
+        <div class="pt-3 border-t border-slate-100 text-center text-xs font-sans text-slate-500">
+          ¿Eres desarrollador o administrador general de la plataforma?
+          <a
+            routerLink="/auth/login-superadmin"
+            class="text-[#0056FB] font-medium hover:underline block mt-1"
+          >
+            Ir a Consola Superadmin →
+          </a>
         </div>
       </div>
     </div>
   `
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly authStore = inject(AuthStore);
   private readonly router = inject(Router);
@@ -112,12 +134,16 @@ export class LoginComponent {
 
   email = '';
   password = '';
+  readonly clubSlug = signal<string | null>(null);
   readonly isLoading = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly showPassword = signal<boolean>(false);
 
-  fillCredentials(email: string, pass: string): void {
-    this.email = email;
-    this.password = pass;
+  ngOnInit(): void {
+    const qp = this.route.snapshot.queryParams;
+    if (qp['club']) {
+      this.clubSlug.set(qp['club']);
+    }
   }
 
   onLogin(): void {
@@ -131,13 +157,14 @@ export class LoginComponent {
       .subscribe({
         next: (tokenRes) => {
           this.authStore.setAccessToken(tokenRes.access_token);
-          // Fetch current user details
+
           this.authService.getMe().subscribe({
             next: (user) => {
               this.authStore.setCurrentUser(user);
               this.isLoading.set(false);
-              const defaultUrl = user.is_superadmin ? '/superadmin' : '/admin';
-              const returnUrl = this.route.snapshot.queryParams['returnUrl'] || defaultUrl;
+
+              // Route directly to Club Operations Dashboard
+              const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/admin';
               this.router.navigateByUrl(returnUrl);
             },
             error: () => {
@@ -148,8 +175,11 @@ export class LoginComponent {
         },
         error: (err) => {
           this.isLoading.set(false);
+          const detail = err.error?.detail;
           this.errorMessage.set(
-            err.error?.detail || 'Credenciales inválidas. Verifica tu correo y contraseña.'
+            typeof detail === 'string'
+              ? detail
+              : 'Credenciales inválidas. Verifica tu correo y contraseña.'
           );
         }
       });
