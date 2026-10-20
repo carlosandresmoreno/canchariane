@@ -295,9 +295,9 @@ export class ClubLocationManagerComponent implements OnInit, AfterViewInit, OnDe
       zoomControl: true
     });
 
-    // Clean OpenStreetMap Tile Layer (CartoDB Positron / OSM style)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    // OpenStreetMap 100% Free Tile Layer
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19
     }).addTo(this.map);
 
