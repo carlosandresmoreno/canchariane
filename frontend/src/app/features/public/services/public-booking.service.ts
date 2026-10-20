@@ -8,6 +8,7 @@ import {
   PublicBookingResponse,
   PublicClub,
   PublicClubLayout,
+  PublicClubSummary,
   PublicSlot
 } from '../models/public.models';
 
@@ -17,6 +18,14 @@ import {
 export class PublicBookingService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = '/api/v1';
+
+  listClubs(params?: { city?: string; sport?: string; search?: string }): Observable<PublicClubSummary[]> {
+    let httpParams = new HttpParams();
+    if (params?.city) httpParams = httpParams.set('city', params.city);
+    if (params?.sport) httpParams = httpParams.set('sport', params.sport);
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    return this.http.get<PublicClubSummary[]>(`${this.baseUrl}/clubs`, { params: httpParams });
+  }
 
   getClub(slug: string): Observable<PublicClub> {
     return this.http.get<PublicClub>(`${this.baseUrl}/clubs/${slug}`);

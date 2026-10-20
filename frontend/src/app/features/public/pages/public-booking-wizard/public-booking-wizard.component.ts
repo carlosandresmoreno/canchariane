@@ -42,9 +42,11 @@ interface DayOption {
       <header class="relative z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl sticky top-0">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <div class="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center font-serif italic text-lg text-[#0056FB] shadow-xs">
-              C
-            </div>
+            @if (club()?.logo_url) {
+              <img [src]="club()?.logo_url" [alt]="club()?.name" class="w-10 h-10 rounded-2xl object-cover shadow-xs border border-slate-200" />
+            } @else {
+              <img src="logo-mark.svg" alt="Canchariane" class="w-10 h-10 rounded-2xl shadow-xs" />
+            }
             <div>
               <div class="flex items-center gap-2">
                 <span class="font-mono text-[10px] tracking-[0.25em] text-slate-500 uppercase">Club</span>

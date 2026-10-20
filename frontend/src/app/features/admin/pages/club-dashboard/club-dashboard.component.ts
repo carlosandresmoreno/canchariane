@@ -33,8 +33,9 @@ import { ClubLayoutEditorComponent } from '../../components/layout-editor/club-l
 import { ClubBusinessHoursManagerComponent } from '../../components/business-hours-manager/club-business-hours-manager.component';
 import { ClubStaffManagerComponent } from '../../components/staff-manager/club-staff-manager.component';
 import { ClubStatsViewComponent } from '../../components/stats-view/club-stats-view.component';
+import { ClubLocationManagerComponent } from '../../components/location-manager/club-location-manager.component';
 
-export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'staff' | 'stats';
+export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'staff' | 'stats' | 'location';
 
 @Component({
   selector: 'app-club-dashboard',
@@ -47,7 +48,8 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
     ClubLayoutEditorComponent,
     ClubBusinessHoursManagerComponent,
     ClubStaffManagerComponent,
-    ClubStatsViewComponent
+    ClubStatsViewComponent,
+    ClubLocationManagerComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -59,9 +61,7 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
       <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur-xl sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <div class="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center font-serif italic text-sm text-[#0056FB] shadow-xs">
-              🏢
-            </div>
+            <img src="logo-mark.svg" alt="Canchariane" class="w-10 h-10 rounded-2xl shadow-xs" />
             <div>
               <div class="flex items-center gap-2.5">
                 <h1 class="font-display font-semibold text-slate-900 text-sm sm:text-base tracking-wide">
@@ -190,6 +190,19 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
             >
               <span>📊</span>
               <span>Estadísticas</span>
+            </button>
+
+            <button
+              type="button"
+              (click)="activeTab.set('location')"
+              [class.bg-[#0056FB]]="activeTab() === 'location'"
+              [class.text-white]="activeTab() === 'location'"
+              [class.shadow-xs]="activeTab() === 'location'"
+              [class.text-slate-600]="activeTab() !== 'location'"
+              class="px-3.5 py-2 rounded-xl hover:bg-slate-100 transition-all flex items-center gap-2 shrink-0 font-medium"
+            >
+              <span>📍</span>
+              <span>Ubicación & Sede</span>
             </button>
           }
         </div>
@@ -377,6 +390,14 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
             [occupancyPct]="occupancyPct()"
             [totalRevenueCents]="totalRevenueCents()"
             [totalBookings]="activeBookingsCount()"
+          />
+        }
+
+        @if (activeTab() === 'location' && isOwnerOrAdmin()) {
+          <app-club-location-manager
+            [clubId]="clubId()"
+            [initialAddress]="clubInfo()?.address"
+            [initialPhone]="clubInfo()?.phone"
           />
         }
       </main>
@@ -1078,6 +1099,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     return '🏢 Administrador de Club';
   });
 
+  readonly clubId = computed(() => this.clubInfo()?.club_id || '');
   readonly clubSlug = computed(() => this.clubInfo()?.slug || 'club-alpha');
   readonly clubName = computed(() => this.clubInfo()?.club_name || 'Club Deportivo');
   readonly isPublished = computed(() => this.clubInfo()?.is_published ?? true);

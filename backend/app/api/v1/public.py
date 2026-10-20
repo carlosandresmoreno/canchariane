@@ -89,6 +89,10 @@ async def list_published_clubs(
             address=c.address,
             phone=c.phone,
             logo_url=c.logo_url,
+            latitude=(c.settings or {}).get("latitude"),
+            longitude=(c.settings or {}).get("longitude"),
+            city=(c.settings or {}).get("city", "Pereira"),
+            sports=sorted(list(set(court.sport for court in c.courts if court.is_active))),
         )
         for c in clubs
     ]
@@ -165,6 +169,9 @@ async def get_club_by_slug(
         address=club.address,
         phone=club.phone,
         logo_url=club.logo_url,
+        latitude=s.get("latitude"),
+        longitude=s.get("longitude"),
+        city=s.get("city", "Pereira"),
         courts=active_courts,
         business_hours=hours,
         allowed_durations=allowed_durations,

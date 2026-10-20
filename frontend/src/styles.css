@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 @theme {
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -127,6 +128,25 @@ html {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 86, 251, 0.6);
+}
+/* Leaflet custom map aesthetic */
+.leaflet-popup-content-wrapper {
+  border-radius: 1.25rem !important;
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15) !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+.leaflet-container {
+  font-family: var(--font-sans) !important;
+}
+.leaflet-popup-tip {
+  background: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08) !important;
 }
 
 

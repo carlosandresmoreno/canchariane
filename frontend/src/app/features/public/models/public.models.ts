@@ -1,3 +1,17 @@
+export interface PublicClubSummary {
+  id: string;
+  name: string;
+  slug: string;
+  timezone: string;
+  address?: string | null;
+  phone?: string | null;
+  logo_url?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  city?: string | null;
+  sports?: string[];
+}
+
 export interface PublicClub {
   id: string;
   name: string;
@@ -7,6 +21,9 @@ export interface PublicClub {
   address?: string | null;
   phone?: string | null;
   logo_url?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  city?: string | null;
   courts: PublicCourt[];
   allowed_durations?: number[];
   default_duration?: number;

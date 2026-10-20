@@ -1,3 +1,5 @@
+import urllib.parse
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -5,13 +7,32 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = False
 
-    # Database
+    # Database connection parameters
+    DB_HOST: str | None = "arianedevs-db.c4xiqgaau7tv.us-east-1.rds.amazonaws.com"
+    DB_PORT: int = 5432
+    DB_USER: str | None = "postgres"
+    DB_PASSWORD: str | None = "vlf1v1(3cX9pN|Z.yb350K~MX?Lq"
+    DB_NAME: str = "canchariane_db"
+
+    # Database URLs
     DATABASE_URL: str = (
-        "postgresql+asyncpg://canchariane:canchariane_password@localhost:5432/canchariane_db"
+        "postgresql+asyncpg://postgres:vlf1v1%283cX9pN%7CZ.yb350K%7EMX%3FLq@arianedevs-db.c4xiqgaau7tv.us-east-1.rds.amazonaws.com:5432/canchariane_db"
     )
     SYNC_DATABASE_URL: str = (
-        "postgresql+psycopg://canchariane:canchariane_password@localhost:5432/canchariane_db"
+        "postgresql+psycopg://postgres:vlf1v1%283cX9pN%7CZ.yb350K%7EMX%3FLq@arianedevs-db.c4xiqgaau7tv.us-east-1.rds.amazonaws.com:5432/canchariane_db"
     )
+
+    @model_validator(mode="after")
+    def assemble_db_urls(self) -> "Settings":
+        if self.DB_HOST and self.DB_USER and self.DB_PASSWORD:
+            encoded_password = urllib.parse.quote_plus(self.DB_PASSWORD)
+            self.DATABASE_URL = (
+                f"postgresql+asyncpg://{self.DB_USER}:{encoded_password}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+            )
+            self.SYNC_DATABASE_URL = (
+                f"postgresql+psycopg://{self.DB_USER}:{encoded_password}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+            )
+        return self
 
     # Security
     JWT_SECRET: str = "canchariane_super_secret_key_minimum_32_bytes_secure_token"

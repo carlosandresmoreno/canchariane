@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 72" fill="none">
+  <defs>
+    <linearGradient id="logoBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0066FF"/>
+      <stop offset="50%" stop-color="#0052E0"/>
+      <stop offset="100%" stop-color="#0035B8"/>
+    </linearGradient>
+    <linearGradient id="logoBallGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22FFA8"/>
+      <stop offset="100%" stop-color="#00E575"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon Mark (60x60) -->
+  <g transform="translate(4, 6)">
+    <!-- Base Squircle -->
+    <rect width="60" height="60" rx="16" fill="url(#logoBgGrad)"/>
+    <rect x="0.5" y="0.5" width="59" height="59" rx="15.5" stroke="white" stroke-opacity="0.2"/>
+
+    <!-- Court Lines -->
+    <rect x="14" y="13" width="32" height="34" rx="4" fill="rgba(255,255,255,0.08)" stroke="white" stroke-width="2"/>
+    <line x1="14" y1="30" x2="46" y2="30" stroke="white" stroke-width="1.5" stroke-dasharray="3 2" stroke-opacity="0.9"/>
+    <line x1="30" y1="20" x2="30" y2="40" stroke="white" stroke-width="1.2" stroke-opacity="0.6"/>
+    <line x1="19" y1="20" x2="41" y2="20" stroke="white" stroke-width="1.2" stroke-opacity="0.5"/>
+    <line x1="19" y1="40" x2="41" y2="40" stroke="white" stroke-width="1.2" stroke-opacity="0.5"/>
+
+    <!-- Energy Ball -->
+    <circle cx="45" cy="15" r="4" fill="url(#logoBallGrad)"/>
+  </g>
+
+  <!-- Brand Typography -->
+  <g transform="translate(76, 20)">
+    <!-- Wordmark -->
+    <text x="0" y="21" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="23" font-weight="800" fill="#0F172A" letter-spacing="-0.02em">
+      CANCHARIANE
+    </text>
+    <!-- Tagline -->
+    <text x="1" y="38" font-family="'JetBrains Mono', monospace" font-size="8.5" font-weight="600" fill="#64748B" letter-spacing="0.22em">
+      GESTIÓN DEPORTIVA
+    </text>
+  </g>
+</svg>

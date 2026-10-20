@@ -10,3 +10,11 @@ api_v1_router.include_router(auth_router)
 api_v1_router.include_router(club_admin_router)
 api_v1_router.include_router(superadmin_router)
 api_v1_router.include_router(public_router)
+
+# v1_router with prefix "/v1" handles reverse proxies that strip the "/api" prefix (e.g. proxy_pass ...:8004/)
+v1_router = APIRouter(prefix="/v1", include_in_schema=False)
+v1_router.include_router(auth_router)
+v1_router.include_router(club_admin_router)
+v1_router.include_router(superadmin_router)
+v1_router.include_router(public_router)
+

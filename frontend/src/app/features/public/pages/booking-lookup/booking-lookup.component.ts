@@ -20,9 +20,7 @@ import { PublicBookingResponse } from '../../models/public.models';
       <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur-xl sticky top-0 z-40">
         <div class="max-w-4xl mx-auto px-6 h-20 flex items-center justify-between">
           <a routerLink="/" class="flex items-center gap-3 text-slate-900 group transition-all duration-300">
-            <div class="w-9 h-9 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-xs font-serif italic text-[#0056FB] shadow-xs group-hover:border-[#0056FB]/50 transition-all">
-              C
-            </div>
+            <img src="logo-mark.svg" alt="Canchariane" class="w-9 h-9 rounded-xl shadow-xs group-hover:scale-105 transition-all" />
             <div class="flex flex-col">
               <span class="font-display font-semibold text-xs tracking-[0.22em] uppercase text-slate-900">Canchariane</span>
               <span class="text-[9px] uppercase tracking-widest text-slate-400 font-mono">Conserjería Digital</span>

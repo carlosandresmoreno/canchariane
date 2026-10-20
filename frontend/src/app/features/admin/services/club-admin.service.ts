@@ -153,6 +153,9 @@ export interface ClubDashboardInfo {
   is_published: boolean;
   phone?: string | null;
   address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  city?: string | null;
   role: string;
   timezone: string;
 }
@@ -287,5 +290,10 @@ export interface ClubBookingSettings {
   default_duration: number;
   slot_step_minutes?: number | null;
   currency?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  city?: string | null;
+  address?: string | null;
+  phone?: string | null;
 }
 

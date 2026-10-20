@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.api.errors import register_error_handlers
-from app.api.v1.router import api_v1_router
+from app.api.v1.router import api_v1_router, v1_router
 from app.config import settings
 from app.infrastructure.db.session import engine
 
@@ -41,8 +41,15 @@ def create_app() -> FastAPI:
     # Global domain exception to RFC 9457 Problem Details
     register_error_handlers(app)
 
-    # Include API Routers
+    # Include API Routers:
+    # 1. /api/v1 prefix for direct calls & frontends
+    # 2. /v1 prefix for reverse proxies that strip /api/ (e.g. proxy_pass http://...:8004/)
     app.include_router(api_v1_router)
+    app.include_router(v1_router)
+
+    @app.get("/", status_code=status.HTTP_200_OK, tags=["Health"], include_in_schema=False)
+    async def root() -> dict[str, str]:
+        return {"status": "healthy", "service": "canchariane-api"}
 
     @app.get("/health", status_code=status.HTTP_200_OK, tags=["Health"])
     async def health() -> dict[str, str]:

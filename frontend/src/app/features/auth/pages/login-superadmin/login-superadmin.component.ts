@@ -25,9 +25,7 @@ import { AuthStore } from '../../../../core/state/auth.store';
       <div class="w-full max-w-md space-y-6 p-7 sm:p-9 rounded-3xl bg-white border border-slate-200/90 shadow-[0_25px_60px_rgba(15,23,42,0.07)] relative z-10">
         <!-- Developer & Superadmin Terminal Branding -->
         <div class="text-center space-y-2.5">
-          <div class="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center mx-auto text-xl shadow-md border border-slate-700">
-            👑
-          </div>
+          <img src="logo-mark.svg" alt="Canchariane" class="w-14 h-14 rounded-2xl mx-auto shadow-md" />
 
           <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-[10px] font-mono tracking-wider uppercase">
             <span class="w-1.5 h-1.5 rounded-full bg-[#0056FB] animate-pulse"></span>

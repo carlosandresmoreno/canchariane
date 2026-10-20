@@ -25,9 +25,7 @@ import { AuthStore } from '../../../../core/state/auth.store';
       <div class="w-full max-w-md space-y-6 p-7 sm:p-9 rounded-3xl bg-white border border-slate-200/90 shadow-[0_20px_50px_rgba(15,23,42,0.06)] relative z-10">
         <!-- Club Branding Header -->
         <div class="text-center space-y-2.5">
-          <div class="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 text-[#0056FB] flex items-center justify-center mx-auto text-xl shadow-xs">
-            🏢
-          </div>
+          <img src="logo-mark.svg" alt="Canchariane" class="w-14 h-14 rounded-2xl mx-auto shadow-md" />
 
           <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50/70 border border-blue-200 text-[#0056FB] text-[10px] font-mono tracking-wider uppercase">
             <span class="w-1.5 h-1.5 rounded-full bg-[#0056FB]"></span>

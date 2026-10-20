@@ -27,17 +27,19 @@ services:
     environment:
       PYTHONPATH: /app
       ENVIRONMENT: production
-      DATABASE_URL: postgresql+asyncpg://canchariane:canchariane_password@postgres:5432/canchariane_db
-      SYNC_DATABASE_URL: postgresql+psycopg://canchariane:canchariane_password@postgres:5432/canchariane_db
+      DB_HOST: ${DB_HOST:-arianedevs-db.c4xiqgaau7tv.us-east-1.rds.amazonaws.com}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-vlf1v1(3cX9pN|Z.yb350K~MX?Lq}
+      DB_NAME: ${DB_NAME:-canchariane_db}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://postgres:vlf1v1%283cX9pN%7CZ.yb350K%7EMX%3FLq@arianedevs-db.c4xiqgaau7tv.us-east-1.rds.amazonaws.com:5432/canchariane_db}
+      SYNC_DATABASE_URL: ${SYNC_DATABASE_URL:-postgresql+psycopg://postgres:vlf1v1%283cX9pN%7CZ.yb350K%7EMX%3FLq@arianedevs-db.c4xiqgaau7tv.us-east-1.rds.amazonaws.com:5432/canchariane_db}
       JWT_SECRET: canchariane_production_super_secret_key_minimum_32_bytes_token
       ACCESS_TOKEN_EXPIRE_MINUTES: 15
       REFRESH_TOKEN_EXPIRE_DAYS: 30
       DEFAULT_TIMEZONE: America/Bogota
     ports:
       - "8004:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
 
   frontend:
     build:

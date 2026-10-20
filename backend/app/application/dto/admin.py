@@ -261,11 +261,21 @@ class ClubSettingsResponse(BaseModel):
     default_duration: int
     slot_step_minutes: int | None = None
     currency: str = "COP"
+    latitude: float | None = None
+    longitude: float | None = None
+    city: str | None = None
+    address: str | None = None
+    phone: str | None = None
 
 
 class ClubSettingsUpdateRequest(BaseModel):
     allowed_durations: list[int] | None = None
     default_duration: int | None = None
     slot_step_minutes: int | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    city: str | None = None
+    address: str | None = None
+    phone: str | None = None
 
 

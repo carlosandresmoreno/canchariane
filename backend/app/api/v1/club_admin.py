@@ -82,13 +82,16 @@ async def get_club_dashboard(
         "is_published": club.is_published,
         "phone": club.phone,
         "address": club.address,
+        "latitude": (club.settings or {}).get("latitude"),
+        "longitude": (club.settings or {}).get("longitude"),
+        "city": (club.settings or {}).get("city", "Pereira"),
         "role": user_ctx.memberships.get(str(club_id), "staff"),
         "timezone": club.timezone,
     }
 
 
 # ---------------------------------------------------------
-# CLUB SETTINGS (RENTAL DURATIONS & STEP)
+# CLUB SETTINGS (RENTAL DURATIONS, STEP & GEOLOCATION)
 # ---------------------------------------------------------
 @router.get("/{club_id}/settings", response_model=ClubSettingsResponse)
 async def get_club_settings(
@@ -107,6 +110,11 @@ async def get_club_settings(
         default_duration=default_dur,
         slot_step_minutes=s.get("slot_step_minutes"),
         currency=s.get("currency", "COP"),
+        latitude=s.get("latitude"),
+        longitude=s.get("longitude"),
+        city=s.get("city", "Pereira"),
+        address=club.address,
+        phone=club.phone,
     )
 
 
@@ -144,6 +152,17 @@ async def update_club_settings(
     if data.slot_step_minutes is not None:
         s["slot_step_minutes"] = data.slot_step_minutes
 
+    if data.latitude is not None:
+        s["latitude"] = data.latitude
+    if data.longitude is not None:
+        s["longitude"] = data.longitude
+    if data.city is not None:
+        s["city"] = data.city
+    if data.address is not None:
+        club.address = data.address
+    if data.phone is not None:
+        club.phone = data.phone
+
     club.settings = s
     await db.commit()
 
@@ -154,6 +173,11 @@ async def update_club_settings(
         default_duration=default_dur,
         slot_step_minutes=s.get("slot_step_minutes"),
         currency=s.get("currency", "COP"),
+        latitude=s.get("latitude"),
+        longitude=s.get("longitude"),
+        city=s.get("city", "Pereira"),
+        address=club.address,
+        phone=club.phone,
     )
 
 

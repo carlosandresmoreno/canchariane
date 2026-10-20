@@ -12,6 +12,10 @@ class ClubPublicSummary(BaseModel):
     address: str | None
     phone: str | None
     logo_url: str | None
+    latitude: float | None = None
+    longitude: float | None = None
+    city: str | None = None
+    sports: list[str] = Field(default_factory=list)
 
 
 class CourtPublicDTO(BaseModel):
@@ -40,6 +44,9 @@ class ClubPublicDetail(BaseModel):
     address: str | None
     phone: str | None
     logo_url: str | None
+    latitude: float | None = None
+    longitude: float | None = None
+    city: str | None = None
     courts: list[CourtPublicDTO]
     business_hours: list[BusinessHoursPublicDTO]
     allowed_durations: list[int] = Field(default_factory=lambda: [60])

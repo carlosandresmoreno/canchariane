@@ -4,8 +4,10 @@ import { authGuard, superadminGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    pathMatch: 'full',
-    redirectTo: 'c/club-alpha'
+    loadComponent: () =>
+      import('./features/public/pages/club-directory/club-directory.component').then(
+        (m) => m.ClubDirectoryComponent
+      )
   },
   {
     path: 'c/:slug',
@@ -51,6 +53,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'c/club-alpha'
+    redirectTo: ''
   }
 ];
