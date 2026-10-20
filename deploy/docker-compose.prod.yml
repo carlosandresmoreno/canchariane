@@ -1,36 +1,10 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: canchariane_prod_postgres
-    restart: always
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-canchariane}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-canchariane_secure_password_replace_in_prod}
-      POSTGRES_DB: ${POSTGRES_DB:-canchariane_db}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ../docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-canchariane} -d ${POSTGRES_DB:-canchariane_db}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    deploy:
-      resources:
-        limits:
-          memory: 1024M
-    networks:
-      - canchariane_network
-
   backend:
     build:
       context: ../backend
       dockerfile: Dockerfile
     container_name: canchariane_prod_backend
     restart: always
-    depends_on:
-      postgres:
-        condition: service_healthy
     ports:
       - "8004:8000"
     environment:
@@ -74,9 +48,6 @@ services:
           memory: 256M
     networks:
       - canchariane_network
-
-volumes:
-  postgres_data:
 
 networks:
   canchariane_network:
