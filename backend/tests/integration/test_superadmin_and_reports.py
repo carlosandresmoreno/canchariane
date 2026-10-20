@@ -147,6 +147,15 @@ async def test_superadmin_access_control_and_club_lifecycle(
     assert resp_list_deleted.status_code == 200
     assert len(resp_list_deleted.json()) == 0
 
+    # 10. Teardown hard delete to keep DB pristine
+    await api_client.delete(
+        f"/api/v1/superadmin/clubs/{club_id}?hard_delete=true",
+        headers=super_headers,
+    )
+    await db_session.delete(reg_user)
+    await db_session.delete(super_user)
+    await db_session.commit()
+
 
 @pytest.mark.asyncio
 async def test_club_occupancy_and_revenue_reports(
@@ -187,6 +196,7 @@ async def test_club_occupancy_and_revenue_reports(
     )
     db_session.add_all([club, c1, c2])
 
+    b_hours = []
     for dow in range(7):
         bh = BusinessHoursModel(
             id=uuid6.uuid7(),
@@ -196,6 +206,7 @@ async def test_club_occupancy_and_revenue_reports(
             closes_at=time(20, 0),  # 12 hours = 720 minutes per day per court
             closes_next_day=False,
         )
+        b_hours.append(bh)
         db_session.add(bh)
 
     # 2. Create Admin user
@@ -303,3 +314,15 @@ async def test_club_occupancy_and_revenue_reports(
     assert len(rev_data["daily"]) == 1
     assert rev_data["daily"][0]["booking_count"] == 2
     assert len(rev_data["by_court"]) == 2
+
+    # Teardown: delete bookings, events, courts, hours, members, club, and user
+    await db_session.delete(b1)
+    await db_session.delete(b2)
+    await db_session.delete(c1)
+    await db_session.delete(c2)
+    for bh in b_hours:
+        await db_session.delete(bh)
+    await db_session.delete(membership)
+    await db_session.delete(club)
+    await db_session.delete(admin_user)
+    await db_session.commit()

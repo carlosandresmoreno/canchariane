@@ -55,8 +55,8 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
 
 
 @pytest_asyncio.fixture
-async def seed_club_and_court(test_engine) -> tuple[ClubModel, CourtModel, CourtModel]:
-    """Creates a test club with two courts using an independent session."""
+async def seed_club_and_court(test_engine) -> AsyncGenerator[tuple[ClubModel, CourtModel, CourtModel], None]:
+    """Creates a test club with two courts using an independent session and cleans them up."""
     async_session = async_sessionmaker(test_engine, expire_on_commit=False, class_=AsyncSession)
     async with async_session() as session:
         club_id = uuid6.uuid7()
@@ -94,4 +94,10 @@ async def seed_club_and_court(test_engine) -> tuple[ClubModel, CourtModel, Court
         await session.refresh(club)
         await session.refresh(court_1)
         await session.refresh(court_2)
-        return club, court_1, court_2
+        try:
+            yield club, court_1, court_2
+        finally:
+            await session.delete(court_1)
+            await session.delete(court_2)
+            await session.delete(club)
+            await session.commit()

@@ -24,9 +24,9 @@ async def seed_demo_club():
             club = ClubModel(
                 id=club_id,
                 slug="club-alpha",
-                name="Club Deportivo Campestre Alpha",
+                name="Club Campestre Deportivo Alpha",
                 timezone="America/Bogota",
-                address="Av. El Dorado #68C-61, Bogotá",
+                address="Av. 30 de Agosto # 87-25, Sector Villa Olímpica, Pereira",
                 phone="+57 310 987 6543",
                 is_published=True,
                 subscription_status="active",
@@ -35,7 +35,10 @@ async def seed_demo_club():
                     "payment_mode": "on_site",
                     "allowed_durations": [30, 60, 90, 120],
                     "default_duration": 60,
-                    "currency": "COP"
+                    "currency": "COP",
+                    "city": "Pereira",
+                    "latitude": 4.8085,
+                    "longitude": -75.7142
                 }
             )
             session.add(club)
