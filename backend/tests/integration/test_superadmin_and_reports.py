@@ -125,6 +125,28 @@ async def test_superadmin_access_control_and_club_lifecycle(
     assert len(resp_list.json()) == 1
     assert resp_list.json()[0]["id"] == club_id
 
+    # 8. Superadmin deletes club (soft delete)
+    resp_delete = await api_client.delete(
+        f"/api/v1/superadmin/clubs/{club_id}",
+        headers=super_headers,
+    )
+    assert resp_delete.status_code == 204
+
+    # 9. Verify club is excluded from active list and returns 404 on direct fetch
+    resp_get_deleted = await api_client.get(
+        f"/api/v1/superadmin/clubs/{club_id}",
+        headers=super_headers,
+    )
+    assert resp_get_deleted.status_code == 404
+
+    resp_list_deleted = await api_client.get(
+        "/api/v1/superadmin/clubs",
+        params={"search": new_slug},
+        headers=super_headers,
+    )
+    assert resp_list_deleted.status_code == 200
+    assert len(resp_list_deleted.json()) == 0
+
 
 @pytest.mark.asyncio
 async def test_club_occupancy_and_revenue_reports(

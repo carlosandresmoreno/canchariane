@@ -1,9 +1,10 @@
+from datetime import UTC, datetime, time
 from typing import Annotated
 from uuid import UUID
 
 import uuid6
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_superadmin
@@ -16,13 +17,17 @@ from app.application.dto.superadmin import (
     SuperadminMembershipResponse,
     SuperadminStatsResponse,
 )
-from datetime import time
 from app.infrastructure.db.models import (
+    BlockModel,
+    BookingEventModel,
     BookingModel,
     BusinessHoursModel,
+    ClubLayoutModel,
     ClubMemberModel,
     ClubModel,
     CourtModel,
+    PaymentModel,
+    PricingRuleModel,
     UserModel,
 )
 from app.infrastructure.security.password import hash_password
@@ -36,15 +41,23 @@ async def get_system_stats(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> SuperadminStatsResponse:
     """Returns platform-wide KPIs for superadministrators."""
-    total_clubs = await db.scalar(select(func.count(ClubModel.id))) or 0
+    total_clubs = await db.scalar(select(func.count(ClubModel.id)).where(ClubModel.deleted_at.is_(None))) or 0
     active_clubs = (
         await db.scalar(
-            select(func.count(ClubModel.id)).where(ClubModel.subscription_status == "active")
+            select(func.count(ClubModel.id)).where(
+                ClubModel.subscription_status == "active",
+                ClubModel.deleted_at.is_(None),
+            )
         )
         or 0
     )
     published_clubs = (
-        await db.scalar(select(func.count(ClubModel.id)).where(ClubModel.is_published.is_(True)))
+        await db.scalar(
+            select(func.count(ClubModel.id)).where(
+                ClubModel.is_published.is_(True),
+                ClubModel.deleted_at.is_(None),
+            )
+        )
         or 0
     )
     total_courts = (
@@ -199,6 +212,7 @@ async def list_clubs(
             ClubMemberModel,
             (ClubMemberModel.club_id == ClubModel.id) & (ClubMemberModel.is_active.is_(True)),
         )
+        .where(ClubModel.deleted_at.is_(None))
         .group_by(ClubModel.id)
         .order_by(ClubModel.name)
         .limit(limit)
@@ -245,7 +259,7 @@ async def get_club_by_id(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> SuperadminClubResponse:
     club = await db.get(ClubModel, club_id)
-    if not club:
+    if not club or club.deleted_at is not None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Club no encontrado")
 
     c_count = (
@@ -291,7 +305,7 @@ async def update_club(
 ) -> SuperadminClubResponse:
     """Updates club configuration, subscription state, or published status."""
     club = await db.get(ClubModel, club_id)
-    if not club:
+    if not club or club.deleted_at is not None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Club no encontrado")
 
     if data.slug is not None and data.slug.lower().strip() != club.slug:
@@ -299,6 +313,7 @@ async def update_club(
             select(ClubModel).where(
                 ClubModel.slug == data.slug.lower().strip(),
                 ClubModel.id != club_id,
+                ClubModel.deleted_at.is_(None),
             )
         )
         if existing:
@@ -360,6 +375,136 @@ async def update_club(
         members_count=m_count,
         created_at=club.created_at,
     )
+
+
+@router.post("/clubs/{club_id}/toggle-power", response_model=SuperadminClubResponse)
+async def toggle_club_power(
+    club_id: UUID,
+    _: Annotated[UserContext, Depends(require_superadmin)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SuperadminClubResponse:
+    """Toggles club between online (active/published) and offline (suspended for non-payment)."""
+    club = await db.get(ClubModel, club_id)
+    if not club or club.deleted_at is not None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Club no encontrado")
+
+    # If currently active and published -> Turn OFF (suspend)
+    if club.is_published and club.subscription_status in ("active", "trial"):
+        club.is_published = False
+        club.subscription_status = "suspended"
+    else:
+        # Turn ON (activate and publish)
+        club.is_published = True
+        club.subscription_status = "active"
+
+    await db.commit()
+    await db.refresh(club)
+
+    c_count = (
+        await db.scalar(
+            select(func.count(CourtModel.id)).where(
+                CourtModel.club_id == club_id, CourtModel.deleted_at.is_(None)
+            )
+        )
+        or 0
+    )
+    m_count = (
+        await db.scalar(
+            select(func.count(ClubMemberModel.id)).where(
+                ClubMemberModel.club_id == club_id, ClubMemberModel.is_active.is_(True)
+            )
+        )
+        or 0
+    )
+
+    return SuperadminClubResponse(
+        id=club.id,
+        name=club.name,
+        slug=club.slug,
+        timezone=club.timezone,
+        currency=(club.settings or {}).get("currency", "COP"),
+        subscription_status=club.subscription_status,
+        is_published=club.is_published,
+        address=club.address,
+        phone=club.phone,
+        email=(club.settings or {}).get("email"),
+        courts_count=c_count,
+        members_count=m_count,
+        created_at=club.created_at,
+    )
+
+
+@router.delete("/clubs/{club_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_club(
+    club_id: UUID,
+    _: Annotated[UserContext, Depends(require_superadmin)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    hard_delete: bool = False,
+) -> Response:
+    """Deletes or cancels a club tenant globally from the platform with full cascading cleanup."""
+    club = await db.get(ClubModel, club_id)
+    if not club:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Club no encontrado")
+
+    if hard_delete:
+        # Full Hard Delete: delete all child entities in reverse foreign key order
+        booking_ids_subq = select(BookingModel.id).where(BookingModel.club_id == club_id)
+        # 1. Delete payments tied to bookings in this club
+        await db.execute(delete(PaymentModel).where(PaymentModel.booking_id.in_(booking_ids_subq)))
+        # 2. Delete audit events
+        await db.execute(delete(BookingEventModel).where(BookingEventModel.booking_id.in_(booking_ids_subq)))
+        # 3. Delete bookings (must be deleted before courts due to ondelete='RESTRICT')
+        await db.execute(delete(BookingModel).where(BookingModel.club_id == club_id))
+        # 4. Delete maintenance blocks
+        await db.execute(delete(BlockModel).where(BlockModel.club_id == club_id))
+        # 5. Delete pricing rules
+        await db.execute(delete(PricingRuleModel).where(PricingRuleModel.club_id == club_id))
+        # 6. Delete business hours
+        await db.execute(delete(BusinessHoursModel).where(BusinessHoursModel.club_id == club_id))
+        # 7. Delete 2D/3D layouts
+        await db.execute(delete(ClubLayoutModel).where(ClubLayoutModel.club_id == club_id))
+        # 8. Delete courts
+        await db.execute(delete(CourtModel).where(CourtModel.club_id == club_id))
+        # 9. Delete memberships
+        await db.execute(delete(ClubMemberModel).where(ClubMemberModel.club_id == club_id))
+        # 10. Delete the club tenant record
+        await db.delete(club)
+    else:
+        # Soft delete: mark club as deleted, unpublish, cancel active bookings, and deactivate courts
+        now = datetime.now(UTC)
+        club.deleted_at = now
+        club.is_published = False
+        club.subscription_status = "cancelled"
+
+        # Cancel any active/held reservations in this club
+        await db.execute(
+            update(BookingModel)
+            .where(
+                BookingModel.club_id == club_id,
+                BookingModel.status.in_(["held", "confirmed"]),
+            )
+            .values(
+                status="cancelled",
+                cancellation_reason="Club dado de baja por la administración",
+            )
+        )
+
+        # Deactivate all courts
+        await db.execute(
+            update(CourtModel)
+            .where(CourtModel.club_id == club_id, CourtModel.deleted_at.is_(None))
+            .values(deleted_at=now, is_active=False)
+        )
+
+        # Deactivate all staff memberships
+        await db.execute(
+            update(ClubMemberModel)
+            .where(ClubMemberModel.club_id == club_id, ClubMemberModel.is_active.is_(True))
+            .values(is_active=False)
+        )
+
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post(

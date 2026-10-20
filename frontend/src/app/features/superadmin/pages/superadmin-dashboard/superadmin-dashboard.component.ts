@@ -181,9 +181,9 @@ import {
                 class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-[#0056FB] transition-colors font-mono"
               >
                 <option value="all">Todos los Estados</option>
-                <option value="active">Activos</option>
+                <option value="active">Prendidos (Al día)</option>
+                <option value="suspended">Apagados (Sin Pago / Suspendidos)</option>
                 <option value="trial">En Prueba (Trial)</option>
-                <option value="suspended">Suspendidos</option>
               </select>
 
               <button
@@ -206,8 +206,7 @@ import {
                   <th class="py-3.5 px-4">Zona / Moneda</th>
                   <th class="py-3.5 px-4 text-center">Pistas</th>
                   <th class="py-3.5 px-4 text-center">Miembros</th>
-                  <th class="py-3.5 px-4 text-center">Suscripción</th>
-                  <th class="py-3.5 px-4 text-center">Público</th>
+                  <th class="py-3.5 px-4 text-center">Estado / Pago</th>
                   <th class="py-3.5 px-6 text-right">Acciones</th>
                 </tr>
               </thead>
@@ -244,23 +243,29 @@ import {
                     </td>
 
                     <td class="py-4 px-4 text-center">
-                      <span
-                        class="px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider font-semibold border"
-                        [ngClass]="getSubscriptionBadgeClass(c.subscription_status)"
-                      >
-                        {{ c.subscription_status }}
-                      </span>
-                    </td>
-
-                    <td class="py-4 px-4 text-center">
-                      <button
-                        type="button"
-                        (click)="togglePublished(c)"
-                        class="px-2.5 py-1 rounded-full text-[10px] font-mono tracking-wider font-medium border transition-colors"
-                        [ngClass]="c.is_published ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'"
-                      >
-                        {{ c.is_published ? 'Publicado' : 'Oculto' }}
-                      </button>
+                      @if (isClubOnline(c)) {
+                        <button
+                          type="button"
+                          (click)="togglePower(c)"
+                          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-mono font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 hover:border-emerald-400 transition-all shadow-2xs group cursor-pointer"
+                          title="Club prendido (al día con el pago). Haz clic para apagar si no paga"
+                        >
+                          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                          <span>Prendido (Al día)</span>
+                          <span class="text-[10px] text-emerald-600 group-hover:text-emerald-950 font-normal ml-0.5">⏸️ Apagar</span>
+                        </button>
+                      } @else {
+                        <button
+                          type="button"
+                          (click)="togglePower(c)"
+                          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-mono font-semibold bg-rose-50 text-rose-800 border border-rose-300 hover:bg-rose-100 hover:border-rose-400 transition-all shadow-2xs group cursor-pointer"
+                          title="Club apagado por falta de pago (oculto en web y sin reservas). Haz clic para prender al recibir pago"
+                        >
+                          <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                          <span>Apagado (Sin Pago)</span>
+                          <span class="text-[10px] text-rose-600 group-hover:text-rose-950 font-normal ml-0.5">⚡ Prender</span>
+                        </button>
+                      }
                     </td>
 
                     <td class="py-4 px-6 text-right">
@@ -287,6 +292,14 @@ import {
                           class="px-3 py-1.5 rounded-lg bg-[#0056FB]/10 hover:bg-[#0056FB]/20 border border-[#0056FB]/20 text-[#0056FB] font-mono text-[11px] font-medium transition-colors"
                         >
                           Editar
+                        </button>
+                        <button
+                          type="button"
+                          (click)="openDeleteModal(c)"
+                          class="p-2 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 hover:text-rose-900 transition-colors"
+                          title="Eliminar Club"
+                        >
+                          🗑
                         </button>
                       </div>
                     </td>
@@ -720,6 +733,94 @@ import {
           </div>
         </div>
       }
+
+      <!-- ============================================================= -->
+      <!-- MODAL: ELIMINAR CLUB                                          -->
+      <!-- ============================================================= -->
+      @if (deletingClub(); as clubToDelete) {
+        <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div class="w-full max-w-md p-7 rounded-3xl bg-white border border-slate-200 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 font-sans text-slate-900">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 text-lg">
+                  🗑️
+                </div>
+                <div>
+                  <span class="text-[10px] uppercase tracking-[0.2em] text-rose-600 font-mono font-semibold block">Zona Peligrosa</span>
+                  <h3 class="font-serif italic text-xl text-slate-900">Eliminar Club Deportivo</h3>
+                </div>
+              </div>
+              <button
+                type="button"
+                (click)="deletingClub.set(null)"
+                class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-800 transition-colors text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            @if (modalError()) {
+              <div class="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between font-mono animate-in fade-in">
+                <span>{{ modalError() }}</span>
+                <button type="button" (click)="modalError.set(null)" class="text-rose-500 hover:text-rose-900 font-bold">✕</button>
+              </div>
+            }
+
+            <div class="space-y-3 text-xs text-slate-600">
+              <p>
+                ¿Estás seguro de que deseas eliminar el club <strong class="text-slate-900">{{ clubToDelete.name }}</strong> (<code>/c/{{ clubToDelete.slug }}</code>)?
+              </p>
+              <div class="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-amber-900 space-y-1.5">
+                <div class="font-semibold flex items-center gap-1.5">
+                  <span>⚠️</span>
+                  <span>Consecuencias inmediatas:</span>
+                </div>
+                <ul class="list-disc list-inside space-y-0.5 text-[11px] text-amber-800">
+                  <li>El club dejará de aparecer en el directorio público y el mapa.</li>
+                  <li>Las canchas y reservas quedarán canceladas/inactivas.</li>
+                  <li>Los administradores y staff del club perderán el acceso a la sede.</li>
+                </ul>
+              </div>
+
+              <!-- Hard Delete Checkbox -->
+              <label class="flex items-start gap-2.5 pt-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="hardDelete"
+                  name="hardDeleteCheck"
+                  class="mt-0.5 rounded border-slate-300 text-rose-600 focus:ring-rose-500"
+                />
+                <span class="text-[11px] text-slate-600">
+                  <strong>Eliminación permanente total:</strong> Borrar registros de la base de datos definitivamente (Hard delete).
+                </span>
+              </label>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                (click)="deletingClub.set(null)"
+                class="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 text-xs font-mono uppercase tracking-wider hover:bg-slate-100 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                (click)="confirmDeleteClub()"
+                [disabled]="isSubmitting()"
+                class="flex-1 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-40 text-white font-medium text-xs font-mono uppercase tracking-wider transition-all duration-300 shadow-md flex items-center justify-center gap-2"
+              >
+                @if (isSubmitting()) {
+                  <span class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  <span>Eliminando...</span>
+                } @else {
+                  <span>Confirmar Eliminación</span>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `
 })
@@ -735,8 +836,11 @@ export class SuperadminDashboardComponent implements OnInit {
   readonly showCreateModal = signal<boolean>(false);
   readonly editingClub = signal<SuperadminClub | null>(null);
   readonly managingMemberClub = signal<SuperadminClub | null>(null);
+  readonly deletingClub = signal<SuperadminClub | null>(null);
   readonly isSubmitting = signal<boolean>(false);
   readonly modalError = signal<string | null>(null);
+
+  hardDelete = false;
 
   searchQuery = '';
   selectedStatus = 'all';
@@ -945,9 +1049,15 @@ export class SuperadminDashboardComponent implements OnInit {
     });
   }
 
-  togglePublished(club: SuperadminClub): void {
-    this.superadminService.updateClub(club.id, { is_published: !club.is_published }).subscribe({
-      next: () => {
+  togglePower(club: SuperadminClub): void {
+    this.superadminService.togglePower(club.id).subscribe({
+      next: (updated) => {
+        const isNowOn = this.isClubOnline(updated);
+        this.feedbackMessage.set(
+          isNowOn
+            ? `🟢 Club '${club.name}' encendido exitosamente (activo y visible en la página pública).`
+            : `🔴 Club '${club.name}' apagado (suspendido por falta de pago, oculto del directorio y reservas).`
+        );
         this.loadClubs();
         this.loadStats();
       },
@@ -955,6 +1065,10 @@ export class SuperadminDashboardComponent implements OnInit {
         this.feedbackMessage.set(this.extractErrorMessage(err));
       }
     });
+  }
+
+  isClubOnline(club: SuperadminClub): boolean {
+    return club.is_published && (club.subscription_status === 'active' || club.subscription_status === 'trial');
   }
 
   openMemberModal(club: SuperadminClub): void {
@@ -1010,6 +1124,35 @@ export class SuperadminDashboardComponent implements OnInit {
       default:
         return 'bg-slate-100 text-slate-700 border-slate-200';
     }
+  }
+
+  openDeleteModal(club: SuperadminClub): void {
+    this.modalError.set(null);
+    this.hardDelete = false;
+    this.deletingClub.set(club);
+  }
+
+  confirmDeleteClub(): void {
+    const club = this.deletingClub();
+    if (!club) return;
+    this.modalError.set(null);
+    this.isSubmitting.set(true);
+
+    this.superadminService.deleteClub(club.id, this.hardDelete).subscribe({
+      next: () => {
+        this.isSubmitting.set(false);
+        this.deletingClub.set(null);
+        this.feedbackMessage.set(
+          `Club '${club.name}' eliminado exitosamente de la plataforma.`
+        );
+        this.loadClubs();
+        this.loadStats();
+      },
+      error: (err) => {
+        this.isSubmitting.set(false);
+        this.modalError.set(this.extractErrorMessage(err));
+      }
+    });
   }
 
   logout(): void {

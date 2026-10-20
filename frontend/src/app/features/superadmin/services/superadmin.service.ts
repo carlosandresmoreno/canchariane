@@ -116,6 +116,15 @@ export class SuperadminService {
     });
   }
 
+  togglePower(clubId: string): Observable<SuperadminClub> {
+    return this.http.post<SuperadminClub>(`${this.baseUrl}/clubs/${clubId}/toggle-power`, {});
+  }
+
+  deleteClub(clubId: string, hardDelete: boolean = false): Observable<void> {
+    const params = new HttpParams().set('hard_delete', hardDelete.toString());
+    return this.http.delete<void>(`${this.baseUrl}/clubs/${clubId}`, { params });
+  }
+
   removeMember(clubId: string, userId: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/clubs/${clubId}/members/${userId}`);
   }

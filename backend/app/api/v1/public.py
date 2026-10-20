@@ -63,7 +63,11 @@ async def list_published_clubs(
 ) -> list[ClubPublicSummary]:
     query = (
         select(ClubModel)
-        .where(ClubModel.is_published.is_(True), ClubModel.deleted_at.is_(None))
+        .where(
+            ClubModel.is_published.is_(True),
+            ClubModel.deleted_at.is_(None),
+            ClubModel.subscription_status.in_(["active", "trial"]),
+        )
         .options(selectinload(ClubModel.courts))
     )
 
@@ -109,6 +113,7 @@ async def get_club_by_slug(
             ClubModel.slug == slug,
             ClubModel.is_published.is_(True),
             ClubModel.deleted_at.is_(None),
+            ClubModel.subscription_status.in_(["active", "trial"]),
         )
         .options(
             selectinload(ClubModel.courts),
@@ -193,6 +198,7 @@ async def get_public_club_layout(
             ClubModel.slug == slug,
             ClubModel.is_published.is_(True),
             ClubModel.deleted_at.is_(None),
+            ClubModel.subscription_status.in_(["active", "trial"]),
         )
         .options(selectinload(ClubModel.courts))
     )
@@ -304,6 +310,7 @@ async def get_club_availability(
             ClubModel.slug == slug,
             ClubModel.is_published.is_(True),
             ClubModel.deleted_at.is_(None),
+            ClubModel.subscription_status.in_(["active", "trial"]),
         )
         .options(
             selectinload(ClubModel.courts),
@@ -468,7 +475,12 @@ async def create_hold(
     # 1. Fetch club and court
     club_query = (
         select(ClubModel)
-        .where(ClubModel.slug == data.club_slug, ClubModel.is_published.is_(True))
+        .where(
+            ClubModel.slug == data.club_slug,
+            ClubModel.is_published.is_(True),
+            ClubModel.deleted_at.is_(None),
+            ClubModel.subscription_status.in_(["active", "trial"]),
+        )
         .options(selectinload(ClubModel.pricing_rules))
     )
     club = await db.scalar(club_query)
