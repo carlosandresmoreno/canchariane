@@ -15,6 +15,7 @@ import { PublicBookingService } from '../../services/public-booking.service';
 import { CourtMapComponent } from '../../components/court-map/court-map.component';
 import { CountdownTimerComponent } from '../../components/countdown-timer/countdown-timer.component';
 import {
+  CourtGroupPublicDTO,
   CreateHoldResponse,
   PublicBookingResponse,
   PublicClub,
@@ -24,8 +25,9 @@ import {
 
 interface DayOption {
   dateStr: string; // "2026-10-20"
-  label: string;   // "Hoy", "Mañana", "Mié 22"
+  label: string;   // "Hoy", "Mañana", "Mié"
   fullLabel: string;
+  isOpen: boolean;
 }
 
 @Component({
@@ -117,24 +119,71 @@ interface DayOption {
                 @for (day of availableDays(); track day.dateStr) {
                   <button
                     type="button"
-                    (click)="selectDate(day.dateStr)"
+                    (click)="day.isOpen && selectDate(day.dateStr)"
+                    [disabled]="!day.isOpen"
                     class="px-5 py-3 rounded-2xl border text-left shrink-0 transition-all duration-300"
                     [ngClass]="selectedDate() === day.dateStr 
                       ? 'bg-[#0056FB] border-[#0056FB] text-white shadow-md' 
-                      : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/70 shadow-xs'"
+                      : day.isOpen
+                        ? 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/70 shadow-xs'
+                        : 'bg-slate-50 border-slate-200/80 text-slate-400 opacity-60 cursor-not-allowed'"
                   >
-                    <div class="text-[10px] font-mono uppercase tracking-wider opacity-80">{{ day.label }}</div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-[10px] font-mono uppercase tracking-wider opacity-80">{{ day.label }}</span>
+                      @if (!day.isOpen) {
+                        <span class="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-200 font-semibold">
+                          Cerrado
+                        </span>
+                      }
+                    </div>
                     <div class="text-sm font-semibold mt-0.5 tracking-tight">{{ day.fullLabel }}</div>
                   </button>
                 }
               </div>
             </div>
 
+            <!-- Category / Modality Selector (Only when club is in auto mode and has multiple categories) -->
+            @if (isAutoMode() && courtGroups().length > 1) {
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">2. Modalidad / Deporte</span>
+                  <span class="text-xs text-slate-500 font-mono">{{ activeGroup()?.name }}</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                  @for (group of courtGroups(); track group.id) {
+                    <button
+                      type="button"
+                      (click)="selectGroup(group.id)"
+                      class="p-4 rounded-2xl border text-left transition-all duration-300"
+                      [ngClass]="activeGroup()?.id === group.id 
+                        ? 'bg-[#0056FB] border-[#0056FB] text-white shadow-md' 
+                        : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/70 shadow-xs'"
+                    >
+                      <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-mono uppercase tracking-wider opacity-80">{{ group.sport }}</span>
+                        <span 
+                          class="text-[10px] font-mono px-2 py-0.5 rounded-full" 
+                          [ngClass]="activeGroup()?.id === group.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'"
+                        >
+                          {{ group.court_count }} canchas
+                        </span>
+                      </div>
+                      <div class="text-sm font-semibold tracking-tight mt-1">{{ group.name }}</div>
+                      <div class="text-xs opacity-90 mt-0.5 font-mono">Desde {{ formatCents(group.price_per_hour_cents) }}/h</div>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
             <!-- Duration Selector -->
             @if (durationOptions().length > 1) {
               <div>
                 <div class="flex items-center justify-between mb-3">
-                  <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">2. Duración del Turno</span>
+                  <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">
+                    {{ isAutoMode() && courtGroups().length > 1 ? '3.' : '2.' }} Duración del Turno
+                  </span>
                   <span class="text-xs text-slate-500 font-mono">{{ selectedDuration() }} minutos</span>
                 </div>
 
@@ -173,138 +222,212 @@ interface DayOption {
             <div>
               <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
                 <div class="flex items-center gap-3">
-                  <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">3. Franja Horaria</span>
+                  <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">
+                    {{ isAutoMode() && courtGroups().length > 1 ? '4.' : '3.' }} Franja Horaria
+                  </span>
                   <span class="font-mono text-xs text-slate-400">
                     {{ distinctHours().length }} horarios disponibles
                   </span>
                 </div>
 
-                <!-- Interval Selector (En punto vs Cada 30m) -->
-                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs shadow-inner">
-                  <span class="text-[10px] uppercase font-mono tracking-wider text-slate-400 px-1.5">Inicio:</span>
-                  <button
-                    type="button"
-                    (click)="setStepMode('exact')"
-                    class="px-2.5 py-1 rounded-lg text-xs transition-all"
-                    [ngClass]="stepMode() === 'exact' ? 'bg-white text-slate-900 font-medium shadow-xs' : 'text-slate-500 hover:text-slate-900'"
-                    title="Turnos comenzando en punto (ej. 08:00, 09:00, 10:00)"
-                  >
-                    En punto
-                  </button>
-                  <button
-                    type="button"
-                    (click)="setStepMode('half')"
-                    class="px-2.5 py-1 rounded-lg text-xs transition-all"
-                    [ngClass]="stepMode() === 'half' ? 'bg-white text-slate-900 font-medium shadow-xs' : 'text-slate-500 hover:text-slate-900'"
-                    title="Turnos comenzando cada 30 min (ej. 08:00, 08:30, 09:00)"
-                  >
-                    Cada 30m
-                  </button>
-                </div>
+                @if (!isCurrentDayClosed()) {
+                  <!-- Interval Selector (En punto vs Cada 30m) -->
+                  <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs shadow-inner">
+                    <span class="text-[10px] uppercase font-mono tracking-wider text-slate-400 px-1.5">Inicio:</span>
+                    <button
+                      type="button"
+                      (click)="setStepMode('exact')"
+                      class="px-2.5 py-1 rounded-lg text-xs transition-all"
+                      [ngClass]="stepMode() === 'exact' ? 'bg-white text-slate-900 font-medium shadow-xs' : 'text-slate-500 hover:text-slate-900'"
+                      title="Turnos comenzando en punto (ej. 08:00, 09:00, 10:00)"
+                    >
+                      En punto
+                    </button>
+                    <button
+                      type="button"
+                      (click)="setStepMode('half')"
+                      class="px-2.5 py-1 rounded-lg text-xs transition-all"
+                      [ngClass]="stepMode() === 'half' ? 'bg-white text-slate-900 font-medium shadow-xs' : 'text-slate-500 hover:text-slate-900'"
+                      title="Turnos comenzando cada 30 min (ej. 08:00, 08:30, 09:00)"
+                    >
+                      Cada 30m
+                    </button>
+                  </div>
+                }
               </div>
 
-              @if (distinctHours().length === 0 && !isLoadingSlots()) {
+              @if (isCurrentDayClosed()) {
+                <div class="p-8 rounded-3xl bg-amber-50/70 border border-amber-200 text-center text-amber-800 text-sm shadow-xs flex flex-col items-center justify-center gap-2">
+                  <span class="text-3xl">🚪</span>
+                  <span class="font-semibold text-base text-amber-900">Instalaciones cerradas este día</span>
+                  <p class="text-xs text-amber-700 font-light max-w-md">
+                    El club no tiene servicio ni disponibilidad de canchas programada para esta fecha. Selecciona otro día abierto en el selector superior.
+                  </p>
+                </div>
+              } @else if (distinctHours().length === 0 && !isLoadingSlots()) {
                 <div class="p-8 rounded-3xl bg-slate-50 border border-slate-200 text-center text-slate-500 font-light text-sm shadow-xs">
                   No hay horarios programados para esta fecha y duración. Selecciona otro día o ajusta la duración.
                 </div>
               } @else {
                 <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
                   @for (hour of distinctHours(); track hour) {
+                    @let count = getAvailableCountForHour(hour);
+                    @let isSelected = selectedHour() === hour;
+                    @let isFull = isAutoMode() ? count === 0 : false;
                     <button
                       type="button"
-                      (click)="selectHour(hour)"
-                      class="px-4 py-2.5 rounded-xl border font-mono text-xs shrink-0 transition-all duration-300"
-                      [ngClass]="selectedHour() === hour 
+                      (click)="!isFull && selectHour(hour)"
+                      [disabled]="isFull"
+                      class="px-4 py-2.5 rounded-xl border font-mono text-xs shrink-0 transition-all duration-300 flex flex-col items-center gap-0.5"
+                      [ngClass]="isSelected 
                         ? 'bg-[#0056FB] text-white font-bold border-[#0056FB] shadow-md' 
-                        : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/70 shadow-xs'"
+                        : isFull
+                          ? 'bg-slate-50 border-slate-200/60 text-slate-300 opacity-50 cursor-not-allowed'
+                          : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/70 shadow-xs'"
                     >
-                      {{ hour }}
+                      <span class="text-xs font-semibold">{{ hour }}</span>
+                      @if (isAutoMode()) {
+                        @if (isFull) {
+                          <span class="text-[9px] font-mono opacity-80">Agotado</span>
+                        } @else if (count === 1) {
+                          <span class="text-[9px] font-mono text-amber-500 font-semibold" [class.text-amber-200]="isSelected">¡1 cupo!</span>
+                        } @else {
+                          <span class="text-[9px] font-mono opacity-80">{{ count }} libres</span>
+                        }
+                      }
                     </button>
                   }
                 </div>
               }
             </div>
 
-            <!-- View Switcher & Court Selector -->
-            <div>
-              <div class="flex items-center justify-between mb-4">
-                <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">4. Selección de Cancha</span>
-                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs shadow-inner">
-                  <button
-                    type="button"
-                    (click)="activeView.set('map')"
-                    class="px-3 py-1 rounded-lg transition-all"
-                    [ngClass]="activeView() === 'map' ? 'bg-white text-slate-900 font-medium shadow-xs' : 'text-slate-500 hover:text-slate-900'"
-                  >
-                    Plano SVG
-                  </button>
-                  <button
-                    type="button"
-                    (click)="activeView.set('list')"
-                    class="px-3 py-1 rounded-lg transition-all"
-                    [ngClass]="activeView() === 'list' ? 'bg-white text-slate-900 font-medium shadow-xs' : 'text-slate-500 hover:text-slate-900'"
-                  >
-                    Lista
-                  </button>
-                </div>
-              </div>
+            <!-- Court Selector / Auto-Assignment Summary -->
+            @if (!isCurrentDayClosed()) {
+              @if (isAutoMode()) {
+                <div>
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">
+                      {{ courtGroups().length > 1 ? '5.' : '4.' }} Asignación de Cancha
+                    </span>
+                    <span class="text-xs text-emerald-600 font-mono font-medium flex items-center gap-1.5">
+                      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Cupo disponible
+                    </span>
+                  </div>
 
-              <!-- Interactive SVG Court Map View -->
-              @if (activeView() === 'map') {
-                <app-court-map
-                  [layout]="layout()"
-                  [slots]="slotsForSelectedHour()"
-                  [selectedCourtId]="selectedCourtId()"
-                  (courtSelect)="onCourtSelect($event)"
-                />
-              }
-
-              <!-- Alternative Grid/List View -->
-              @if (activeView() === 'list') {
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  @for (court of club()?.courts || []; track court.id) {
-                    @let slot = getSlotForCourt(court.id);
-                    @let isAvailable = !!(slot && slot.is_available);
-                    @let isSelected = selectedCourtId() === court.id;
-                    <div
-                      class="p-5 rounded-2xl border transition-all duration-300 cursor-pointer shadow-xs"
-                      [ngClass]="isSelected 
-                        ? 'bg-white border-[#0056FB] ring-2 ring-[#0056FB]/20 shadow-md' 
-                        : isAvailable 
-                          ? 'bg-white border-slate-200 hover:border-slate-400 shadow-xs' 
-                          : 'bg-slate-50/70 border-slate-200/60 opacity-40 cursor-not-allowed'"
-                      (click)="isAvailable && onCourtSelect(court.id)"
-                    >
-                      <div class="flex items-start justify-between">
-                        <div>
-                          <div class="text-[10px] font-mono uppercase tracking-widest text-slate-400">{{ court.sport }}</div>
-                          <h3 class="font-semibold text-slate-900 text-base mt-0.5">{{ court.name }}</h3>
-                          <p class="text-xs text-slate-500 mt-1 capitalize">{{ formatSurface(court.surface) }} • {{ formatPlayerFormat(court.player_format) }}</p>
+                  <div class="p-6 rounded-3xl bg-blue-50/50 border border-blue-200/80 shadow-xs">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-white border border-blue-200 flex items-center justify-center text-2xl shadow-xs text-[#0056FB]">
+                          ⚡
                         </div>
                         <div>
-                          @if (isAvailable && slot) {
-                            <div class="text-right">
-                              <span class="font-mono text-xs font-semibold text-[#0056FB] bg-[#EFF6FF] px-2.5 py-1 rounded-full border border-[#0056FB]/30 block">
-                                {{ formatCents(slot.price_cents) }}
-                              </span>
-                              @if (slot.hourly_rate_cents) {
-                                <span class="text-[10px] font-mono text-slate-400 mt-1 block">
-                                  {{ formatCents(slot.hourly_rate_cents) }}/h
+                          <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-mono uppercase tracking-widest text-blue-600 font-semibold">Turno Auto-Asignado</span>
+                            <span class="text-slate-300">•</span>
+                            <span class="text-xs text-slate-500">{{ activeGroup()?.court_count }} canchas en el complejo</span>
+                          </div>
+                          <h3 class="font-semibold text-slate-900 text-lg mt-0.5">
+                            {{ activeGroup()?.name }}
+                          </h3>
+                          <p class="text-xs text-slate-500 mt-1">
+                            Tu pista se asignará automáticamente entre las canchas disponibles al confirmar la reserva.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="text-right shrink-0">
+                        <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">Tarifa del Turno</span>
+                        <span class="font-mono text-sm font-bold text-[#0056FB] bg-white px-3.5 py-1.5 rounded-full border border-blue-200 shadow-xs inline-block">
+                          {{ formatCents(selectedSlot()?.price_cents || activeGroup()?.price_per_hour_cents) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              } @else {
+                <!-- Manual Mode: View Switcher & Court Selector -->
+                <div>
+                  <div class="flex items-center justify-between mb-4">
+                    <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">4. Selección de Cancha</span>
+                    <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs shadow-inner">
+                      <button
+                        type="button"
+                        (click)="activeView.set('map')"
+                        class="px-3 py-1 rounded-lg transition-all"
+                        [ngClass]="activeView() === 'map' ? 'bg-white text-slate-900 font-medium shadow-xs' : 'text-slate-500 hover:text-slate-900'"
+                      >
+                        Plano SVG
+                      </button>
+                      <button
+                        type="button"
+                        (click)="activeView.set('list')"
+                        class="px-3 py-1 rounded-lg transition-all"
+                        [ngClass]="activeView() === 'list' ? 'bg-white text-slate-900 font-medium shadow-xs' : 'text-slate-500 hover:text-slate-900'"
+                      >
+                        Lista
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Interactive SVG Court Map View -->
+                  @if (activeView() === 'map') {
+                    <app-court-map
+                      [layout]="layout()"
+                      [slots]="slotsForSelectedHour()"
+                      [selectedCourtId]="selectedCourtId()"
+                      (courtSelect)="onCourtSelect($event)"
+                    />
+                  }
+
+                  <!-- Alternative Grid/List View -->
+                  @if (activeView() === 'list') {
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      @for (court of club()?.courts || []; track court.id) {
+                        @let slot = getSlotForCourt(court.id);
+                        @let isAvailable = !!(slot && slot.is_available);
+                        @let isSelected = selectedCourtId() === court.id;
+                        <div
+                          class="p-5 rounded-2xl border transition-all duration-300 cursor-pointer shadow-xs"
+                          [ngClass]="isSelected 
+                            ? 'bg-white border-[#0056FB] ring-2 ring-[#0056FB]/20 shadow-md' 
+                            : isAvailable 
+                              ? 'bg-white border-slate-200 hover:border-slate-400 shadow-xs' 
+                              : 'bg-slate-50/70 border-slate-200/60 opacity-40 cursor-not-allowed'"
+                          (click)="isAvailable && onCourtSelect(court.id)"
+                        >
+                          <div class="flex items-start justify-between">
+                            <div>
+                              <div class="text-[10px] font-mono uppercase tracking-widest text-slate-400">{{ court.sport }}</div>
+                              <h3 class="font-semibold text-slate-900 text-base mt-0.5">{{ court.name }}</h3>
+                              <p class="text-xs text-slate-500 mt-1 capitalize">{{ formatSurface(court.surface) }} • {{ formatPlayerFormat(court.player_format) }}</p>
+                            </div>
+                            <div>
+                              @if (isAvailable && slot) {
+                                <div class="text-right">
+                                  <span class="font-mono text-xs font-semibold text-[#0056FB] bg-[#EFF6FF] px-2.5 py-1 rounded-full border border-[#0056FB]/30 block">
+                                    {{ formatCents(slot.price_cents) }}
+                                  </span>
+                                  @if (slot.hourly_rate_cents) {
+                                    <span class="text-[10px] font-mono text-slate-400 mt-1 block">
+                                      {{ formatCents(slot.hourly_rate_cents) }}/h
+                                    </span>
+                                  }
+                                </div>
+                              } @else {
+                                <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                                  Ocupada
                                 </span>
                               }
                             </div>
-                          } @else {
-                            <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-                              Ocupada
-                            </span>
-                          }
+                          </div>
                         </div>
-                      </div>
+                      }
                     </div>
                   }
                 </div>
               }
-            </div>
+            }
 
             <!-- Sticky Bottom Selection Action Drawer -->
             @if (selectedCourtId() && selectedSlot()) {
@@ -314,8 +437,12 @@ interface DayOption {
                     ✓
                   </div>
                   <div>
-                    <div class="text-[10px] font-mono uppercase tracking-widest text-slate-400">Selección Actual</div>
-                    <div class="font-semibold text-slate-900 text-base leading-tight">{{ selectedSlot()?.court_name }}</div>
+                    <div class="text-[10px] font-mono uppercase tracking-widest text-slate-400">
+                      {{ isAutoMode() ? 'Modalidad Seleccionada' : 'Selección Actual' }}
+                    </div>
+                    <div class="font-semibold text-slate-900 text-base leading-tight">
+                      {{ isAutoMode() ? activeGroup()?.name : selectedSlot()?.court_name }}
+                    </div>
                     <div class="text-xs text-slate-500 font-mono mt-0.5">
                       {{ selectedDate() }} • {{ selectedSlot()?.local_start_time }} - {{ selectedSlot()?.local_end_time }} ({{ selectedDuration() }} min)
                     </div>
@@ -365,8 +492,12 @@ interface DayOption {
             <!-- Hold Status Banner -->
             <div class="flex items-center justify-between p-4 rounded-3xl bg-white/95 backdrop-blur-2xl border border-slate-200 shadow-sm">
               <div>
-                <span class="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">Cancha Bloqueada</span>
-                <span class="font-semibold text-slate-900 text-sm">{{ selectedSlot()?.court_name }} ({{ selectedDuration() }} min)</span>
+                <span class="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
+                  {{ isAutoMode() ? 'Cancha Asignada' : 'Cancha Bloqueada' }}
+                </span>
+                <span class="font-semibold text-slate-900 text-sm">
+                  {{ hold()?.court_name || selectedSlot()?.court_name }} ({{ selectedDuration() }} min)
+                </span>
               </div>
               <app-countdown-timer
                 [expiresAt]="hold()?.expires_at || null"
@@ -587,7 +718,18 @@ export class PublicBookingWizardComponent implements OnInit {
   readonly selectedDate = signal<string>('');
   readonly selectedHour = signal<string>('');
   readonly selectedCourtId = signal<string | null>(null);
+  readonly selectedGroupId = signal<string | null>(null);
   readonly activeView = signal<'map' | 'list'>('map');
+
+  // Category & Auto-assignment Signals
+  readonly isAutoMode = computed(() => this.club()?.court_selection_mode === 'by_category');
+  readonly courtGroups = computed<CourtGroupPublicDTO[]>(() => this.club()?.court_groups || []);
+  readonly activeGroup = computed<CourtGroupPublicDTO | null>(() => {
+    const groups = this.courtGroups();
+    const sel = this.selectedGroupId();
+    if (!groups.length) return null;
+    return groups.find((g) => g.id === sel) || groups[0];
+  });
 
   // Duration & Interval Signals
   readonly selectedDuration = signal<number>(60);
@@ -625,12 +767,19 @@ export class PublicBookingWizardComponent implements OnInit {
   readonly availableDays = computed<DayOption[]>(() => {
     const days: DayOption[] = [];
     const now = new Date();
+    const clubData = this.club();
+    const bHours = clubData?.business_hours;
+
     for (let i = 0; i < 7; i++) {
       const d = new Date(now);
       d.setDate(now.getDate() + i);
-      const dateStr = d.toISOString().split('T')[0];
-      const dd = d.getDate().toString().padStart(2, '0');
-      const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      const dd = day;
+      const mm = month;
+
       let label = `${dd}/${mm}`;
       if (i === 0) label = 'Hoy';
       else if (i === 1) label = 'Mañana';
@@ -638,19 +787,37 @@ export class PublicBookingWizardComponent implements OnInit {
         const weekdays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         label = weekdays[d.getDay()];
       }
+
+      // Map JS getDay() (0=Sun..6=Sat) to Backend weekday (0=Mon..6=Sun)
+      const pythonWeekday = (d.getDay() + 6) % 7;
+      // If business_hours are loaded, check if this weekday is present
+      const isOpen = !bHours || bHours.length === 0 || bHours.some((h) => h.weekday === pythonWeekday);
+
       days.push({
         dateStr,
         label,
-        fullLabel: `${dd}/${mm}`
+        fullLabel: `${dd}/${mm}`,
+        isOpen
       });
     }
     return days;
   });
 
+  readonly isCurrentDayClosed = computed<boolean>(() => {
+    const curDate = this.selectedDate();
+    const dayOpt = this.availableDays().find((d) => d.dateStr === curDate);
+    return dayOpt ? !dayOpt.isOpen : false;
+  });
+
   readonly distinctHours = computed<string[]>(() => {
     const slots = this.allDaySlots();
+    const isAuto = this.isAutoMode();
+    const grp = this.activeGroup();
+    const filteredSlots = (isAuto && grp)
+      ? slots.filter((s) => grp.court_ids.includes(s.court_id))
+      : slots;
     const set = new Set<string>();
-    for (const s of slots) {
+    for (const s of filteredSlots) {
       if (s.local_start_time) {
         set.add(s.local_start_time);
       }
@@ -676,7 +843,6 @@ export class PublicBookingWizardComponent implements OnInit {
       this.selectedDate.set(today);
     }
     this.loadClubAndLayout();
-    this.loadAvailability();
   }
 
   loadClubAndLayout(): void {
@@ -684,6 +850,9 @@ export class PublicBookingWizardComponent implements OnInit {
     this.publicService.getClub(clubSlug).subscribe({
       next: (c) => {
         this.club.set(c);
+        if (c.court_groups && c.court_groups.length > 0) {
+          this.selectedGroupId.set(c.court_groups[0].id);
+        }
         if (c.allowed_durations && c.allowed_durations.length > 0) {
           const defaultDur = c.default_duration || c.allowed_durations[0];
           this.selectedDuration.set(defaultDur);
@@ -691,6 +860,18 @@ export class PublicBookingWizardComponent implements OnInit {
         if (c.slot_step_minutes) {
           this.stepMode.set(c.slot_step_minutes === 30 ? 'half' : 'exact');
         }
+
+        // Auto-select first open day if today is closed
+        const days = this.availableDays();
+        const curDate = this.selectedDate();
+        const curDayOpt = days.find((d) => d.dateStr === curDate);
+        if (!curDayOpt || !curDayOpt.isOpen) {
+          const firstOpen = days.find((d) => d.isOpen);
+          if (firstOpen) {
+            this.selectedDate.set(firstOpen.dateStr);
+          }
+        }
+
         this.loadAvailability();
       },
       error: () => console.error('Error fetching club')
@@ -707,6 +888,13 @@ export class PublicBookingWizardComponent implements OnInit {
     const clubSlug = this.slug();
     if (!dateStr || !clubSlug) return;
 
+    if (this.isCurrentDayClosed()) {
+      this.allDaySlots.set([]);
+      this.selectedHour.set('');
+      this.isLoadingSlots.set(false);
+      return;
+    }
+
     const duration = this.selectedDuration();
     const step = this.stepMode() === 'half' ? 30 : duration;
 
@@ -718,12 +906,20 @@ export class PublicBookingWizardComponent implements OnInit {
           this.allDaySlots.set(slots);
           this.isLoadingSlots.set(false);
           const hours = this.distinctHours();
-          if (hours.length > 0 && !hours.includes(this.selectedHour())) {
-            this.selectedHour.set(hours[0]);
+          if (hours.length > 0) {
+            const cur = this.selectedHour();
+            const target = (cur && hours.includes(cur)) ? cur : hours[0];
+            this.selectHour(target);
+          } else {
+            this.selectedHour.set('');
+            this.selectedCourtId.set(null);
           }
         },
         error: () => {
           this.isLoadingSlots.set(false);
+          this.allDaySlots.set([]);
+          this.selectedHour.set('');
+          this.selectedCourtId.set(null);
         }
       });
   }
@@ -741,14 +937,50 @@ export class PublicBookingWizardComponent implements OnInit {
   }
 
   selectDate(d: string): void {
+    const dayOpt = this.availableDays().find((opt) => opt.dateStr === d);
+    if (dayOpt && !dayOpt.isOpen) return;
     this.selectedDate.set(d);
     this.selectedCourtId.set(null);
+    this.selectedHour.set('');
     this.loadAvailability();
   }
 
   selectHour(h: string): void {
     this.selectedHour.set(h);
+    if (this.isAutoMode()) {
+      const grp = this.activeGroup();
+      if (grp) {
+        const freeSlot = this.allDaySlots().find(
+          (s) => s.local_start_time === h && grp.court_ids.includes(s.court_id) && s.is_available
+        );
+        if (freeSlot) {
+          this.selectedCourtId.set(freeSlot.court_id);
+        } else {
+          this.selectedCourtId.set(null);
+        }
+      }
+    } else {
+      this.selectedCourtId.set(null);
+    }
+  }
+
+  selectGroup(groupId: string): void {
+    this.selectedGroupId.set(groupId);
     this.selectedCourtId.set(null);
+    const hours = this.distinctHours();
+    if (hours.length > 0) {
+      const cur = this.selectedHour();
+      const target = (cur && hours.includes(cur)) ? cur : hours[0];
+      this.selectHour(target);
+    }
+  }
+
+  getAvailableCountForHour(hour: string): number {
+    const grp = this.activeGroup();
+    if (!grp) return 0;
+    return this.allDaySlots().filter(
+      (s) => s.local_start_time === hour && grp.court_ids.includes(s.court_id) && s.is_available
+    ).length;
   }
 
   onCourtSelect(courtId: string): void {
@@ -765,15 +997,25 @@ export class PublicBookingWizardComponent implements OnInit {
     if (!slot || !clubSlug) return;
 
     this.isHolding.set(true);
+    const payload: any = {
+      start_time: slot.start_time,
+      duration_minutes: slot.duration_minutes
+    };
+
+    if (this.isAutoMode()) {
+      payload.group_id = this.activeGroup()?.id;
+    } else {
+      payload.court_id = slot.court_id;
+    }
+
     this.publicService
-      .createHold(clubSlug, {
-        court_id: slot.court_id,
-        start_time: slot.start_time,
-        duration_minutes: slot.duration_minutes
-      })
+      .createHold(clubSlug, payload)
       .subscribe({
         next: (holdRes) => {
           this.hold.set(holdRes);
+          if (holdRes.court_id) {
+            this.selectedCourtId.set(holdRes.court_id);
+          }
           this.isHolding.set(false);
           this.currentStep.set(2);
         },
@@ -782,7 +1024,7 @@ export class PublicBookingWizardComponent implements OnInit {
           const detail = err.error?.detail;
           const msg = typeof detail === 'string'
             ? detail
-            : (Array.isArray(detail) ? detail.map((d: any) => d.msg).join(' | ') : 'El slot ya no está disponible. Selecciona otro.');
+            : (Array.isArray(detail) ? detail.map((d: any) => d.msg).join(' | ') : 'El turno ya no está disponible. Selecciona otro.');
           alert(msg);
           this.loadAvailability();
         }

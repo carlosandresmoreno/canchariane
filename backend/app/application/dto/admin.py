@@ -260,6 +260,7 @@ class ClubSettingsResponse(BaseModel):
     allowed_durations: list[int]
     default_duration: int
     slot_step_minutes: int | None = None
+    court_selection_mode: str = "manual"
     currency: str = "COP"
     latitude: float | None = None
     longitude: float | None = None
@@ -272,6 +273,7 @@ class ClubSettingsUpdateRequest(BaseModel):
     allowed_durations: list[int] | None = None
     default_duration: int | None = None
     slot_step_minutes: int | None = None
+    court_selection_mode: str | None = None
     latitude: float | None = None
     longitude: float | None = None
     city: str | None = None

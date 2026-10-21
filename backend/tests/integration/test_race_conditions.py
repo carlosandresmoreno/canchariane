@@ -122,7 +122,7 @@ async def test_hold_and_idempotent_confirmation_flow(
 ) -> None:
     club, court = seeded_club
     slot_time = (datetime.now(UTC) + timedelta(days=2)).replace(
-        hour=10, minute=0, second=0, microsecond=0
+        hour=15, minute=0, second=0, microsecond=0
     )
 
     # 1. Create hold

@@ -36,6 +36,19 @@ class BusinessHoursPublicDTO(BaseModel):
     closes_next_day: bool
 
 
+class CourtGroupPublicDTO(BaseModel):
+    id: str
+    name: str
+    sport: str
+    player_format: str
+    surface: str | None = None
+    is_covered: bool = False
+    price_per_hour_cents: int
+    court_ids: list[UUID]
+    court_count: int
+    selection_mode: str = "auto"  # "auto" | "manual"
+
+
 class ClubPublicDetail(BaseModel):
     id: UUID
     slug: str
@@ -52,6 +65,8 @@ class ClubPublicDetail(BaseModel):
     allowed_durations: list[int] = Field(default_factory=lambda: [60])
     default_duration: int = 60
     slot_step_minutes: int | None = None
+    court_selection_mode: str = "manual"  # "manual" | "by_category"
+    court_groups: list[CourtGroupPublicDTO] = Field(default_factory=list)
 
 
 class SlotPublicDTO(BaseModel):
@@ -68,7 +83,8 @@ class SlotPublicDTO(BaseModel):
 
 class CreateHoldRequest(BaseModel):
     club_slug: str
-    court_id: UUID
+    court_id: UUID | None = None
+    group_id: str | None = None
     start_time: datetime  # ISO 8601 with timezone (e.g. 2026-10-20T18:00:00Z)
     duration_minutes: int = Field(default=60, ge=30, le=240)
 

@@ -109,6 +109,7 @@ async def get_club_settings(
         allowed_durations=allowed,
         default_duration=default_dur,
         slot_step_minutes=s.get("slot_step_minutes"),
+        court_selection_mode=s.get("court_selection_mode", "manual"),
         currency=s.get("currency", "COP"),
         latitude=s.get("latitude"),
         longitude=s.get("longitude"),
@@ -152,6 +153,11 @@ async def update_club_settings(
     if data.slot_step_minutes is not None:
         s["slot_step_minutes"] = data.slot_step_minutes
 
+    if data.court_selection_mode is not None:
+        if data.court_selection_mode not in ["manual", "by_category"]:
+            raise HTTPException(status_code=400, detail="Modo de selección inválido. Valores permitidos: manual, by_category")
+        s["court_selection_mode"] = data.court_selection_mode
+
     if data.latitude is not None:
         s["latitude"] = data.latitude
     if data.longitude is not None:
@@ -172,6 +178,7 @@ async def update_club_settings(
         allowed_durations=allowed,
         default_duration=default_dur,
         slot_step_minutes=s.get("slot_step_minutes"),
+        court_selection_mode=s.get("court_selection_mode", "manual"),
         currency=s.get("currency", "COP"),
         latitude=s.get("latitude"),
         longitude=s.get("longitude"),
@@ -483,14 +490,29 @@ async def create_block(
 ) -> BlockAdminResponse:
     club_id, user = auth_context
 
-    if data.period_start >= data.period_end:
+    club = await db.get(ClubModel, club_id)
+    club_tz = ZoneInfo(club.timezone if (club and club.timezone) else "America/Bogota")
+
+    start_dt = data.period_start
+    if start_dt.tzinfo is None:
+        start_dt = start_dt.replace(tzinfo=club_tz).astimezone(UTC)
+    else:
+        start_dt = start_dt.astimezone(UTC)
+
+    end_dt = data.period_end
+    if end_dt.tzinfo is None:
+        end_dt = end_dt.replace(tzinfo=club_tz).astimezone(UTC)
+    else:
+        end_dt = end_dt.astimezone(UTC)
+
+    if start_dt >= end_dt:
         raise HTTPException(
             status_code=400, detail="Fecha de inicio debe ser anterior a fecha de fin"
         )
 
     period_range = asyncpg.Range(
-        data.period_start.astimezone(UTC),
-        data.period_end.astimezone(UTC),
+        start_dt,
+        end_dt,
         lower_inc=True,
         upper_inc=False,
     )
@@ -629,11 +651,16 @@ async def list_admin_bookings(
     auth_context: Annotated[tuple[UUID, UserContext], Depends(require_club_role("staff"))],
     from_date: Annotated[datetime | None, Query(alias="from")] = None,
     to_date: Annotated[datetime | None, Query(alias="to")] = None,
+    start_date: Annotated[str | None, Query()] = None,
+    end_date: Annotated[str | None, Query()] = None,
     court_id: UUID | None = None,
     booking_status: Annotated[str | None, Query(alias="status")] = None,
     db: Annotated[AsyncSession, Depends(get_db)] = None,
 ) -> list[AdminBookingResponse]:
     club_id, _ = auth_context
+    club = await db.get(ClubModel, club_id)
+    club_tz = ZoneInfo(club.timezone if (club and club.timezone) else "America/Bogota")
+
     query = (
         select(BookingModel)
         .where(BookingModel.club_id == club_id)
@@ -645,7 +672,18 @@ async def list_admin_bookings(
         query = query.where(BookingModel.court_id == court_id)
     if booking_status:
         query = query.where(BookingModel.status == booking_status)
-    if from_date and to_date:
+
+    if start_date:
+        try:
+            s_d = date.fromisoformat(start_date)
+            e_d = date.fromisoformat(end_date) if end_date else s_d
+            s_utc = datetime.combine(s_d, datetime.min.time(), tzinfo=club_tz).astimezone(UTC)
+            e_utc = datetime.combine(e_d + timedelta(days=1), datetime.min.time(), tzinfo=club_tz).astimezone(UTC)
+            search_range = asyncpg.Range(s_utc, e_utc, lower_inc=True, upper_inc=False)
+            query = query.where(BookingModel.period.op("&&")(search_range))
+        except ValueError:
+            pass
+    elif from_date and to_date:
         search_range = asyncpg.Range(
             from_date.astimezone(UTC),
             to_date.astimezone(UTC),
@@ -695,7 +733,15 @@ async def create_manual_booking(
     if not court or court.club_id != club_id or not court.is_active:
         raise HTTPException(status_code=404, detail="Cancha no encontrada o inactiva")
 
-    period_start = data.period_start.astimezone(UTC)
+    club = await db.get(ClubModel, club_id)
+    club_tz = ZoneInfo(club.timezone if (club and club.timezone) else "America/Bogota")
+
+    start_dt = data.period_start
+    if start_dt.tzinfo is None:
+        period_start = start_dt.replace(tzinfo=club_tz).astimezone(UTC)
+    else:
+        period_start = start_dt.astimezone(UTC)
+
     period_end = period_start + timedelta(minutes=data.duration_minutes)
     period_range = asyncpg.Range(period_start, period_end, lower_inc=True, upper_inc=False)
 

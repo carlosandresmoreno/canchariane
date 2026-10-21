@@ -289,6 +289,7 @@ export interface ClubBookingSettings {
   allowed_durations: number[];
   default_duration: number;
   slot_step_minutes?: number | null;
+  court_selection_mode?: 'manual' | 'by_category';
   currency?: string;
   latitude?: number | null;
   longitude?: number | null;

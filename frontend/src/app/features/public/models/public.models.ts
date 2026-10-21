@@ -12,6 +12,26 @@ export interface PublicClubSummary {
   sports?: string[];
 }
 
+export interface BusinessHoursPublicDTO {
+  weekday: number;
+  opens_at: string;
+  closes_at: string;
+  closes_next_day: boolean;
+}
+
+export interface CourtGroupPublicDTO {
+  id: string;
+  name: string;
+  sport: string;
+  player_format: string;
+  surface?: string | null;
+  is_covered: boolean;
+  price_per_hour_cents: number;
+  court_ids: string[];
+  court_count: number;
+  selection_mode: 'auto' | 'manual';
+}
+
 export interface PublicClub {
   id: string;
   name: string;
@@ -25,10 +45,14 @@ export interface PublicClub {
   longitude?: number | null;
   city?: string | null;
   courts: PublicCourt[];
+  business_hours?: BusinessHoursPublicDTO[];
   allowed_durations?: number[];
   default_duration?: number;
   slot_step_minutes?: number | null;
+  court_selection_mode?: 'manual' | 'by_category';
+  court_groups?: CourtGroupPublicDTO[];
 }
+
 
 export interface PublicCourt {
   id: string;
@@ -66,18 +90,21 @@ export interface PublicAvailabilityResponse {
 }
 
 export interface CreateHoldRequest {
-  court_id: string;
+  court_id?: string;
+  group_id?: string;
   start_time: string; // ISO
   duration_minutes: number;
 }
 
 export interface CreateHoldResponse {
   hold_id: string;
+  code?: string;
   court_id: string;
+  court_name?: string;
   start_time: string;
   end_time: string;
   expires_at: string;
-  expires_in_seconds: number;
+  expires_in_seconds?: number;
   price_cents: number;
   currency: string;
 }

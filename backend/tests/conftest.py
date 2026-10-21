@@ -3,12 +3,14 @@ from collections.abc import AsyncGenerator
 import pytest_asyncio
 import uuid6
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
 from app.api.deps import get_db
 from app.config import settings
 from app.infrastructure.db.models import (
+    BookingModel,
     ClubModel,
     CourtModel,
 )
@@ -97,6 +99,7 @@ async def seed_club_and_court(test_engine) -> AsyncGenerator[tuple[ClubModel, Co
         try:
             yield club, court_1, court_2
         finally:
+            await session.execute(delete(BookingModel).where(BookingModel.club_id == club.id))
             await session.delete(court_1)
             await session.delete(court_2)
             await session.delete(club)

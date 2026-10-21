@@ -84,6 +84,27 @@ const DEFAULT_DAYS: { weekday: number; name: string; shortName: string }[] = [
         </div>
       </div>
 
+      <!-- Pending Changes Notice Banner -->
+      @if (hasPendingChanges()) {
+        <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-4 text-xs text-amber-900 animate-in fade-in">
+          <div class="flex items-center gap-2.5">
+            <span class="text-base">⚠️</span>
+            <div>
+              <p class="font-semibold">Tienes modificaciones de horario sin guardar</p>
+              <p class="text-amber-700 font-light text-[11px]">Haz clic en Guardar Horarios para que los clientes vean las horas actualizadas.</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            (click)="saveHours()"
+            [disabled]="isSaving"
+            class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-mono text-xs font-semibold shadow-xs active:scale-95"
+          >
+            Guardar Ahora
+          </button>
+        </div>
+      }
+
       <!-- Information Callout -->
       <div class="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 flex items-start gap-3 text-xs text-slate-600">
         <span class="text-base text-[#0056FB] leading-none shrink-0 mt-0.5">💡</span>
@@ -92,7 +113,7 @@ const DEFAULT_DAYS: { weekday: number; name: string; shortName: string }[] = [
             ¿Cómo influyen los horarios en las reservas de tus clientes?
           </p>
           <p class="text-slate-500 font-light leading-relaxed">
-            Las franjas horarias del portal público se calculan en base a estas horas. Si marcas un día como <strong class="text-slate-700 font-medium">Cerrado</strong>, el sistema no ofrecerá turnos para esa fecha y avisará al cliente que seleccione otro día.
+            Las franjas horarias del portal público se calculan en base a estas horas. Si marcas un día como <strong class="text-slate-700 font-medium">Cerrado</strong>, el sistema se sincroniza de inmediato, no ofrecerá turnos para esa fecha y avisará al cliente que seleccione otro día.
           </p>
         </div>
       </div>
@@ -110,7 +131,8 @@ const DEFAULT_DAYS: { weekday: number; name: string; shortName: string }[] = [
               <button
                 type="button"
                 (click)="toggleDayOpen(idx)"
-                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                [disabled]="isSaving"
+                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                 [ngClass]="day.isOpen ? 'bg-[#0056FB]' : 'bg-slate-300'"
                 [title]="day.isOpen ? 'Hacer clic para cerrar este día' : 'Hacer clic para abrir este día'"
               >
@@ -219,6 +241,8 @@ export class ClubBusinessHoursManagerComponent implements OnChanges {
   @Input() isSaving = false;
   @Output() save = new EventEmitter<BusinessHourItem[]>();
 
+  readonly hasPendingChanges = signal<boolean>(false);
+
   readonly days = signal<DayConfig[]>(
     DEFAULT_DAYS.map((d) => ({
       weekday: d.weekday,
@@ -242,6 +266,7 @@ export class ClubBusinessHoursManagerComponent implements OnChanges {
   }
 
   syncWithBackendHours(backendHours: BusinessHoursAdminResponse[]): void {
+    this.hasPendingChanges.set(false);
     const updated: DayConfig[] = DEFAULT_DAYS.map((d) => {
       const match = backendHours.find((h) => h.weekday === d.weekday);
       if (match) {
@@ -278,10 +303,12 @@ export class ClubBusinessHoursManagerComponent implements OnChanges {
       isOpen: !current[idx].isOpen
     };
     this.days.set(current);
+    // Instantly persist when toggling a day open/closed
+    this.saveHours();
   }
 
   onTimeChanged(): void {
-    // Triggers local change detection if needed
+    this.hasPendingChanges.set(true);
     this.days.set([...this.days()]);
   }
 
@@ -301,6 +328,7 @@ export class ClubBusinessHoursManagerComponent implements OnChanges {
       }
       return d;
     });
+    this.hasPendingChanges.set(true);
     this.days.set(updated);
   }
 
@@ -311,6 +339,7 @@ export class ClubBusinessHoursManagerComponent implements OnChanges {
       opens_at: d.opens_at || '06:00',
       closes_at: d.closes_at || '23:00'
     }));
+    this.hasPendingChanges.set(true);
     this.days.set(updated);
   }
 
@@ -319,10 +348,12 @@ export class ClubBusinessHoursManagerComponent implements OnChanges {
       ...d,
       isOpen: d.weekday >= 0 && d.weekday <= 4 // Monday to Friday
     }));
+    this.hasPendingChanges.set(true);
     this.days.set(updated);
   }
 
   saveHours(): void {
+    this.hasPendingChanges.set(false);
     // Only send days that are marked as open
     const payload: BusinessHourItem[] = this.days()
       .filter((d) => d.isOpen)

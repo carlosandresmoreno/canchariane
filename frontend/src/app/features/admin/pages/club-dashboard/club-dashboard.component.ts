@@ -238,11 +238,12 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
             [currentDate]="currentDate()"
             [formattedDateDisplay]="formattedDateDisplay()"
             (dayChanged)="navigateDay($event)"
+            (dateSelected)="setDate($event)"
             (todayClicked)="goToToday()"
             (openNewBookingModal)="openNewBookingModal()"
             (openNewBlockModal)="openNewBlockModal($event)"
             (openShareModal)="openShareModal()"
-            (slotClicked)="openSlotBooking($event.courtId, $event.hourStr)"
+            (slotClicked)="openSlotBooking($event.courtId, $event.hourStr, $event.dateStr)"
             (selectBooking)="openBookingDetails($event)"
             (selectBlock)="openBlockDetails($event)"
           />
@@ -365,6 +366,52 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                   <p class="text-[11px] text-slate-400 mt-1">Controla cómo se generan los intervalos de horario en la parrilla.</p>
                 </div>
               </div>
+
+              <!-- Court Selection Mode (Manual vs Automatic) -->
+              <div class="pt-4 border-t border-slate-100">
+                <label class="text-[11px] font-mono uppercase tracking-wider text-slate-600 font-semibold block mb-2">
+                  4. Modo de Selección de Cancha para el Cliente
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    (click)="settingsCourtSelectionMode.set('manual')"
+                    class="p-4 rounded-2xl border text-left transition-all"
+                    [ngClass]="settingsCourtSelectionMode() === 'manual'
+                      ? 'bg-blue-50/50 border-[#0056FB] text-slate-900 shadow-xs'
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'"
+                  >
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-sm font-semibold">🗺️ Selección en Plano / Lista</span>
+                      <span class="text-xs font-mono font-bold" [class.text-[#0056FB]]="settingsCourtSelectionMode() === 'manual'">
+                        {{ settingsCourtSelectionMode() === 'manual' ? '✓ Activo' : '' }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-light">
+                      El cliente elige la cancha física exacta en el plano interactivo. Ideal para clubes con canchas variadas o techadas.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="settingsCourtSelectionMode.set('by_category')"
+                    class="p-4 rounded-2xl border text-left transition-all"
+                    [ngClass]="settingsCourtSelectionMode() === 'by_category'
+                      ? 'bg-blue-50/50 border-[#0056FB] text-slate-900 shadow-xs'
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'"
+                  >
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-sm font-semibold">⚡ Por Modalidad y Cupos (Auto-asignada)</span>
+                      <span class="text-xs font-mono font-bold" [class.text-[#0056FB]]="settingsCourtSelectionMode() === 'by_category'">
+                        {{ settingsCourtSelectionMode() === 'by_category' ? '✓ Activo' : '' }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-light">
+                      El cliente elige solo la modalidad y horario. El sistema auto-asigna una cancha libre. Ideal para clubes con canchas homogéneas (ej. Fútbol 5).
+                    </p>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <!-- Business Hours Component -->
@@ -423,7 +470,18 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
             </div>
 
             <form (ngSubmit)="submitManualBooking()" class="space-y-4">
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Fecha *</label>
+                  <input
+                    type="date"
+                    required
+                    [(ngModel)]="modalDate"
+                    name="modalDate"
+                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
+                  />
+                </div>
+
                 <div>
                   <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Cancha</label>
                   <select
@@ -437,7 +495,9 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                     }
                   </select>
                 </div>
+              </div>
 
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Hora Inicio</label>
                   <input
@@ -547,6 +607,10 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
               <div class="flex justify-between py-1.5 border-b border-slate-100">
                 <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Cancha</span>
                 <span class="font-medium text-slate-900">{{ selectedBooking()?.court_name }}</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-100">
+                <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Horario</span>
+                <span class="font-medium text-[#0056FB]">{{ formatBookingTime(selectedBooking()) }}</span>
               </div>
               <div class="flex justify-between py-1.5 border-b border-slate-100">
                 <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Teléfono</span>
@@ -1014,8 +1078,15 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   // Active Tab
   readonly activeTab = signal<AdminDashboardTab>('timeline');
 
-  // Selected date signal (format "YYYY-MM-DD")
-  readonly currentDate = signal<string>(new Date().toISOString().split('T')[0]);
+  // Selected date signal (format "YYYY-MM-DD" in Colombia/Club timezone)
+  readonly currentDate = signal<string>(
+    new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Bogota',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(new Date())
+  );
 
   // Data signals
   readonly courts = signal<AdminCourt[]>([]);
@@ -1031,6 +1102,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   readonly settingsAllowedDurations = signal<number[]>([60]);
   readonly settingsDefaultDuration = signal<number>(60);
   readonly settingsSlotStep = signal<number | null>(null);
+  readonly settingsCourtSelectionMode = signal<'manual' | 'by_category'>('manual');
 
   readonly allDurationChoices = [
     { minutes: 30, label: '30 min', sub: 'Media hora' },
@@ -1059,6 +1131,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
 
   // Modal form bindings
   modalCourtId = '';
+  modalDate = '';
   modalTime = '14:00';
   modalDurationMinutes = 60;
   modalCustomerName = '';
@@ -1175,7 +1248,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   }
 
   getActiveClubId(): string | null {
-    const active = this.authStore.activeClubId();
+    const active = this.authStore.activeClubId() || this.clubInfo()?.club_id;
     if (active) return active;
     const user = this.authStore.currentUser();
     if (user?.memberships && user.memberships.length > 0) {
@@ -1218,11 +1291,31 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  getWeekRange(dateStr: string): { start: string; end: string } {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    const dayOfWeek = d.getDay();
+    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = new Date(year, month - 1, day + diffToMonday);
+    const sunday = new Date(year, month - 1, day + diffToMonday + 6);
+
+    const fmt = (dt: Date) => {
+      const y = dt.getFullYear();
+      const m = (dt.getMonth() + 1).toString().padStart(2, '0');
+      const da = dt.getDate().toString().padStart(2, '0');
+      return `${y}-${m}-${da}`;
+    };
+    return { start: fmt(monday), end: fmt(sunday) };
+  }
+
   loadBookings(clubId: string): void {
-    const date = this.currentDate();
-    this.adminService.getBookings(clubId, date, date).subscribe({
+    const { start, end } = this.getWeekRange(this.currentDate());
+    this.adminService.getBookings(clubId, start, end).subscribe({
       next: (bookings) => this.bookings.set(bookings),
-      error: () => console.error('Error loading bookings')
+      error: (e) => {
+        console.error('Error loading bookings', e);
+        this.bookings.set([]);
+      }
     });
     this.loadBlocks(clubId);
   }
@@ -1260,21 +1353,36 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   }
 
   navigateDay(offset: number): void {
-    const curr = new Date(this.currentDate() + 'T12:00:00');
+    const curr = new Date(this.currentDate() + 'T12:00:00-05:00');
     curr.setDate(curr.getDate() + offset);
-    const dateStr = curr.toISOString().split('T')[0];
+    const dateStr = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Bogota',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(curr);
+    this.setDate(dateStr);
+  }
+
+  setDate(dateStr: string): void {
+    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return;
     this.currentDate.set(dateStr);
     const clubId = this.getActiveClubId();
     if (clubId) this.loadBookings(clubId);
   }
 
   goToToday(): void {
-    this.currentDate.set(new Date().toISOString().split('T')[0]);
-    const clubId = this.getActiveClubId();
-    if (clubId) this.loadBookings(clubId);
+    const today = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Bogota',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(new Date());
+    this.setDate(today);
   }
 
   openNewBookingModal(): void {
+    this.modalDate = this.currentDate();
     this.modalTime = '14:00';
     this.modalDurationMinutes = 60;
     this.modalCustomerName = '';
@@ -1283,8 +1391,9 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     this.showCreateBookingModal.set(true);
   }
 
-  openSlotBooking(courtId: string, hourStr: string): void {
+  openSlotBooking(courtId: string, hourStr: string, dateStr?: string): void {
     this.modalCourtId = courtId;
+    this.modalDate = dateStr || this.currentDate();
     this.modalTime = hourStr;
     this.modalDurationMinutes = 60;
     this.modalCustomerName = '';
@@ -1346,11 +1455,11 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     let endIso: string;
 
     if (this.blockModalWholeDay) {
-      startIso = `${date}T00:00:00Z`;
-      endIso = `${date}T23:59:59Z`;
+      startIso = `${date}T00:00:00-05:00`;
+      endIso = `${date}T23:59:59-05:00`;
     } else {
-      startIso = `${date}T${this.blockModalStartTime}:00Z`;
-      endIso = `${date}T${this.blockModalEndTime}:00Z`;
+      startIso = this.toClubIso(date, this.blockModalStartTime);
+      endIso = this.toClubIso(date, this.blockModalEndTime);
     }
 
     const payload: AdminCreateBlock = {
@@ -1425,15 +1534,58 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  toClubIso(date: string, time: string): string {
+    const timeNorm = time.length === 5 ? `${time}:00` : time;
+    return `${date}T${timeNorm}-05:00`;
+  }
+
   formatBlockPeriod(block: AdminBlock): string {
     const start = new Date(block.period_start);
     const end = new Date(block.period_end);
-    const dateStr = start.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
-    const sh = start.getHours().toString().padStart(2, '0');
-    const sm = start.getMinutes().toString().padStart(2, '0');
-    const eh = end.getHours().toString().padStart(2, '0');
-    const em = end.getMinutes().toString().padStart(2, '0');
-    return `${dateStr} • ${sh}:${sm} a ${eh}:${em}`;
+    const dateStr = start.toLocaleDateString('es-CO', {
+      timeZone: 'America/Bogota',
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short'
+    });
+    const sh = start.toLocaleTimeString('es-CO', {
+      timeZone: 'America/Bogota',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    const eh = end.toLocaleTimeString('es-CO', {
+      timeZone: 'America/Bogota',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    return `${dateStr} • ${sh} a ${eh}`;
+  }
+
+  formatBookingTime(booking: AdminBooking | null | undefined): string {
+    if (!booking) return '';
+    const start = new Date(booking.period_start);
+    const end = new Date(booking.period_end);
+    const dateStr = start.toLocaleDateString('es-CO', {
+      timeZone: 'America/Bogota',
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short'
+    });
+    const sh = start.toLocaleTimeString('es-CO', {
+      timeZone: 'America/Bogota',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    const eh = end.toLocaleTimeString('es-CO', {
+      timeZone: 'America/Bogota',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    return `${dateStr} • ${sh} a ${eh}`;
   }
 
   submitManualBooking(): void {
@@ -1442,7 +1594,8 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
 
     this.errorMessage.set(null);
     this.isSubmitting.set(true);
-    const periodStart = `${this.currentDate()}T${this.modalTime}:00Z`;
+    const bookingDate = this.modalDate || this.currentDate();
+    const periodStart = this.toClubIso(bookingDate, this.modalTime);
 
     this.adminService
       .createBooking(clubId, {
@@ -1459,6 +1612,9 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
           this.isSubmitting.set(false);
           this.showCreateBookingModal.set(false);
           this.feedbackMessage.set('Reserva creada exitosamente.');
+          if (this.currentDate() !== bookingDate) {
+            this.currentDate.set(bookingDate);
+          }
           this.loadBookings(clubId);
         },
         error: (err) => {
@@ -1620,6 +1776,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
         this.settingsAllowedDurations.set(s.allowed_durations || [60]);
         this.settingsDefaultDuration.set(s.default_duration || 60);
         this.settingsSlotStep.set(s.slot_step_minutes ?? null);
+        this.settingsCourtSelectionMode.set(s.court_selection_mode || 'manual');
       },
       error: (e) => console.error('Error fetching club settings', e)
     });
@@ -1655,7 +1812,8 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
       .updateSettings(clubId, {
         allowed_durations: this.settingsAllowedDurations(),
         default_duration: this.settingsDefaultDuration(),
-        slot_step_minutes: this.settingsSlotStep()
+        slot_step_minutes: this.settingsSlotStep(),
+        court_selection_mode: this.settingsCourtSelectionMode()
       })
       .subscribe({
         next: (updated) => {
@@ -1663,6 +1821,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
           this.settingsAllowedDurations.set(updated.allowed_durations);
           this.settingsDefaultDuration.set(updated.default_duration);
           this.settingsSlotStep.set(updated.slot_step_minutes ?? null);
+          this.settingsCourtSelectionMode.set(updated.court_selection_mode || 'manual');
           this.feedbackMessage.set('Políticas de duración y reservas guardadas exitosamente.');
         },
         error: (err) => {

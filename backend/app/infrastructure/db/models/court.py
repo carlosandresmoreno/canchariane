@@ -33,6 +33,6 @@ class CourtModel(Base, UUIDv7PKMixin, TimestampMixin):
 
     # Relationships
     club = relationship("ClubModel", back_populates="courts")
-    bookings = relationship("BookingModel", back_populates="court")
-    pricing_rules = relationship("PricingRuleModel", back_populates="court")
-    blocks = relationship("BlockModel", back_populates="court")
+    bookings = relationship("BookingModel", back_populates="court", cascade="all, delete-orphan", passive_deletes=True)
+    pricing_rules = relationship("PricingRuleModel", back_populates="court", cascade="all, delete-orphan", passive_deletes=True)
+    blocks = relationship("BlockModel", back_populates="court", cascade="all, delete-orphan", passive_deletes=True)

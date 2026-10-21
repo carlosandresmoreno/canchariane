@@ -20,6 +20,7 @@ from app.application.dto.public import (
     ClubPublicDetail,
     ClubPublicSummary,
     ConfirmBookingRequest,
+    CourtGroupPublicDTO,
     CourtPublicDTO,
     CreateHoldRequest,
     HoldResponse,
@@ -165,6 +166,35 @@ async def get_club_by_slug(
     allowed_durations = s.get("allowed_durations") or [60]
     default_duration = s.get("default_duration") or (allowed_durations[0] if allowed_durations else 60)
     slot_step_minutes = s.get("slot_step_minutes")
+    court_selection_mode = s.get("court_selection_mode", "manual")
+
+    # Build Court Categories / Groups
+    groups_map: dict[str, dict[str, Any]] = {}
+    for c in active_courts:
+        fmt_clean = c.player_format.lower().replace(" ", "")
+        key = f"{c.sport}-{fmt_clean}".lower()
+        format_label = c.player_format.upper() if "x" in c.player_format else c.player_format.capitalize()
+        sport_label = c.sport.capitalize()
+        group_name = f"{sport_label} ({format_label})"
+        if key not in groups_map:
+            groups_map[key] = {
+                "id": key,
+                "name": group_name,
+                "sport": c.sport,
+                "player_format": c.player_format,
+                "surface": c.surface,
+                "is_covered": c.is_covered,
+                "price_per_hour_cents": c.price_per_hour_cents or 6000000,
+                "court_ids": [],
+                "court_count": 0,
+                "selection_mode": "auto" if court_selection_mode == "by_category" else "manual",
+            }
+        groups_map[key]["court_ids"].append(c.id)
+        groups_map[key]["court_count"] += 1
+        if c.price_per_hour_cents and c.price_per_hour_cents < groups_map[key]["price_per_hour_cents"]:
+            groups_map[key]["price_per_hour_cents"] = c.price_per_hour_cents
+
+    court_groups = [CourtGroupPublicDTO(**g) for g in groups_map.values()]
 
     return ClubPublicDetail(
         id=club.id,
@@ -182,6 +212,8 @@ async def get_club_by_slug(
         allowed_durations=allowed_durations,
         default_duration=default_duration,
         slot_step_minutes=slot_step_minutes,
+        court_selection_mode=court_selection_mode,
+        court_groups=court_groups,
     )
 
 
@@ -481,24 +513,93 @@ async def create_hold(
             ClubModel.deleted_at.is_(None),
             ClubModel.subscription_status.in_(["active", "trial"]),
         )
-        .options(selectinload(ClubModel.pricing_rules))
+        .options(
+            selectinload(ClubModel.courts),
+            selectinload(ClubModel.pricing_rules),
+            selectinload(ClubModel.business_hours),
+        )
     )
     club = await db.scalar(club_query)
     if not club:
         raise HTTPException(status_code=404, detail="Club no encontrado")
 
-    court = await db.get(CourtModel, data.court_id)
-    if not court or court.club_id != club.id or not court.is_active:
-        raise HTTPException(status_code=404, detail="Cancha no encontrada o inactiva")
-
-    # 2. Time periods
+    # 2. Time periods and Operating Hours Validation
     period_start = data.start_time.astimezone(UTC)
     period_end = period_start + timedelta(minutes=data.duration_minutes)
     period_range = asyncpg.Range(period_start, period_end, lower_inc=True, upper_inc=False)
 
-    # 3. Resolve price
     club_tz = ZoneInfo(club.timezone)
     local_start = period_start.astimezone(club_tz)
+    local_end = period_end.astimezone(club_tz)
+
+    weekday = local_start.weekday()
+    hours_model = next((h for h in (club.business_hours or []) if h.weekday == weekday), None)
+    if not hours_model:
+        raise HTTPException(
+            status_code=400,
+            detail="El club se encuentra cerrado en el día seleccionado.",
+        )
+
+    opening_dt = datetime.combine(local_start.date(), hours_model.opens_at, tzinfo=club_tz)
+    closing_day = local_start.date() + timedelta(days=1) if hours_model.closes_next_day else local_start.date()
+    closing_dt = datetime.combine(closing_day, hours_model.closes_at, tzinfo=club_tz)
+
+    if local_start < opening_dt or local_end > closing_dt:
+        raise HTTPException(
+            status_code=400,
+            detail=f"El horario seleccionado ({local_start.strftime('%H:%M')} - {local_end.strftime('%H:%M')}) está fuera del horario de atención del club.",
+        )
+
+    # 3. Resolve Court (Explicit selection or Automatic Allocation)
+    court = None
+    if data.court_id:
+        court = next((c for c in club.courts if c.id == data.court_id and c.is_active and c.deleted_at is None), None)
+        if not court:
+            court = await db.get(CourtModel, data.court_id)
+            if not court or court.club_id != club.id or not court.is_active or court.deleted_at is not None:
+                raise HTTPException(status_code=404, detail="Cancha no encontrada o inactiva")
+    else:
+        # Automatic allocation: find eligible active courts
+        candidate_courts = [c for c in club.courts if c.is_active and c.deleted_at is None]
+        if data.group_id:
+            candidate_courts = [
+                c for c in candidate_courts
+                if f"{c.sport}-{c.player_format.replace(' ', '')}".lower() == data.group_id.lower()
+            ]
+        if not candidate_courts:
+            raise HTTPException(status_code=404, detail="No hay canchas disponibles para esta modalidad.")
+
+        candidate_ids = [c.id for c in candidate_courts]
+        # Query busy bookings
+        busy_bookings_query = select(BookingModel.court_id).where(
+            BookingModel.club_id == club.id,
+            BookingModel.court_id.in_(candidate_ids),
+            BookingModel.status.in_(["held", "confirmed"]),
+            BookingModel.period.op("&&")(period_range),
+        )
+        busy_court_ids = set((await db.scalars(busy_bookings_query)).all())
+
+        # Query busy blocks
+        busy_blocks_query = select(BlockModel.court_id).where(
+            BlockModel.club_id == club.id,
+            or_(BlockModel.court_id.in_(candidate_ids), BlockModel.court_id.is_(None)),
+            BlockModel.period.op("&&")(period_range),
+        )
+        for b_court_id in (await db.scalars(busy_blocks_query)).all():
+            if b_court_id is None:
+                busy_court_ids.update(candidate_ids)
+            else:
+                busy_court_ids.add(b_court_id)
+
+        free_courts = [c for c in candidate_courts if c.id not in busy_court_ids]
+        if not free_courts:
+            raise HTTPException(
+                status_code=409,
+                detail="Todas las canchas de esta modalidad se encuentran ocupadas en este horario.",
+            )
+        court = free_courts[0]
+
+    # 3. Resolve price
     price_cents = 5000000  # Default $50.000 COP
     currency = "COP"
 
