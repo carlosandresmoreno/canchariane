@@ -469,6 +469,16 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
               </button>
             </div>
 
+            @if (errorMessage()) {
+              <div class="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between font-mono animate-in fade-in">
+                <div class="flex items-center gap-2">
+                  <span class="text-rose-500 font-bold text-sm">⚠️</span>
+                  <span class="leading-relaxed">{{ errorMessage() }}</span>
+                </div>
+                <button type="button" (click)="errorMessage.set(null)" class="text-rose-600 hover:text-rose-950 font-bold ml-2 shrink-0">✕</button>
+              </div>
+            }
+
             <form (ngSubmit)="submitManualBooking()" class="space-y-4">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -734,6 +744,16 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
             <p class="text-xs text-slate-500 font-sans">
               El horario que bloquees no estará disponible para reservas de los clientes ni en la web pública ni en el mostrador.
             </p>
+
+            @if (errorMessage()) {
+              <div class="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between font-mono animate-in fade-in">
+                <div class="flex items-center gap-2">
+                  <span class="text-rose-500 font-bold text-sm">⚠️</span>
+                  <span class="leading-relaxed">{{ errorMessage() }}</span>
+                </div>
+                <button type="button" (click)="errorMessage.set(null)" class="text-rose-600 hover:text-rose-950 font-bold ml-2 shrink-0">✕</button>
+              </div>
+            }
 
             <form (ngSubmit)="submitBlock()" class="space-y-4">
               <!-- Cancha Afectada -->
@@ -1382,6 +1402,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   }
 
   openNewBookingModal(): void {
+    this.errorMessage.set(null);
     this.modalDate = this.currentDate();
     this.modalTime = '14:00';
     this.modalDurationMinutes = 60;
@@ -1392,6 +1413,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   }
 
   openSlotBooking(courtId: string, hourStr: string, dateStr?: string): void {
+    this.errorMessage.set(null);
     this.modalCourtId = courtId;
     this.modalDate = dateStr || this.currentDate();
     this.modalTime = hourStr;

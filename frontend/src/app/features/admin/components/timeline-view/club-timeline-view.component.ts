@@ -718,11 +718,45 @@ export interface WeekDayItem {
   `
 })
 export class ClubTimelineViewComponent {
-  @Input({ required: true }) courts: AdminCourt[] = [];
-  @Input({ required: true }) bookings: AdminBooking[] = [];
-  @Input() blocks: AdminBlock[] = [];
-  @Input({ required: true }) currentDate!: string;
-  @Input({ required: true }) formattedDateDisplay!: string;
+  readonly _courts = signal<AdminCourt[]>([]);
+  @Input({ required: true }) set courts(val: AdminCourt[]) {
+    this._courts.set(val || []);
+  }
+  get courts(): AdminCourt[] {
+    return this._courts();
+  }
+
+  readonly _bookings = signal<AdminBooking[]>([]);
+  @Input({ required: true }) set bookings(val: AdminBooking[]) {
+    this._bookings.set(val || []);
+  }
+  get bookings(): AdminBooking[] {
+    return this._bookings();
+  }
+
+  readonly _blocks = signal<AdminBlock[]>([]);
+  @Input() set blocks(val: AdminBlock[]) {
+    this._blocks.set(val || []);
+  }
+  get blocks(): AdminBlock[] {
+    return this._blocks();
+  }
+
+  readonly _currentDate = signal<string>('');
+  @Input({ required: true }) set currentDate(val: string) {
+    this._currentDate.set(val || '');
+  }
+  get currentDate(): string {
+    return this._currentDate();
+  }
+
+  readonly _formattedDateDisplay = signal<string>('');
+  @Input({ required: true }) set formattedDateDisplay(val: string) {
+    this._formattedDateDisplay.set(val || '');
+  }
+  get formattedDateDisplay(): string {
+    return this._formattedDateDisplay();
+  }
 
   @Output() dayChanged = new EventEmitter<number>();
   @Output() dateSelected = new EventEmitter<string>();
@@ -748,7 +782,9 @@ export class ClubTimelineViewComponent {
 
   // Week Days computation (7 days: Monday to Sunday)
   readonly weekDays = computed<WeekDayItem[]>(() => {
-    const cur = this.currentDate;
+    const cur = this._currentDate();
+    const allBookings = this._bookings();
+    const allBlocks = this._blocks();
     if (!cur) return [];
     const [y, m, d] = cur.split('-').map(Number);
     const dateObj = new Date(y, m - 1, d);
@@ -777,13 +813,13 @@ export class ClubTimelineViewComponent {
       const dayStart = new Date(`${dtStr}T00:00:00-05:00`).getTime();
       const dayEnd = new Date(`${dtStr}T23:59:59-05:00`).getTime();
 
-      const bCount = this.bookings.filter(b => {
+      const bCount = allBookings.filter(b => {
         const bStart = new Date(b.period_start).getTime();
         const bEnd = new Date(b.period_end).getTime();
         return dayStart < bEnd && dayEnd > bStart && b.status !== 'cancelled';
       }).length;
 
-      const blkCount = (this.blocks || []).some(blk => {
+      const blkCount = allBlocks.some(blk => {
         const blkStart = new Date(blk.period_start).getTime();
         const blkEnd = new Date(blk.period_end).getTime();
         return dayStart < blkEnd && dayEnd > blkStart;
@@ -814,18 +850,20 @@ export class ClubTimelineViewComponent {
 
   get activeCourtNameForWeek(): string {
     const filter = this.selectedCourtFilter();
+    const all = this._courts();
     if (filter === 'all') {
-      return this.courts[0] ? `${this.courts[0].name} (${this.courts[0].sport})` : 'Cancha 1';
+      return all[0] ? `${all[0].name} (${all[0].sport})` : 'Cancha 1';
     }
-    const c = this.courts.find(item => item.id === filter);
+    const c = all.find(item => item.id === filter);
     return c ? `${c.name} (${c.sport})` : 'Cancha';
   }
 
-  // Filtered courts based on active court pill
+  // Filtered courts based on active court pill (reacts to both filter and courts signal)
   readonly displayedCourts = computed(() => {
     const filter = this.selectedCourtFilter();
-    if (filter === 'all') return this.courts;
-    return this.courts.filter(c => c.id === filter);
+    const all = this._courts();
+    if (filter === 'all') return all;
+    return all.filter(c => c.id === filter);
   });
 
   get dayGridColumnsStyle(): string {
@@ -844,11 +882,12 @@ export class ClubTimelineViewComponent {
 
   // Daily stats for selected day
   get dayBookingsCount(): number {
-    if (!this.currentDate) return 0;
-    const dayStart = new Date(`${this.currentDate}T00:00:00-05:00`).getTime();
-    const dayEnd = new Date(`${this.currentDate}T23:59:59-05:00`).getTime();
+    const cur = this._currentDate();
+    if (!cur) return 0;
+    const dayStart = new Date(`${cur}T00:00:00-05:00`).getTime();
+    const dayEnd = new Date(`${cur}T23:59:59-05:00`).getTime();
 
-    return this.bookings.filter(b => {
+    return this._bookings().filter(b => {
       const bStart = new Date(b.period_start).getTime();
       const bEnd = new Date(b.period_end).getTime();
       return dayStart < bEnd && dayEnd > bStart && (b.status === 'confirmed' || b.status === 'completed');
@@ -856,11 +895,12 @@ export class ClubTimelineViewComponent {
   }
 
   get dayRevenueCents(): number {
-    if (!this.currentDate) return 0;
-    const dayStart = new Date(`${this.currentDate}T00:00:00-05:00`).getTime();
-    const dayEnd = new Date(`${this.currentDate}T23:59:59-05:00`).getTime();
+    const cur = this._currentDate();
+    if (!cur) return 0;
+    const dayStart = new Date(`${cur}T00:00:00-05:00`).getTime();
+    const dayEnd = new Date(`${cur}T23:59:59-05:00`).getTime();
 
-    return this.bookings
+    return this._bookings()
       .filter(b => {
         const bStart = new Date(b.period_start).getTime();
         const bEnd = new Date(b.period_end).getTime();
@@ -870,11 +910,13 @@ export class ClubTimelineViewComponent {
   }
 
   get todayBlocksCount(): number {
-    if (!this.currentDate || !this.blocks?.length) return 0;
-    const dayStart = new Date(`${this.currentDate}T00:00:00-05:00`).getTime();
-    const dayEnd = new Date(`${this.currentDate}T23:59:59-05:00`).getTime();
+    const cur = this._currentDate();
+    const blks = this._blocks();
+    if (!cur || !blks.length) return 0;
+    const dayStart = new Date(`${cur}T00:00:00-05:00`).getTime();
+    const dayEnd = new Date(`${cur}T23:59:59-05:00`).getTime();
 
-    return this.blocks.filter((b) => {
+    return blks.filter((b) => {
       const bStart = new Date(b.period_start).getTime();
       const bEnd = new Date(b.period_end).getTime();
       return dayStart < bEnd && dayEnd > bStart;
@@ -883,7 +925,7 @@ export class ClubTimelineViewComponent {
 
   readonly chronologicalEntries = computed(() => {
     const filter = this.selectedCourtFilter();
-    const cur = this.currentDate;
+    const cur = this._currentDate();
     if (!cur) return [];
 
     const dayStart = new Date(`${cur}T00:00:00-05:00`).getTime();
@@ -897,7 +939,7 @@ export class ClubTimelineViewComponent {
       uniqueKey: string;
     }[] = [];
 
-    for (const b of this.bookings) {
+    for (const b of this._bookings()) {
       if (filter !== 'all' && b.court_id !== filter) continue;
       const bStart = new Date(b.period_start).getTime();
       const bEnd = new Date(b.period_end).getTime();
@@ -911,7 +953,7 @@ export class ClubTimelineViewComponent {
       }
     }
 
-    for (const blk of this.blocks || []) {
+    for (const blk of this._blocks()) {
       if (filter !== 'all' && blk.court_id && blk.court_id !== filter) continue;
       const bStart = new Date(blk.period_start).getTime();
       const bEnd = new Date(blk.period_end).getTime();
@@ -973,13 +1015,14 @@ export class ClubTimelineViewComponent {
   }
 
   getBlockForCell(dateStr: string, courtId: string, hourNum: number): AdminBlock | undefined {
-    if (!dateStr || !this.blocks?.length) return undefined;
+    const blks = this._blocks();
+    if (!dateStr || !blks.length) return undefined;
     const hStr = hourNum.toString().padStart(2, '0');
     const nextHStr = (hourNum + 1).toString().padStart(2, '0');
     const cellStart = new Date(`${dateStr}T${hStr}:00:00-05:00`).getTime();
     const cellEnd = new Date(`${dateStr}T${nextHStr}:00:00-05:00`).getTime();
 
-    return this.blocks.find((b) => {
+    return blks.find((b) => {
       if (b.court_id && b.court_id !== courtId) return false;
       const bStart = new Date(b.period_start).getTime();
       const bEnd = new Date(b.period_end).getTime();
@@ -988,13 +1031,14 @@ export class ClubTimelineViewComponent {
   }
 
   getBookingForCell(dateStr: string, courtId: string, hourNum: number): AdminBooking | undefined {
-    if (!dateStr || !this.bookings?.length) return undefined;
+    const bkgs = this._bookings();
+    if (!dateStr || !bkgs.length) return undefined;
     const hStr = hourNum.toString().padStart(2, '0');
     const nextHStr = (hourNum + 1).toString().padStart(2, '0');
     const cellStart = new Date(`${dateStr}T${hStr}:00:00-05:00`).getTime();
     const cellEnd = new Date(`${dateStr}T${nextHStr}:00:00-05:00`).getTime();
 
-    return this.bookings.find((b) => {
+    return bkgs.find((b) => {
       if (b.court_id !== courtId) return false;
       const bStart = new Date(b.period_start).getTime();
       const bEnd = new Date(b.period_end).getTime();
