@@ -211,6 +211,10 @@ export class ClubAdminService {
     });
   }
 
+  deleteBooking(clubId: string, bookingId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${clubId}/bookings/${bookingId}`);
+  }
+
   // --- Layout & Map ---
   getLayout(clubId: string): Observable<ClubLayout> {
     return this.http.get<ClubLayout>(`${this.baseUrl}/${clubId}/layout`);

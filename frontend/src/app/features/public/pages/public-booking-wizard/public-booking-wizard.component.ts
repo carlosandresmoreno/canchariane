@@ -22,6 +22,7 @@ import {
   PublicClubLayout,
   PublicSlot
 } from '../../models/public.models';
+import { COUNTRY_DIAL_CODES, DEFAULT_DIAL_CODE } from '../../../../core/constants/country-codes';
 
 interface DayOption {
   dateStr: string; // "2026-10-20"
@@ -42,86 +43,59 @@ interface DayOption {
 
       <!-- Top Quiet Luxury Header -->
       <header class="relative z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl sticky top-0">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
-          <div class="flex items-center gap-4">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
+          <div class="flex items-center gap-3 sm:gap-4">
             @if (club()?.logo_url) {
-              <img [src]="club()?.logo_url" [alt]="club()?.name" class="w-10 h-10 rounded-2xl object-cover shadow-xs border border-slate-200" />
+              <img [src]="club()?.logo_url" [alt]="club()?.name" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl object-cover shadow-xs border border-slate-200" />
             } @else {
-              <img src="logo-mark.svg" alt="Canchariane" class="w-10 h-10 rounded-2xl shadow-xs" />
+              <img src="logo-mark.svg" alt="Canchariane" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl shadow-xs" />
             }
             <div>
               <div class="flex items-center gap-2">
-                <span class="font-mono text-[10px] tracking-[0.25em] text-slate-500 uppercase">Club</span>
+                <span class="font-mono text-[9px] sm:text-[10px] tracking-[0.25em] text-slate-500 uppercase">Club</span>
                 <span class="w-1.5 h-1.5 rounded-full bg-[#0056FB]"></span>
-                <span class="text-xs text-slate-500">{{ club()?.timezone || 'America/Bogota' }}</span>
+                <span class="text-[11px] sm:text-xs text-slate-500">{{ club()?.timezone || 'America/Bogota' }}</span>
               </div>
-              <h1 class="font-serif italic text-xl sm:text-2xl text-slate-900 tracking-tight leading-none mt-0.5">
+              <h1 class="font-serif italic text-lg sm:text-2xl text-slate-900 tracking-tight leading-none mt-0.5">
                 {{ club()?.name || 'Club Deportivo' }}
               </h1>
             </div>
           </div>
 
-          <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-2">
             <a
               routerLink="/lookup"
-              class="text-xs font-mono uppercase tracking-wider text-slate-600 hover:text-slate-950 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:border-slate-400 transition-all shadow-xs hidden sm:inline-flex"
+              class="text-xs font-mono uppercase tracking-wider text-slate-600 hover:text-slate-950 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-white border border-slate-200 hover:border-slate-400 transition-all shadow-xs inline-flex items-center gap-1.5"
             >
-              Consultar Reserva
-            </a>
-            <a
-              [routerLink]="['/auth/login']"
-              [queryParams]="{ club: club()?.slug, type: 'club' }"
-              class="text-xs font-mono uppercase tracking-wider text-[#0056FB] hover:text-[#0048d6] px-3.5 py-2 rounded-xl bg-blue-50/70 hover:bg-blue-100/70 border border-blue-200 transition-all shadow-xs flex items-center gap-1.5 font-medium"
-              title="Acceso para recepcionistas y administración del club"
-            >
-              <span>Acceso Personal</span>
-              <span class="text-[10px]">➔</span>
+              <span class="text-xs">🔍</span>
+              <span class="hidden sm:inline">Consultar Reserva</span>
+              <span class="sm:hidden">Buscar</span>
             </a>
           </div>
         </div>
       </header>
 
       <!-- Main Step Container -->
-      <main class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-8 w-full flex-1">
-        <!-- Minimalist Step Indicator -->
-        <nav aria-label="Progreso" class="mb-10">
-          <div class="flex items-center justify-between max-w-md mx-auto border-b border-slate-200 pb-3 text-xs">
-            <div class="flex items-center gap-2" [class.text-slate-900]="currentStep() >= 1" [class.text-slate-400]="currentStep() < 1">
-              <span class="font-mono text-[11px] font-semibold" [class.text-[#0056FB]]="currentStep() >= 1">01</span>
-              <span class="tracking-wider uppercase text-[10px]">Cancha & Hora</span>
-            </div>
-            <span class="text-slate-300">/</span>
-            <div class="flex items-center gap-2" [class.text-slate-900]="currentStep() >= 2" [class.text-slate-400]="currentStep() < 2">
-              <span class="font-mono text-[11px] font-semibold" [class.text-[#0056FB]]="currentStep() >= 2">02</span>
-              <span class="tracking-wider uppercase text-[10px]">Tus Datos</span>
-            </div>
-            <span class="text-slate-300">/</span>
-            <div class="flex items-center gap-2" [class.text-slate-900]="currentStep() >= 3" [class.text-slate-400]="currentStep() < 3">
-              <span class="font-mono text-[11px] font-semibold" [class.text-[#0056FB]]="currentStep() >= 3">03</span>
-              <span class="tracking-wider uppercase text-[10px]">Confirmación</span>
-            </div>
-          </div>
-        </nav>
-
+      <main class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 w-full flex-1">
         <!-- ============================================================= -->
         <!-- PASO 1: SELECCIÓN DE FECHA, HORA Y CANCHA                     -->
         <!-- ============================================================= -->
         @if (currentStep() === 1) {
-          <div class="space-y-8 animate-in fade-in duration-500">
+          <div class="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
             <!-- Date Carousel Selector -->
             <div>
-              <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center justify-between mb-2 sm:mb-3">
                 <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-medium">1. Fecha de Juego</span>
                 <span class="text-xs text-slate-500 font-mono">{{ selectedDate() }}</span>
               </div>
 
-              <div class="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+              <div class="flex gap-2 sm:gap-2.5 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none snap-x">
                 @for (day of availableDays(); track day.dateStr) {
                   <button
                     type="button"
                     (click)="day.isOpen && selectDate(day.dateStr)"
                     [disabled]="!day.isOpen"
-                    class="px-5 py-3 rounded-2xl border text-left shrink-0 transition-all duration-300"
+                    class="min-w-[82px] sm:min-w-[100px] px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-2xl border text-left shrink-0 transition-all duration-300 snap-start"
                     [ngClass]="selectedDate() === day.dateStr 
                       ? 'bg-[#0056FB] border-[#0056FB] text-white shadow-md' 
                       : day.isOpen
@@ -131,12 +105,12 @@ interface DayOption {
                     <div class="flex items-center gap-1.5">
                       <span class="text-[10px] font-mono uppercase tracking-wider opacity-80">{{ day.label }}</span>
                       @if (!day.isOpen) {
-                        <span class="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-200 font-semibold">
+                        <span class="text-[9px] font-mono uppercase tracking-wider px-1 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-200 font-semibold">
                           Cerrado
                         </span>
                       }
                     </div>
-                    <div class="text-sm font-semibold mt-0.5 tracking-tight">{{ day.fullLabel }}</div>
+                    <div class="text-sm sm:text-base font-semibold mt-0.5 tracking-tight">{{ day.fullLabel }}</div>
                   </button>
                 }
               </div>
@@ -269,7 +243,7 @@ interface DayOption {
                   No hay horarios programados para esta fecha y duración. Selecciona otro día o ajusta la duración.
                 </div>
               } @else {
-                <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+                <div class="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none snap-x">
                   @for (hour of distinctHours(); track hour) {
                     @let count = getAvailableCountForHour(hour);
                     @let isSelected = selectedHour() === hour;
@@ -278,14 +252,14 @@ interface DayOption {
                       type="button"
                       (click)="!isFull && selectHour(hour)"
                       [disabled]="isFull"
-                      class="px-4 py-2.5 rounded-xl border font-mono text-xs shrink-0 transition-all duration-300 flex flex-col items-center gap-0.5"
+                      class="min-w-[68px] sm:min-w-[76px] px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border font-mono text-xs shrink-0 transition-all duration-300 flex flex-col items-center gap-0.5 snap-start"
                       [ngClass]="isSelected 
                         ? 'bg-[#0056FB] text-white font-bold border-[#0056FB] shadow-md' 
                         : isFull
                           ? 'bg-slate-50 border-slate-200/60 text-slate-300 opacity-50 cursor-not-allowed'
                           : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/70 shadow-xs'"
                     >
-                      <span class="text-xs font-semibold">{{ hour }}</span>
+                      <span class="text-xs sm:text-sm font-semibold">{{ hour }}</span>
                       @if (isAutoMode()) {
                         @if (isFull) {
                           <span class="text-[9px] font-mono opacity-80">Agotado</span>
@@ -529,17 +503,32 @@ interface DayOption {
 
               <div>
                 <label for="phone" class="block text-[11px] font-mono uppercase tracking-wider text-slate-600 mb-1.5">
-                  Teléfono Móvil
+                  Teléfono Móvil *
                 </label>
-                <input
-                  id="phone"
-                  type="tel"
-                  required
-                  [(ngModel)]="customerPhone"
-                  name="customerPhone"
-                  placeholder="Ej: +57 300 123 4567"
-                  class="w-full px-4 py-3 rounded-2xl bg-slate-50/70 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-[#0056FB] focus:outline-none focus:ring-1 focus:ring-[#0056FB]/30 text-sm transition-colors font-mono"
-                />
+                <div class="flex items-center rounded-2xl bg-slate-50/70 border border-slate-200 focus-within:bg-white focus-within:border-[#0056FB] focus-within:ring-1 focus-within:ring-[#0056FB]/30 transition-colors overflow-hidden">
+                  <div class="relative flex items-center bg-slate-100/90 border-r border-slate-200 text-slate-700 text-xs font-mono px-3 py-3 shrink-0">
+                    <select
+                      [(ngModel)]="customerDialCode"
+                      name="customerDialCode"
+                      class="bg-transparent text-slate-800 text-xs font-mono font-medium focus:outline-none cursor-pointer pr-1"
+                    >
+                      @for (c of countryCodes; track c.code) {
+                        <option [value]="c.dial_code">
+                          {{ c.flag }} {{ c.dial_code }}
+                        </option>
+                      }
+                    </select>
+                  </div>
+                  <input
+                    id="phone"
+                    type="tel"
+                    required
+                    [(ngModel)]="customerPhone"
+                    name="customerPhone"
+                    placeholder="Ej: 300 123 4567"
+                    class="w-full px-4 py-3 bg-transparent text-slate-900 placeholder:text-slate-400 focus:outline-none text-sm transition-colors font-mono"
+                  />
+                </div>
               </div>
 
               <div>
@@ -760,7 +749,9 @@ export class PublicBookingWizardComponent implements OnInit {
   readonly confirmedBooking = signal<PublicBookingResponse | null>(null);
 
   // Form Fields
+  readonly countryCodes = COUNTRY_DIAL_CODES;
   customerName = '';
+  customerDialCode = DEFAULT_DIAL_CODE;
   customerPhone = '';
   customerEmail = '';
 
@@ -1039,11 +1030,14 @@ export class PublicBookingWizardComponent implements OnInit {
     this.isConfirming.set(true);
     const idempotencyKey = 'idemp-' + Math.random().toString(36).substring(2) + Date.now();
 
+    const rawPhone = this.customerPhone.trim();
+    const formattedPhone = rawPhone.startsWith('+') ? rawPhone : `${this.customerDialCode} ${rawPhone}`.trim();
+
     this.publicService
       .confirmBooking(clubSlug, idempotencyKey, {
         hold_id: currentHold.hold_id,
         customer_name: this.customerName.trim(),
-        customer_phone: this.customerPhone.trim(),
+        customer_phone: formattedPhone,
         customer_email: this.customerEmail.trim()
       })
       .subscribe({

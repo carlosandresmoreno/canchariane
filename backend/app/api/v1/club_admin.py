@@ -875,6 +875,23 @@ async def update_booking_status(
     )
 
 
+@router.delete("/{club_id}/bookings/{booking_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_booking(
+    booking_id: UUID,
+    auth_context: Annotated[tuple[UUID, UserContext], Depends(require_club_role("staff"))],
+    db: Annotated[AsyncSession, Depends(get_db)] = None,
+) -> None:
+    """Permanently delete a booking (e.g. created by mistake). Allowed for staff and admins."""
+    club_id, current_user = auth_context
+    query = select(BookingModel).where(BookingModel.id == booking_id, BookingModel.club_id == club_id)
+    booking = await db.scalar(query)
+    if not booking:
+        raise HTTPException(status_code=404, detail="Reserva no encontrada")
+
+    await db.delete(booking)
+    await db.commit()
+
+
 # ---------------------------------------------------------
 # LAYOUT & INTERACTIVE COURT MAP
 # ---------------------------------------------------------

@@ -34,6 +34,7 @@ import { ClubBusinessHoursManagerComponent } from '../../components/business-hou
 import { ClubStaffManagerComponent } from '../../components/staff-manager/club-staff-manager.component';
 import { ClubStatsViewComponent } from '../../components/stats-view/club-stats-view.component';
 import { ClubLocationManagerComponent } from '../../components/location-manager/club-location-manager.component';
+import { COUNTRY_DIAL_CODES, DEFAULT_DIAL_CODE } from '../../../../core/constants/country-codes';
 
 export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'staff' | 'stats' | 'location';
 
@@ -59,58 +60,57 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
 
       <!-- Top Architectural Navbar -->
       <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur-xl sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <img src="logo-mark.svg" alt="Canchariane" class="w-10 h-10 rounded-2xl shadow-xs" />
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
+          <div class="flex items-center gap-3 sm:gap-4">
+            <img src="logo-mark.svg" alt="Canchariane" class="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl shadow-xs shrink-0" />
             <div>
-              <div class="flex items-center gap-2.5">
-                <h1 class="font-display font-semibold text-slate-900 text-sm sm:text-base tracking-wide">
-                  Panel de Operaciones de Club
+              <div class="flex items-center gap-2">
+                <h1 class="font-display font-semibold text-slate-900 text-xs sm:text-base tracking-wide truncate max-w-[150px] sm:max-w-none">
+                  Panel de Operaciones
                 </h1>
-                <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0056FB] border border-blue-200 text-[10px] font-mono tracking-wider uppercase flex items-center gap-1.5">
+                <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full bg-blue-50 text-[#0056FB] border border-blue-200 text-[10px] font-mono tracking-wider uppercase items-center gap-1.5">
                   <span class="w-1.5 h-1.5 rounded-full bg-[#0056FB] animate-pulse"></span>
-                  SSE Sincronizado
+                  En Vivo
                 </span>
               </div>
-              <p class="text-[11px] text-slate-500 font-mono tracking-wider uppercase">
-                {{ isOwnerOrAdmin() ? 'Administración Integral & Dueño de Club' : 'Mostrador & Recepción de Pistas' }}
+              <p class="text-[10px] sm:text-[11px] text-slate-500 font-mono tracking-wider uppercase truncate max-w-[180px] sm:max-w-none">
+                {{ isOwnerOrAdmin() ? 'Administrador' : 'Recepcionista' }}
               </p>
             </div>
           </div>
 
           <!-- Controls & Profile -->
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 sm:gap-3">
             <!-- Share Public Portal Button -->
             <button
               type="button"
               (click)="openShareModal()"
-              class="px-3 sm:px-3.5 py-2 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-[#0056FB] font-mono text-xs font-semibold tracking-wider flex items-center gap-1.5 transition-all shadow-xs active:scale-95"
+              class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-[#0056FB] font-mono text-xs font-semibold tracking-wider flex items-center gap-1.5 transition-all shadow-xs active:scale-95"
               title="Compartir link del portal de reservas de este club"
             >
               <span class="text-sm">🔗</span>
               <span class="hidden sm:inline">Compartir Portal</span>
             </button>
 
-            <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200">
-              <span class="hidden md:inline-flex px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#0056FB] text-[10px] font-mono tracking-wider font-medium">
-                {{ userRoleBadge() }}
-              </span>
-              <div class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-mono font-medium text-slate-700 shadow-xs" [title]="authStore.currentUser()?.email || ''">
+            <div class="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200">
+              <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-mono font-medium text-slate-700 shadow-xs" [title]="authStore.currentUser()?.email || ''">
                 {{ authStore.userInitials() }}
               </div>
               <button
                 type="button"
                 (click)="logout()"
-                class="text-xs uppercase tracking-wider font-mono text-slate-500 hover:text-slate-900 transition-colors hidden sm:inline"
+                class="text-xs uppercase tracking-wider font-mono text-slate-500 hover:text-slate-950 transition-colors px-1 py-1"
+                title="Cerrar sesión"
               >
-                Salir
+                <span class="hidden sm:inline">Salir</span>
+                <span class="sm:hidden text-sm">🚪</span>
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Tab Navigation Bar -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-2 overflow-x-auto py-2 border-t border-slate-100 font-mono text-xs">
+        <!-- Tab Navigation Bar with smooth horizontal touch scrolling -->
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-1.5 sm:py-2 border-t border-slate-100 font-mono text-xs scrollbar-none snap-x">
           <!-- Timeline Tab (Visible to Staff and Admins) -->
           <button
             type="button"
@@ -209,7 +209,7 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
       </header>
 
       <!-- Main Content Container -->
-      <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full flex-1 space-y-6 relative z-10">
+      <main class="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8 w-full flex-1 space-y-4 sm:space-y-6 relative z-10 pb-24 sm:pb-8">
         <!-- Toast Feedback Message -->
         @if (feedbackMessage()) {
           <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between font-mono animate-in fade-in">
@@ -453,12 +453,12 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
       <!-- MODAL: NUEVA RESERVA MANUAL                                   -->
       <!-- ============================================================= -->
       @if (showCreateBookingModal()) {
-        <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div class="w-full max-w-lg p-7 rounded-3xl bg-white border border-slate-200 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 font-sans text-slate-900">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div class="w-full max-w-lg p-5 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-2xl space-y-5 sm:space-y-6 animate-in fade-in zoom-in-95 font-sans text-slate-900 max-h-[92vh] overflow-y-auto my-auto">
+            <div class="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100">
               <div>
                 <span class="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-mono block">Mostrador & Teléfono</span>
-                <h3 class="font-serif italic text-2xl text-slate-900">Nueva Reserva Manual</h3>
+                <h3 class="font-serif italic text-xl sm:text-2xl text-slate-900">Nueva Reserva Manual</h3>
               </div>
               <button
                 type="button"
@@ -547,29 +547,42 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                 />
               </div>
 
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Teléfono *</label>
+              <div>
+                <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Teléfono *</label>
+                <div class="flex items-center rounded-xl bg-slate-50 border border-slate-200 focus-within:bg-white focus-within:border-[#0056FB] transition-colors overflow-hidden">
+                  <div class="relative flex items-center bg-slate-100/80 border-r border-slate-200 text-slate-700 text-xs font-mono px-2 py-2.5 shrink-0">
+                    <select
+                      [(ngModel)]="modalCustomerDialCode"
+                      name="modalCustomerDialCode"
+                      class="bg-transparent text-slate-800 text-xs font-mono font-medium focus:outline-none cursor-pointer pr-1"
+                    >
+                      @for (c of countryCodes; track c.code) {
+                        <option [value]="c.dial_code">
+                          {{ c.flag }} {{ c.dial_code }}
+                        </option>
+                      }
+                    </select>
+                  </div>
                   <input
                     type="tel"
                     required
                     [(ngModel)]="modalCustomerPhone"
                     name="modalCustomerPhone"
-                    placeholder="+57 300 123 4567"
-                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
+                    placeholder="300 123 4567"
+                    class="w-full px-3 py-2.5 bg-transparent text-slate-900 text-sm font-mono placeholder:text-slate-400 focus:outline-none"
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Valor Turno (COP)</label>
-                  <input
-                    type="number"
-                    [(ngModel)]="modalPriceCents"
-                    name="modalPrice"
-                    step="500000"
-                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
-                  />
-                </div>
+              <div>
+                <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Valor Turno (COP)</label>
+                <input
+                  type="number"
+                  [(ngModel)]="modalPriceCents"
+                  name="modalPrice"
+                  step="500000"
+                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
+                />
               </div>
 
               <div class="flex items-center gap-3 pt-3">
@@ -597,12 +610,12 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
       <!-- MODAL: DETALLES DE RESERVA EXISTENTE                          -->
       <!-- ============================================================= -->
       @if (selectedBooking()) {
-        <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div class="w-full max-w-md p-7 rounded-3xl bg-white border border-slate-200 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 font-sans text-slate-900">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div class="w-full max-w-md p-5 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-2xl space-y-5 sm:space-y-6 animate-in fade-in zoom-in-95 font-sans text-slate-900 max-h-[92vh] overflow-y-auto my-auto">
+            <div class="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100">
               <div>
                 <span class="text-[10px] uppercase tracking-[0.2em] text-[#0056FB] font-mono block">Reserva {{ selectedBooking()?.code }}</span>
-                <h3 class="font-serif italic text-2xl text-slate-900">{{ selectedBooking()?.customer_name }}</h3>
+                <h3 class="font-serif italic text-xl sm:text-2xl text-slate-900">{{ selectedBooking()?.customer_name }}</h3>
               </div>
               <button
                 type="button"
@@ -638,10 +651,40 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
               </div>
             </div>
 
+            <!-- WhatsApp Actions: Chatear & Confirmar Asistencia -->
+            @if (selectedBooking()?.customer_phone) {
+              <div class="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 space-y-2">
+                <div class="flex items-center gap-1.5 text-emerald-800 text-[10px] font-mono uppercase tracking-wider font-semibold">
+                  <span class="text-sm">💬</span>
+                  <span>WhatsApp con el Cliente</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    (click)="openWhatsAppChat(selectedBooking())"
+                    class="py-2.5 px-3 rounded-xl bg-white hover:bg-emerald-100/70 border border-emerald-200 text-emerald-800 font-mono uppercase tracking-wider text-xs font-semibold transition-all shadow-2xs flex items-center justify-center gap-1.5 active:scale-95"
+                    title="Abrir conversación con el cliente"
+                  >
+                    <span>💬</span>
+                    <span>Chatear</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="openWhatsAppConfirmBooking(selectedBooking())"
+                    class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-mono uppercase tracking-wider text-xs font-semibold transition-all shadow-xs flex items-center justify-center gap-1.5 active:scale-95"
+                    title="Enviar mensaje para confirmar si el cliente viene a jugar"
+                  >
+                    <span>🎾</span>
+                    <span>Confirmar Asistencia</span>
+                  </button>
+                </div>
+              </div>
+            }
+
             <!-- Quick Action Buttons -->
-            @if (selectedBooking()?.status !== 'cancelled') {
-              @if (!confirmingCancelBooking()) {
-                <div class="space-y-2 pt-2">
+            @if (!confirmingCancelBooking() && !confirmingDeleteBooking()) {
+              <div class="space-y-2 pt-2">
+                @if (selectedBooking()?.status !== 'cancelled') {
                   <button
                     type="button"
                     (click)="updateStatus('completed')"
@@ -663,58 +706,102 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                   >
                     ✕ Cancelar Reserva
                   </button>
-                </div>
-              } @else {
-                <!-- Confirmation Box Before Cancelling -->
-                <div class="p-5 rounded-2xl bg-rose-50/80 border border-rose-200 space-y-3 animate-in fade-in">
-                  <div class="flex items-center gap-2 text-rose-800 font-semibold text-xs font-mono uppercase tracking-wider">
-                    <span>⚠️</span>
-                    <span>Confirmación de Cancelación</span>
+                } @else {
+                  <div class="p-3.5 rounded-2xl bg-slate-100 text-slate-500 font-mono text-xs text-center border border-slate-200">
+                    Esta reserva se encuentra cancelada.
+                    @if (selectedBooking()?.cancellation_reason) {
+                      <span class="block text-[11px] text-slate-400 mt-1 italic">
+                        Motivo: {{ selectedBooking()?.cancellation_reason }}
+                      </span>
+                    }
                   </div>
-                  <p class="text-xs text-rose-950 font-sans leading-relaxed">
-                    ¿Estás seguro de cancelar la reserva de <strong>{{ selectedBooking()?.customer_name }}</strong>? La cancha <strong>{{ selectedBooking()?.court_name }}</strong> quedará liberada inmediatamente.
-                  </p>
-                  <div class="space-y-1">
-                    <label class="text-[10px] font-mono uppercase text-slate-500 block">Motivo de cancelación (opcional):</label>
-                    <input
-                      type="text"
-                      [(ngModel)]="adminCancelReason"
-                      placeholder="Ej: Solicitado por el cliente en llamada"
-                      class="w-full px-3 py-2 rounded-xl border border-rose-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 font-sans"
-                    />
-                  </div>
-                  <div class="flex items-center gap-2 pt-1">
-                    <button
-                      type="button"
-                      [disabled]="isUpdatingBookingStatus()"
-                      (click)="confirmCancelBooking()"
-                      class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-mono uppercase tracking-wider text-xs font-semibold transition-colors shadow-xs flex items-center justify-center gap-2"
-                    >
-                      @if (isUpdatingBookingStatus()) {
-                        <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                        <span>Cancelando...</span>
-                      } @else {
-                        <span>Confirmar Cancelación</span>
-                      }
-                    </button>
-                    <button
-                      type="button"
-                      (click)="confirmingCancelBooking.set(false)"
-                      class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-mono transition-colors"
-                    >
-                      Volver
-                    </button>
-                  </div>
-                </div>
-              }
-            } @else {
-              <div class="p-4 rounded-2xl bg-slate-100 text-slate-500 font-mono text-xs text-center border border-slate-200">
-                Esta reserva se encuentra cancelada.
-                @if (selectedBooking()?.cancellation_reason) {
-                  <span class="block text-[11px] text-slate-400 mt-1 italic">
-                    Motivo: {{ selectedBooking()?.cancellation_reason }}
-                  </span>
                 }
+
+                <!-- Botón Eliminar Permanente (Por Error de Registro) -->
+                <button
+                  type="button"
+                  (click)="confirmingDeleteBooking.set(true)"
+                  class="w-full py-2.5 rounded-xl border border-dashed border-red-300 hover:border-red-500 hover:bg-red-50 text-red-700 font-mono uppercase tracking-wider text-xs transition-colors flex items-center justify-center gap-1.5"
+                  title="Elimina definitivamente la reserva si se ingresó por error"
+                >
+                  <span>🗑️</span>
+                  <span>Eliminar Definitivamente (Error)</span>
+                </button>
+              </div>
+            } @else if (confirmingCancelBooking()) {
+              <!-- Confirmation Box Before Cancelling -->
+              <div class="p-5 rounded-2xl bg-rose-50/80 border border-rose-200 space-y-3 animate-in fade-in">
+                <div class="flex items-center gap-2 text-rose-800 font-semibold text-xs font-mono uppercase tracking-wider">
+                  <span>⚠️</span>
+                  <span>Confirmación de Cancelación</span>
+                </div>
+                <p class="text-xs text-rose-950 font-sans leading-relaxed">
+                  ¿Estás seguro de cancelar la reserva de <strong>{{ selectedBooking()?.customer_name }}</strong>? La cancha <strong>{{ selectedBooking()?.court_name }}</strong> quedará liberada inmediatamente.
+                </p>
+                <div class="space-y-1">
+                  <label class="text-[10px] font-mono uppercase text-slate-500 block">Motivo de cancelación (opcional):</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="adminCancelReason"
+                    placeholder="Ej: Solicitado por el cliente en llamada"
+                    class="w-full px-3 py-2 rounded-xl border border-rose-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 font-sans"
+                  />
+                </div>
+                <div class="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    [disabled]="isUpdatingBookingStatus()"
+                    (click)="confirmCancelBooking()"
+                    class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-mono uppercase tracking-wider text-xs font-semibold transition-colors shadow-xs flex items-center justify-center gap-2"
+                  >
+                    @if (isUpdatingBookingStatus()) {
+                      <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                      <span>Cancelando...</span>
+                    } @else {
+                      <span>Confirmar Cancelación</span>
+                    }
+                  </button>
+                  <button
+                    type="button"
+                    (click)="confirmingCancelBooking.set(false)"
+                    class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-mono transition-colors"
+                  >
+                    Volver
+                  </button>
+                </div>
+              </div>
+            } @else if (confirmingDeleteBooking()) {
+              <!-- Confirmation Box Before Permanent Deleting -->
+              <div class="p-5 rounded-2xl bg-red-50 border border-red-200 space-y-3 animate-in fade-in">
+                <div class="flex items-center gap-2 text-red-800 font-semibold text-xs font-mono uppercase tracking-wider">
+                  <span>🗑️</span>
+                  <span>Eliminar Turno por Error</span>
+                </div>
+                <p class="text-xs text-red-950 font-sans leading-relaxed">
+                  ¿Deseas eliminar permanentemente la reserva <strong>#{{ selectedBooking()?.code }}</strong> de <strong>{{ selectedBooking()?.customer_name }}</strong>? Esta acción borrará el registro de la agenda y liberará el horario de inmediato.
+                </p>
+                <div class="flex items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    [disabled]="isDeletingBooking()"
+                    (click)="confirmDeleteBooking()"
+                    class="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-mono uppercase tracking-wider text-xs font-semibold transition-colors shadow-xs flex items-center justify-center gap-2"
+                  >
+                    @if (isDeletingBooking()) {
+                      <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                      <span>Eliminando...</span>
+                    } @else {
+                      <span>Sí, Eliminar Definitivamente</span>
+                    }
+                  </button>
+                  <button
+                    type="button"
+                    (click)="confirmingDeleteBooking.set(false)"
+                    class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-mono transition-colors"
+                  >
+                    Volver
+                  </button>
+                </div>
               </div>
             }
           </div>
@@ -1135,7 +1222,9 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   readonly selectedBooking = signal<AdminBooking | null>(null);
   readonly selectedBlock = signal<AdminBlock | null>(null);
   readonly confirmingCancelBooking = signal<boolean>(false);
+  readonly confirmingDeleteBooking = signal<boolean>(false);
   readonly isUpdatingBookingStatus = signal<boolean>(false);
+  readonly isDeletingBooking = signal<boolean>(false);
   adminCancelReason = '';
   readonly showCreateBookingModal = signal<boolean>(false);
   readonly showCreateBlockModal = signal<boolean>(false);
@@ -1149,12 +1238,15 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   readonly feedbackMessage = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
 
+  readonly countryCodes = COUNTRY_DIAL_CODES;
+
   // Modal form bindings
   modalCourtId = '';
   modalDate = '';
   modalTime = '14:00';
   modalDurationMinutes = 60;
   modalCustomerName = '';
+  modalCustomerDialCode = DEFAULT_DIAL_CODE;
   modalCustomerPhone = '';
   modalPriceCents = 8000000;
 
@@ -1407,6 +1499,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     this.modalTime = '14:00';
     this.modalDurationMinutes = 60;
     this.modalCustomerName = '';
+    this.modalCustomerDialCode = DEFAULT_DIAL_CODE;
     this.modalCustomerPhone = '';
     this.onDurationChange();
     this.showCreateBookingModal.set(true);
@@ -1419,6 +1512,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     this.modalTime = hourStr;
     this.modalDurationMinutes = 60;
     this.modalCustomerName = '';
+    this.modalCustomerDialCode = DEFAULT_DIAL_CODE;
     this.modalCustomerPhone = '';
     this.onDurationChange();
     this.showCreateBookingModal.set(true);
@@ -1432,12 +1526,14 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
 
   openBookingDetails(b: AdminBooking): void {
     this.confirmingCancelBooking.set(false);
+    this.confirmingDeleteBooking.set(false);
     this.adminCancelReason = '';
     this.selectedBooking.set(b);
   }
 
   closeBookingDetails(): void {
     this.confirmingCancelBooking.set(false);
+    this.confirmingDeleteBooking.set(false);
     this.adminCancelReason = '';
     this.selectedBooking.set(null);
   }
@@ -1619,13 +1715,16 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     const bookingDate = this.modalDate || this.currentDate();
     const periodStart = this.toClubIso(bookingDate, this.modalTime);
 
+    const rawPhone = this.modalCustomerPhone.trim();
+    const formattedPhone = rawPhone.startsWith('+') ? rawPhone : `${this.modalCustomerDialCode} ${rawPhone}`.trim();
+
     this.adminService
       .createBooking(clubId, {
         court_id: this.modalCourtId,
         period_start: periodStart,
         duration_minutes: Number(this.modalDurationMinutes) || 60,
         customer_name: this.modalCustomerName.trim(),
-        customer_phone: this.modalCustomerPhone.trim(),
+        customer_phone: formattedPhone,
         price_cents: Number(this.modalPriceCents) || 8000000,
         payment_status: 'paid'
       })
@@ -1682,6 +1781,29 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isUpdatingBookingStatus.set(false);
+        this.errorMessage.set(this.extractErrorMessage(err));
+      }
+    });
+  }
+
+  confirmDeleteBooking(): void {
+    const b = this.selectedBooking();
+    const clubId = this.getActiveClubId();
+    if (!b || !clubId) return;
+
+    this.isDeletingBooking.set(true);
+    this.errorMessage.set(null);
+
+    this.adminService.deleteBooking(clubId, b.id).subscribe({
+      next: () => {
+        this.isDeletingBooking.set(false);
+        this.confirmingDeleteBooking.set(false);
+        this.selectedBooking.set(null);
+        this.feedbackMessage.set(`Reserva #${b.code} (${b.customer_name}) eliminada definitivamente.`);
+        this.loadBookings(clubId);
+      },
+      error: (err) => {
+        this.isDeletingBooking.set(false);
         this.errorMessage.set(this.extractErrorMessage(err));
       }
     });
@@ -1955,6 +2077,34 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   shareViaWhatsapp(): void {
     const msg = `¡Hola! 👋 Reserva tu cancha en ${this.clubName()} online aquí: ${this.publicPortalUrl()}`;
     const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    if (typeof window !== 'undefined') {
+      window.open(url, '_blank');
+    }
+  }
+
+  cleanPhoneForWhatsApp(phone?: string | null): string {
+    if (!phone) return '';
+    const clean = phone.replace(/\D/g, '');
+    if (clean.length === 10) return `57${clean}`;
+    return clean;
+  }
+
+  openWhatsAppChat(b?: AdminBooking | null): void {
+    if (!b || !b.customer_phone) return;
+    const phone = this.cleanPhoneForWhatsApp(b.customer_phone);
+    const msg = `¡Hola ${b.customer_name}! 👋 Te escribimos de ${this.clubName()} respecto a tu turno en ${b.court_name}.`;
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    if (typeof window !== 'undefined') {
+      window.open(url, '_blank');
+    }
+  }
+
+  openWhatsAppConfirmBooking(b?: AdminBooking | null): void {
+    if (!b || !b.customer_phone) return;
+    const phone = this.cleanPhoneForWhatsApp(b.customer_phone);
+    const timeDisplay = this.formatBookingTime(b);
+    const msg = `¡Hola ${b.customer_name}! 👋 Te saludamos de ${this.clubName()}.\n\nQueremos confirmar los detalles de tu reserva:\n📍 Cancha: ${b.court_name}\n📅 Fecha y Horario: ${timeDisplay}\n🎫 Código de reserva: ${b.code}\n\n¿Nos confirmas tu asistencia? ¡Te esperamos en la pista! 🎾⚽`;
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
     if (typeof window !== 'undefined') {
       window.open(url, '_blank');
     }

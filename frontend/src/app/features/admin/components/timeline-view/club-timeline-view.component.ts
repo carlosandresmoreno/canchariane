@@ -3,6 +3,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnInit,
   Output,
   computed,
   signal
@@ -53,13 +54,13 @@ export interface WeekDayItem {
           </div>
 
           <!-- Date Navigation Bar -->
-          <div class="flex flex-wrap items-center gap-2">
-            <div class="flex items-center gap-1 bg-slate-50 p-1 sm:p-1.5 rounded-2xl border border-slate-200 text-xs font-mono shadow-xs">
+          <div class="flex items-center gap-2 w-full lg:w-auto">
+            <div class="flex items-center gap-1 bg-slate-50 p-1 sm:p-1.5 rounded-2xl border border-slate-200 text-xs font-mono shadow-xs w-full lg:w-auto justify-between">
               <!-- Anterior -->
               <button
                 type="button"
                 (click)="dayChanged.emit(-1)"
-                class="w-8 h-8 flex items-center justify-center hover:bg-slate-200/80 active:scale-95 rounded-xl text-slate-700 transition-all font-bold"
+                class="w-8 h-8 flex items-center justify-center hover:bg-slate-200/80 active:scale-95 rounded-xl text-slate-700 transition-all font-bold shrink-0"
                 title="Día anterior"
               >
                 ◀
@@ -67,11 +68,11 @@ export interface WeekDayItem {
 
               <!-- Calendario Datepicker Interactivo -->
               <label
-                class="relative flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-[#0056FB] cursor-pointer transition-colors shadow-2xs group"
+                class="relative flex-1 lg:flex-initial flex items-center justify-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-[#0056FB] cursor-pointer transition-colors shadow-2xs group"
                 title="Toca para elegir cualquier fecha en el calendario"
               >
                 <span class="text-sm group-hover:scale-110 transition-transform">📅</span>
-                <span class="text-xs font-semibold text-slate-900 tracking-wide capitalize select-none">
+                <span class="text-xs font-semibold text-slate-900 tracking-wide capitalize select-none truncate">
                   {{ formattedDateDisplay }}
                 </span>
                 <input
@@ -87,7 +88,7 @@ export interface WeekDayItem {
               <button
                 type="button"
                 (click)="dayChanged.emit(1)"
-                class="w-8 h-8 flex items-center justify-center hover:bg-slate-200/80 active:scale-95 rounded-xl text-slate-700 transition-all font-bold"
+                class="w-8 h-8 flex items-center justify-center hover:bg-slate-200/80 active:scale-95 rounded-xl text-slate-700 transition-all font-bold shrink-0"
                 title="Día siguiente"
               >
                 ▶
@@ -97,7 +98,7 @@ export interface WeekDayItem {
               <button
                 type="button"
                 (click)="todayClicked.emit()"
-                class="px-2.5 py-1.5 hover:bg-blue-50 text-slate-700 hover:text-[#0056FB] rounded-xl text-[11px] font-semibold tracking-wider uppercase transition-colors"
+                class="px-2.5 py-1.5 hover:bg-blue-50 text-slate-700 hover:text-[#0056FB] rounded-xl text-[11px] font-semibold tracking-wider uppercase transition-colors shrink-0"
                 title="Ir al día de hoy"
               >
                 Hoy
@@ -138,27 +139,27 @@ export interface WeekDayItem {
         <!-- 2. GOOGLE CALENDAR WEEK DAYS RIBBON (7 DÍAS INTERACTIVOS) -->
         <div class="p-2 sm:p-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-2">
           <div class="flex items-center justify-between px-1 text-[11px] font-mono text-slate-500">
-            <span class="font-semibold uppercase tracking-wider flex items-center gap-1.5">
+            <span class="font-semibold uppercase tracking-wider flex items-center gap-1.5 text-[10px] sm:text-[11px]">
               <span>🗓️</span>
-              <span>Semana: {{ weekRangeDisplay }}</span>
+              <span class="truncate max-w-[140px] sm:max-w-none">{{ weekRangeDisplay }}</span>
             </span>
 
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
               <button
                 type="button"
                 (click)="dayChanged.emit(-7)"
-                class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-colors shadow-2xs font-semibold text-[10px] uppercase"
+                class="px-2 sm:px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-colors shadow-2xs font-semibold text-[9px] sm:text-[10px] uppercase"
                 title="Retroceder 1 semana"
               >
-                ◀ Sem. Anterior
+                ◀ Sem.
               </button>
               <button
                 type="button"
                 (click)="dayChanged.emit(7)"
-                class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-colors shadow-2xs font-semibold text-[10px] uppercase"
+                class="px-2 sm:px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-colors shadow-2xs font-semibold text-[9px] sm:text-[10px] uppercase"
                 title="Avanzar 1 semana"
               >
-                Sem. Siguiente ▶
+                Sem. ▶
               </button>
             </div>
           </div>
@@ -172,11 +173,11 @@ export interface WeekDayItem {
                 [ngClass]="day.isSelected
                   ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-400/40 border-blue-600'
                   : (day.isToday ? 'bg-white text-slate-900 border-blue-400 font-bold' : 'bg-white text-slate-700 border-slate-200')"
-                class="py-2 px-1 sm:px-2 rounded-2xl border transition-all text-center flex flex-col items-center justify-center gap-0.5 relative group hover:border-blue-600 cursor-pointer"
+                class="py-1.5 sm:py-2 px-0.5 sm:px-2 rounded-xl sm:rounded-2xl border transition-all text-center flex flex-col items-center justify-center gap-0.5 relative group hover:border-blue-600 cursor-pointer"
               >
                 <!-- Day Name (Lun, Mar, Mié...) -->
                 <span
-                  class="text-[10px] sm:text-xs font-mono uppercase tracking-wider font-semibold"
+                  class="text-[9px] sm:text-xs font-mono uppercase tracking-wider font-semibold"
                   [ngClass]="day.isSelected ? 'text-white' : (day.isToday ? 'text-blue-600' : 'text-slate-500')"
                 >
                   {{ day.dayName }}
@@ -184,17 +185,17 @@ export interface WeekDayItem {
 
                 <!-- Day Number -->
                 <span
-                  class="text-sm sm:text-lg font-bold font-sans tracking-tight"
+                  class="text-xs sm:text-lg font-bold font-sans tracking-tight"
                   [ngClass]="day.isSelected ? 'text-white' : 'text-slate-900'"
                 >
                   {{ day.dayNumber }}
                 </span>
 
                 <!-- Indicators -->
-                <div class="flex items-center gap-1 h-2">
+                <div class="flex items-center gap-1 h-1.5 sm:h-2">
                   @if (day.isToday) {
                     <span
-                      class="text-[8px] font-mono uppercase px-1 py-0.1 rounded font-bold"
+                      class="text-[7px] sm:text-[8px] font-mono uppercase px-1 py-0.1 rounded font-bold"
                       [ngClass]="day.isSelected ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-600'"
                     >
                       Hoy
@@ -213,37 +214,37 @@ export interface WeekDayItem {
         </div>
 
         <!-- 3. VIEW MODE SELECTOR & COURT FILTER TABS -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1">
           <!-- Calendar View Modes: Día | Semana | Agenda -->
-          <div class="flex items-center gap-1 p-1 bg-slate-100/90 rounded-2xl w-fit border border-slate-200/80 text-xs font-mono">
+          <div class="flex items-center gap-1 p-1 bg-slate-100/90 rounded-2xl w-full sm:w-fit border border-slate-200/80 text-xs font-mono justify-between sm:justify-start">
             <button
               type="button"
               (click)="viewMode.set('day')"
               [ngClass]="viewMode() === 'day' ? 'bg-white text-blue-600 shadow-xs font-bold' : 'text-slate-600'"
-              class="px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5"
+              class="flex-1 sm:flex-initial px-2.5 sm:px-3 py-1.5 rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-1.5 text-xs"
             >
               <span>📅</span>
-              <span>Día (Parrilla)</span>
+              <span>Día</span>
             </button>
 
             <button
               type="button"
               (click)="viewMode.set('week')"
               [ngClass]="viewMode() === 'week' ? 'bg-white text-blue-600 shadow-xs font-bold' : 'text-slate-600'"
-              class="px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5"
+              class="flex-1 sm:flex-initial px-2.5 sm:px-3 py-1.5 rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-1.5 text-xs"
             >
               <span>📆</span>
-              <span>Semana (7 Días)</span>
+              <span>Semana</span>
             </button>
 
             <button
               type="button"
               (click)="viewMode.set('list')"
               [ngClass]="viewMode() === 'list' ? 'bg-white text-blue-600 shadow-xs font-bold' : 'text-slate-600'"
-              class="px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5"
+              class="flex-1 sm:flex-initial px-2.5 sm:px-3 py-1.5 rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-1.5 text-xs"
             >
               <span>📋</span>
-              <span>Agenda (Lista)</span>
+              <span>Agenda</span>
               @if (dayBookingsCount > 0) {
                 <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-100 text-[#0056FB] font-bold">
                   {{ dayBookingsCount }}
@@ -252,14 +253,13 @@ export interface WeekDayItem {
             </button>
           </div>
 
-          <!-- Court Filter Pills -->
-          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs font-mono scrollbar-none">
-            <span class="text-slate-400 text-[10px] uppercase tracking-wider shrink-0 mr-1 hidden sm:inline">Cancha:</span>
+          <!-- Court Filter Pills with smooth mobile touch scrolling -->
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs font-mono scrollbar-none snap-x">
             <button
               type="button"
               (click)="selectedCourtFilter.set('all')"
               [ngClass]="selectedCourtFilter() === 'all' ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-600'"
-              class="px-3 py-1.5 rounded-xl border border-slate-200 transition-all shrink-0 hover:bg-slate-100 font-medium"
+              class="px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 transition-all shrink-0 hover:bg-slate-100 font-medium text-xs snap-start"
             >
               Todas ({{ courts.length }})
             </button>
@@ -269,7 +269,7 @@ export interface WeekDayItem {
                 type="button"
                 (click)="selectedCourtFilter.set(c.id)"
                 [ngClass]="selectedCourtFilter() === c.id ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-600'"
-                class="px-3 py-1.5 rounded-xl border border-slate-200 transition-all shrink-0 hover:bg-slate-100 font-medium truncate max-w-[150px]"
+                class="px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 transition-all shrink-0 hover:bg-slate-100 font-medium text-xs truncate max-w-[140px] snap-start"
               >
                 {{ c.name }}
               </button>
@@ -717,7 +717,13 @@ export interface WeekDayItem {
     </div>
   `
 })
-export class ClubTimelineViewComponent {
+export class ClubTimelineViewComponent implements OnInit {
+  ngOnInit(): void {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      this.viewMode.set('list');
+    }
+  }
+
   readonly _courts = signal<AdminCourt[]>([]);
   @Input({ required: true }) set courts(val: AdminCourt[]) {
     this._courts.set(val || []);
