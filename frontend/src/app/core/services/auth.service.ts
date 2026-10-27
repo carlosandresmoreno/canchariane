@@ -29,7 +29,9 @@ export class AuthService {
   }
 
   getMe(): Observable<User> {
-    return this.http.get<User>(`${this.baseUrl}/me`);
+    return this.http.get<User>(`${this.baseUrl}/me`, {
+      withCredentials: true
+    });
   }
 
   logout(): Observable<void> {

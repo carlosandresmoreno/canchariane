@@ -64,6 +64,14 @@ class ClubLayoutResponse(BaseModel):
 
 
 # --- Courts ---
+class PricingRuleSlotDTO(BaseModel):
+    id: UUID | None = None
+    start_time: str
+    end_time: str
+    price_cents: int
+    weekday_mask: int = 127
+
+
 class CourtCreateRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -76,6 +84,7 @@ class CourtCreateRequest(BaseModel):
     position: int = 0
     shape: ShapeUnion | None = None
     price_per_hour_cents: int = Field(default=6000000, ge=0)
+    pricing_rules: list[PricingRuleSlotDTO] | None = None
 
 
 class CourtUpdateRequest(BaseModel):
@@ -91,6 +100,7 @@ class CourtUpdateRequest(BaseModel):
     position: int | None = None
     shape: ShapeUnion | None = None
     price_per_hour_cents: int | None = Field(default=None, ge=0)
+    pricing_rules: list[PricingRuleSlotDTO] | None = None
 
 
 class CourtAdminResponse(BaseModel):
@@ -106,6 +116,7 @@ class CourtAdminResponse(BaseModel):
     position: int
     shape: dict[str, Any] | None
     price_per_hour_cents: int | None = None
+    pricing_rules: list[PricingRuleSlotDTO] = []
     created_at: datetime
 
 
@@ -279,5 +290,22 @@ class ClubSettingsUpdateRequest(BaseModel):
     city: str | None = None
     address: str | None = None
     phone: str | None = None
+
+
+# --- Daily Store Sales ---
+class DailyStoreSaleCreateRequest(BaseModel):
+    sale_date: date
+    amount_cents: int = Field(ge=0)
+    notes: str | None = None
+
+
+class DailyStoreSaleResponse(BaseModel):
+    id: UUID
+    club_id: UUID
+    sale_date: str
+    amount_cents: int
+    notes: str | None = None
+    created_at: datetime
+
 
 

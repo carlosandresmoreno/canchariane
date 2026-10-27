@@ -8,7 +8,14 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AdminCourt, AdminCourtCreate } from '../../services/club-admin.service';
+import { AdminCourt, AdminCourtCreate, PricingRuleSlot } from '../../services/club-admin.service';
+
+export interface CourtTimeSlotForm {
+  id?: string;
+  start: string;
+  end: string;
+  priceCop: number;
+}
 
 @Component({
   selector: 'app-club-courts-manager',
@@ -81,11 +88,24 @@ import { AdminCourt, AdminCourtCreate } from '../../services/club-admin.service'
               </div>
 
               <!-- Price Badge -->
-              <div class="flex items-center justify-between p-3 rounded-2xl bg-blue-50/70 border border-blue-200/80">
-                <span class="text-[10px] uppercase font-mono tracking-wider text-slate-500">Tarifa Base (1 hora)</span>
-                <span class="font-serif italic font-bold text-base text-[#0056FB]">
-                  {{ formatCents(court.price_per_hour_cents) }}
-                </span>
+              <div class="flex flex-col gap-1.5 p-3 rounded-2xl bg-blue-50/70 border border-blue-200/80">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] uppercase font-mono tracking-wider text-slate-500">
+                    {{ (court.pricing_rules && court.pricing_rules.length > 1) ? 'Tarifa por Franjas' : 'Tarifa Base (1 hora)' }}
+                  </span>
+                  <span class="font-serif italic font-bold text-base text-[#0056FB]">
+                    {{ (court.pricing_rules && court.pricing_rules.length > 1) ? ('Desde ' + formatCents(getMinPrice(court))) : formatCents(court.price_per_hour_cents) }}
+                  </span>
+                </div>
+                @if (court.pricing_rules && court.pricing_rules.length > 1) {
+                  <div class="flex flex-wrap gap-1 mt-1 pt-1.5 border-t border-blue-200/60 text-[10px] font-mono text-slate-600">
+                    @for (r of court.pricing_rules; track r.id || r.start_time) {
+                      <span class="px-1.5 py-0.5 rounded bg-white border border-blue-100 shadow-2xs">
+                        {{ formatTimeAmPm(r.start_time) }} - {{ formatTimeAmPm(r.end_time) }}: <strong class="text-[#0056FB]">{{ formatCents(r.price_cents) }}</strong>
+                      </span>
+                    }
+                  </div>
+                }
               </div>
 
               <!-- Features -->
@@ -249,25 +269,108 @@ import { AdminCourt, AdminCourtCreate } from '../../services/club-admin.service'
                 </div>
               </div>
 
-              <div>
-                <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">
-                  Precio Base por Hora (COP) *
+              <div class="space-y-3">
+                <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500">
+                  Esquema de Precios *
                 </label>
-                <div class="relative">
-                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-sm">$</span>
-                  <input
-                    type="number"
-                    required
-                    [(ngModel)]="courtPriceCop"
-                    name="courtPriceCop"
-                    step="5000"
-                    placeholder="65000"
-                    class="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-sm focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
-                  />
+                <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl text-xs font-mono">
+                  <button
+                    type="button"
+                    (click)="pricingMode = 'fixed'"
+                    class="py-2 px-3 rounded-xl transition-all font-semibold flex items-center justify-center gap-1.5"
+                    [ngClass]="pricingMode === 'fixed' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600'"
+                  >
+                    <span>☀️</span>
+                    <span>Todo el Día (Fijo)</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="pricingMode = 'tiered'"
+                    class="py-2 px-3 rounded-xl transition-all font-semibold flex items-center justify-center gap-1.5"
+                    [ngClass]="pricingMode === 'tiered' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600'"
+                  >
+                    <span>⚡</span>
+                    <span>Por Franjas Horarias</span>
+                  </button>
                 </div>
-                <p class="text-[11px] text-slate-400 font-mono mt-1">
-                  Tarifa base de 1 hora. Para reservas de 30m, 90m, 2h, etc., el sistema calculará el valor proporcional.
-                </p>
+
+                @if (pricingMode === 'fixed') {
+                  <div>
+                    <div class="relative">
+                      <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-sm">$</span>
+                      <input
+                        type="number"
+                        required
+                        [(ngModel)]="courtPriceCop"
+                        name="courtPriceCop"
+                        step="5000"
+                        placeholder="65000"
+                        class="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-sm focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
+                      />
+                    </div>
+                    <p class="text-[11px] text-slate-400 font-mono mt-1">
+                      Mismo precio todo el día (ej. $65.000 / hora).
+                    </p>
+                  </div>
+                } @else {
+                  <div class="space-y-2">
+                    <div class="p-3 bg-blue-50/60 border border-blue-200/80 rounded-2xl text-[11px] text-blue-900 font-mono">
+                      💡 Configura tarifas distintas por franjas (ej. $50.000 mañanas y $75.000 noches / horas pico).
+                    </div>
+
+                    @for (slot of courtTimeSlots; track $index) {
+                      <div class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono">
+                        <div class="flex items-center gap-1 flex-1">
+                          <span class="text-slate-400 text-[10px]">De</span>
+                          <input
+                            type="time"
+                            [(ngModel)]="slot.start"
+                            [name]="'slot_start_' + $index"
+                            class="px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800"
+                          />
+                          <span class="text-slate-400 text-[10px]">A</span>
+                          <input
+                            type="time"
+                            [(ngModel)]="slot.end"
+                            [name]="'slot_end_' + $index"
+                            class="px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800"
+                          />
+                        </div>
+
+                        <div class="relative w-28">
+                          <span class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-[11px]">$</span>
+                          <input
+                            type="number"
+                            step="5000"
+                            [(ngModel)]="slot.priceCop"
+                            [name]="'slot_price_' + $index"
+                            placeholder="70000"
+                            class="w-full pl-5 pr-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-900"
+                          />
+                        </div>
+
+                        @if (courtTimeSlots.length > 1) {
+                          <button
+                            type="button"
+                            (click)="removeTimeSlot($index)"
+                            class="text-rose-500 hover:text-rose-700 px-1.5 py-1 text-sm font-bold"
+                            title="Eliminar franja"
+                          >
+                            ✕
+                          </button>
+                        }
+                      </div>
+                    }
+
+                    <button
+                      type="button"
+                      (click)="addTimeSlot()"
+                      class="w-full py-2 px-3 border border-dashed border-[#0056FB]/60 text-[#0056FB] bg-blue-50/50 hover:bg-blue-50 rounded-xl text-xs font-mono font-semibold transition-all flex items-center justify-center gap-1"
+                    >
+                      <span>+ Agregar Otra Franja Horaria</span>
+                    </button>
+                  </div>
+                }
               </div>
 
               <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
@@ -412,10 +515,18 @@ export class ClubCourtsManagerComponent {
     }
   }
 
+  pricingMode: 'fixed' | 'tiered' = 'fixed';
+  courtTimeSlots: CourtTimeSlotForm[] = [];
+
   openCreateModal(): void {
     this.isEditing.set(false);
     this.selectedCourtId = null;
+    this.pricingMode = 'fixed';
     this.courtPriceCop = 65000;
+    this.courtTimeSlots = [
+      { start: '06:00', end: '17:00', priceCop: 50000 },
+      { start: '17:00', end: '23:59', priceCop: 75000 }
+    ];
     this.form = {
       name: '',
       sport: 'football',
@@ -432,6 +543,21 @@ export class ClubCourtsManagerComponent {
     this.isEditing.set(true);
     this.selectedCourtId = court.id;
     this.courtPriceCop = court.price_per_hour_cents ? Math.round(court.price_per_hour_cents / 100) : 65000;
+    if (court.pricing_rules && court.pricing_rules.length > 1) {
+      this.pricingMode = 'tiered';
+      this.courtTimeSlots = court.pricing_rules.map(r => ({
+        id: r.id,
+        start: r.start_time,
+        end: r.end_time,
+        priceCop: Math.round(r.price_cents / 100)
+      }));
+    } else {
+      this.pricingMode = 'fixed';
+      this.courtTimeSlots = [
+        { start: '06:00', end: '17:00', priceCop: 50000 },
+        { start: '17:00', end: '23:59', priceCop: 75000 }
+      ];
+    }
     this.form = {
       name: court.name,
       sport: court.sport,
@@ -444,13 +570,61 @@ export class ClubCourtsManagerComponent {
     this.showModal.set(true);
   }
 
+  addTimeSlot(): void {
+    const last = this.courtTimeSlots[this.courtTimeSlots.length - 1];
+    const newStart = last ? last.end : '17:00';
+    this.courtTimeSlots.push({
+      start: newStart,
+      end: '23:59',
+      priceCop: (last ? last.priceCop : 65000) + 10000
+    });
+  }
+
+  removeTimeSlot(index: number): void {
+    if (this.courtTimeSlots.length > 1) {
+      this.courtTimeSlots.splice(index, 1);
+    }
+  }
+
+  getMinPrice(court: AdminCourt): number {
+    if (!court.pricing_rules || court.pricing_rules.length === 0) {
+      return court.price_per_hour_cents || 6000000;
+    }
+    return Math.min(...court.pricing_rules.map(r => r.price_cents));
+  }
+
+  formatTimeAmPm(timeStr?: string): string {
+    if (!timeStr) return '';
+    const parts = timeStr.split(':');
+    let h = parseInt(parts[0], 10);
+    if (isNaN(h)) return timeStr;
+    const m = parts[1] || '00';
+    const period = h >= 12 ? 'pm' : 'am';
+    h = h % 12;
+    if (h === 0) h = 12;
+    return `${h}:${m} ${period}`;
+  }
+
   submitForm(): void {
     if (!this.form.name.trim()) return;
+    const rules: PricingRuleSlot[] = this.pricingMode === 'tiered'
+      ? this.courtTimeSlots.map(s => ({
+          start_time: s.start,
+          end_time: s.end,
+          price_cents: Math.round(Number(s.priceCop) * 100),
+          weekday_mask: 127
+        }))
+      : [];
+    const basePrice = this.pricingMode === 'tiered' && rules.length > 0
+      ? rules[0].price_cents
+      : Math.round(Number(this.courtPriceCop) * 100);
+
     this.saveCourt.emit({
       courtId: this.selectedCourtId ?? undefined,
       data: {
         ...this.form,
-        price_per_hour_cents: Math.round(Number(this.courtPriceCop) * 100)
+        price_per_hour_cents: basePrice,
+        pricing_rules: rules
       }
     });
     this.showModal.set(false);

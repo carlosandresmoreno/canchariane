@@ -188,7 +188,7 @@ async def refresh_token(
         )
         await db.execute(revoke_query)
         await db.commit()
-        response.delete_cookie("refresh_token", path="/api/v1/auth")
+        response.delete_cookie("refresh_token", path="/")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Reutilización de token detectada. Sesión invalidada por seguridad.",
@@ -199,7 +199,7 @@ async def refresh_token(
         record.is_revoked = True
         record.revoked_at = datetime.now(UTC)
         await db.commit()
-        response.delete_cookie("refresh_token", path="/api/v1/auth")
+        response.delete_cookie("refresh_token", path="/")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Refresh token expirado",

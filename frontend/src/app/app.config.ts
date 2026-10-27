@@ -19,16 +19,29 @@ export function initializeApp(authService: AuthService, authStore: AuthStore): (
       try {
         const user = await firstValueFrom(authService.getMe());
         authStore.setCurrentUser(user);
-      } catch {
-        // If initial token is invalid, attempt refresh
-        try {
-          const refreshed = await firstValueFrom(authService.refreshToken());
-          authStore.setAccessToken(refreshed.access_token);
-          const user = await firstValueFrom(authService.getMe());
-          authStore.setCurrentUser(user);
-        } catch {
-          authStore.clearSession();
+      } catch (err: any) {
+        // If 401 Unauthorized, token has expired: try refresh token
+        if (err?.status === 401) {
+          try {
+            const refreshed = await firstValueFrom(authService.refreshToken());
+            authStore.setAccessToken(refreshed.access_token);
+            const user = await firstValueFrom(authService.getMe());
+            authStore.setCurrentUser(user);
+          } catch {
+            authStore.clearSession();
+          }
         }
+        // If network error (offline, flaky mobile connection), do NOT clear session so user isn't logged out
+      }
+    } else {
+      // Check if there is an active session via refresh cookie
+      try {
+        const refreshed = await firstValueFrom(authService.refreshToken());
+        authStore.setAccessToken(refreshed.access_token);
+        const user = await firstValueFrom(authService.getMe());
+        authStore.setCurrentUser(user);
+      } catch {
+        // Guest user, no session
       }
     }
     authStore.isInitialized.set(true);

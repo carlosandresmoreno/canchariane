@@ -34,6 +34,7 @@ class ClubModel(Base, UUIDv7PKMixin, TimestampMixin):
     )
     blocks = relationship("BlockModel", back_populates="club", cascade="all, delete-orphan")
     bookings = relationship("BookingModel", back_populates="club", cascade="all, delete-orphan")
+    store_sales = relationship("DailyStoreSaleModel", back_populates="club", cascade="all, delete-orphan")
 
     __table_args__ = (
         Index("ix_clubs_slug_active", "slug", unique=True, postgresql_where=(deleted_at.is_(None))),

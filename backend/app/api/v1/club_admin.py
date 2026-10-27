@@ -36,6 +36,9 @@ from app.application.dto.admin import (
     DecorationItem,
     PricingRuleAdminResponse,
     PricingRuleCreateRequest,
+    PricingRuleSlotDTO,
+    DailyStoreSaleCreateRequest,
+    DailyStoreSaleResponse,
 )
 from app.application.dto.auth import UserContext
 from app.application.dto.reports import (
@@ -58,6 +61,7 @@ from app.infrastructure.db.models import (
     ClubMemberModel,
     ClubModel,
     CourtModel,
+    DailyStoreSaleModel,
     PricingRuleModel,
     UserModel,
 )
@@ -215,8 +219,19 @@ async def list_courts(
 
     responses = []
     for c in courts:
-        court_rule = next((pr for pr in c.pricing_rules if pr.court_id == c.id), None)
+        court_rules = [pr for pr in c.pricing_rules if pr.court_id == c.id]
+        court_rule = court_rules[0] if court_rules else None
         court_price = court_rule.price_cents if court_rule else (default_club_price or 6000000)
+        rules_dto = [
+            PricingRuleSlotDTO(
+                id=pr.id,
+                start_time=pr.start_time.strftime("%H:%M"),
+                end_time=pr.end_time.strftime("%H:%M"),
+                price_cents=pr.price_cents,
+                weekday_mask=pr.weekday_mask,
+            )
+            for pr in sorted(court_rules, key=lambda x: x.start_time)
+        ]
         responses.append(
             CourtAdminResponse(
                 id=c.id,
@@ -231,6 +246,7 @@ async def list_courts(
                 position=c.position,
                 shape=c.shape,
                 price_per_hour_cents=court_price,
+                pricing_rules=rules_dto,
                 created_at=c.created_at,
             )
         )
@@ -264,18 +280,60 @@ async def create_court(
     )
     db.add(court)
 
-    price_cents = data.price_per_hour_cents if data.price_per_hour_cents is not None else 6000000
-    rule = PricingRuleModel(
-        id=uuid6.uuid7(),
-        club_id=club_id,
-        court_id=court_id,
-        weekday_mask=127,
-        start_time=time(0, 0),
-        end_time=time(23, 59, 59),
-        price_cents=price_cents,
-        currency="COP",
-    )
-    db.add(rule)
+    rules_dto: list[PricingRuleSlotDTO] = []
+    if data.pricing_rules and len(data.pricing_rules) > 0:
+        for pr_in in data.pricing_rules:
+            st_parts = [int(p) for p in pr_in.start_time.split(":")]
+            st = time(st_parts[0], st_parts[1])
+            if pr_in.end_time in ("24:00", "23:59"):
+                et = time(23, 59, 59)
+            else:
+                et_parts = [int(p) for p in pr_in.end_time.split(":")]
+                et = time(et_parts[0], et_parts[1])
+            rule = PricingRuleModel(
+                id=uuid6.uuid7(),
+                club_id=club_id,
+                court_id=court_id,
+                weekday_mask=pr_in.weekday_mask,
+                start_time=st,
+                end_time=et,
+                price_cents=pr_in.price_cents,
+                currency="COP",
+            )
+            db.add(rule)
+            rules_dto.append(
+                PricingRuleSlotDTO(
+                    id=rule.id,
+                    start_time=rule.start_time.strftime("%H:%M"),
+                    end_time=rule.end_time.strftime("%H:%M"),
+                    price_cents=rule.price_cents,
+                    weekday_mask=rule.weekday_mask,
+                )
+            )
+        base_price_cents = rules_dto[0].price_cents if rules_dto else 6000000
+    else:
+        price_cents = data.price_per_hour_cents if data.price_per_hour_cents is not None else 6000000
+        rule = PricingRuleModel(
+            id=uuid6.uuid7(),
+            club_id=club_id,
+            court_id=court_id,
+            weekday_mask=127,
+            start_time=time(0, 0),
+            end_time=time(23, 59, 59),
+            price_cents=price_cents,
+            currency="COP",
+        )
+        db.add(rule)
+        base_price_cents = price_cents
+        rules_dto.append(
+            PricingRuleSlotDTO(
+                id=rule.id,
+                start_time="00:00",
+                end_time="23:59",
+                price_cents=price_cents,
+                weekday_mask=127,
+            )
+        )
 
     await db.commit()
     await db.refresh(court)
@@ -292,7 +350,8 @@ async def create_court(
         is_active=court.is_active,
         position=court.position,
         shape=court.shape,
-        price_per_hour_cents=price_cents,
+        price_per_hour_cents=base_price_cents,
+        pricing_rules=rules_dto,
         created_at=court.created_at,
     )
 
@@ -311,6 +370,7 @@ async def update_court(
 
     update_dict = data.model_dump(exclude_unset=True)
     price_to_update = update_dict.pop("price_per_hour_cents", None)
+    pricing_rules_to_update = update_dict.pop("pricing_rules", None)
 
     if "shape" in update_dict and update_dict["shape"] is not None:
         update_dict["shape"] = data.shape.model_dump() if data.shape else None
@@ -318,9 +378,67 @@ async def update_court(
     for key, value in update_dict.items():
         setattr(court, key, value)
 
-    price_cents = None
-    if price_to_update is not None:
-        price_cents = price_to_update
+    rules_dto: list[PricingRuleSlotDTO] = []
+    if pricing_rules_to_update is not None:
+        # Recreate pricing rules for this court
+        await db.execute(
+            delete(PricingRuleModel).where(
+                PricingRuleModel.club_id == club_id,
+                PricingRuleModel.court_id == court_id,
+            )
+        )
+        if len(pricing_rules_to_update) > 0:
+            for pr_in in pricing_rules_to_update:
+                st_parts = [int(p) for p in pr_in["start_time"].split(":")]
+                st = time(st_parts[0], st_parts[1])
+                if pr_in["end_time"] in ("24:00", "23:59"):
+                    et = time(23, 59, 59)
+                else:
+                    et_parts = [int(p) for p in pr_in["end_time"].split(":")]
+                    et = time(et_parts[0], et_parts[1])
+                rule = PricingRuleModel(
+                    id=uuid6.uuid7(),
+                    club_id=club_id,
+                    court_id=court_id,
+                    weekday_mask=pr_in.get("weekday_mask", 127),
+                    start_time=st,
+                    end_time=et,
+                    price_cents=pr_in["price_cents"],
+                    currency="COP",
+                )
+                db.add(rule)
+                rules_dto.append(
+                    PricingRuleSlotDTO(
+                        id=rule.id,
+                        start_time=rule.start_time.strftime("%H:%M"),
+                        end_time=rule.end_time.strftime("%H:%M"),
+                        price_cents=rule.price_cents,
+                        weekday_mask=rule.weekday_mask,
+                    )
+                )
+        else:
+            base_p = price_to_update or 6000000
+            rule = PricingRuleModel(
+                id=uuid6.uuid7(),
+                club_id=club_id,
+                court_id=court_id,
+                weekday_mask=127,
+                start_time=time(0, 0),
+                end_time=time(23, 59, 59),
+                price_cents=base_p,
+                currency="COP",
+            )
+            db.add(rule)
+            rules_dto.append(
+                PricingRuleSlotDTO(
+                    id=rule.id,
+                    start_time="00:00",
+                    end_time="23:59",
+                    price_cents=base_p,
+                    weekday_mask=127,
+                )
+            )
+    elif price_to_update is not None:
         rule_query = select(PricingRuleModel).where(
             PricingRuleModel.club_id == club_id,
             PricingRuleModel.court_id == court_id,
@@ -340,15 +458,29 @@ async def update_court(
                 currency="COP",
             )
             db.add(new_rule)
-    else:
-        rule_query = select(PricingRuleModel.price_cents).where(
-            PricingRuleModel.club_id == club_id,
-            PricingRuleModel.court_id == court_id,
-        )
-        price_cents = await db.scalar(rule_query)
 
     await db.commit()
     await db.refresh(court)
+
+    # Fetch fresh rules if not already assembled
+    if not rules_dto:
+        fresh_rules_q = select(PricingRuleModel).where(
+            PricingRuleModel.club_id == club_id,
+            PricingRuleModel.court_id == court_id,
+        ).order_by(PricingRuleModel.start_time)
+        fresh_rules = (await db.scalars(fresh_rules_q)).all()
+        rules_dto = [
+            PricingRuleSlotDTO(
+                id=r.id,
+                start_time=r.start_time.strftime("%H:%M"),
+                end_time=r.end_time.strftime("%H:%M"),
+                price_cents=r.price_cents,
+                weekday_mask=r.weekday_mask,
+            )
+            for r in fresh_rules
+        ]
+
+    effective_price = rules_dto[0].price_cents if rules_dto else (price_to_update or 6000000)
 
     return CourtAdminResponse(
         id=court.id,
@@ -362,7 +494,8 @@ async def update_court(
         is_active=court.is_active,
         position=court.position,
         shape=court.shape,
-        price_per_hour_cents=price_cents or 6000000,
+        price_per_hour_cents=effective_price,
+        pricing_rules=rules_dto,
         created_at=court.created_at,
     )
 
@@ -1415,4 +1548,96 @@ async def delete_club_staff(
     await db.delete(membership)
     await db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# ---------------------------------------------------------
+# DAILY STORE SALES (TIENDA / CAFETERIA)
+# ---------------------------------------------------------
+@router.get("/{club_id}/store-sales", response_model=list[DailyStoreSaleResponse])
+async def list_daily_store_sales(
+    auth_context: Annotated[tuple[UUID, UserContext], Depends(require_club_role("staff"))],
+    db: Annotated[AsyncSession, Depends(get_db)] = None,
+) -> list[DailyStoreSaleResponse]:
+    club_id, _ = auth_context
+    query = (
+        select(DailyStoreSaleModel)
+        .where(DailyStoreSaleModel.club_id == club_id)
+        .order_by(DailyStoreSaleModel.sale_date.desc())
+        .limit(60)
+    )
+    records = (await db.scalars(query)).all()
+    return [
+        DailyStoreSaleResponse(
+            id=r.id,
+            club_id=r.club_id,
+            sale_date=r.sale_date.isoformat(),
+            amount_cents=r.amount_cents,
+            notes=r.notes,
+            created_at=r.created_at,
+        )
+        for r in records
+    ]
+
+
+@router.post(
+    "/{club_id}/store-sales",
+    response_model=DailyStoreSaleResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def record_daily_store_sale(
+    data: DailyStoreSaleCreateRequest,
+    auth_context: Annotated[tuple[UUID, UserContext], Depends(require_club_role("staff"))],
+    db: Annotated[AsyncSession, Depends(get_db)] = None,
+) -> DailyStoreSaleResponse:
+    club_id, _ = auth_context
+    query = select(DailyStoreSaleModel).where(
+        DailyStoreSaleModel.club_id == club_id,
+        DailyStoreSaleModel.sale_date == data.sale_date,
+    )
+    existing = await db.scalar(query)
+    if existing:
+        existing.amount_cents = data.amount_cents
+        existing.notes = data.notes
+        await db.commit()
+        await db.refresh(existing)
+        record = existing
+    else:
+        record = DailyStoreSaleModel(
+            id=uuid6.uuid7(),
+            club_id=club_id,
+            sale_date=data.sale_date,
+            amount_cents=data.amount_cents,
+            notes=data.notes,
+        )
+        db.add(record)
+        await db.commit()
+        await db.refresh(record)
+
+    return DailyStoreSaleResponse(
+        id=record.id,
+        club_id=record.club_id,
+        sale_date=record.sale_date.isoformat(),
+        amount_cents=record.amount_cents,
+        notes=record.notes,
+        created_at=record.created_at,
+    )
+
+
+@router.delete(
+    "/{club_id}/store-sales/{sale_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_daily_store_sale(
+    sale_id: UUID,
+    auth_context: Annotated[tuple[UUID, UserContext], Depends(require_club_role("admin"))],
+    db: Annotated[AsyncSession, Depends(get_db)] = None,
+) -> Response:
+    club_id, _ = auth_context
+    record = await db.get(DailyStoreSaleModel, sale_id)
+    if not record or record.club_id != club_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Registro de venta no encontrado")
+    await db.delete(record)
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
 

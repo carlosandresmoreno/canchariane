@@ -237,6 +237,7 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
             [blocks]="blocks()"
             [currentDate]="currentDate()"
             [formattedDateDisplay]="formattedDateDisplay()"
+            [businessHours]="businessHours()"
             (dayChanged)="navigateDay($event)"
             (dateSelected)="setDate($event)"
             (todayClicked)="goToToday()"
@@ -433,6 +434,7 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
 
         @if (activeTab() === 'stats' && isOwnerOrAdmin()) {
           <app-club-stats-view
+            [clubId]="clubId()"
             [courts]="courts()"
             [occupancyPct]="occupancyPct()"
             [totalRevenueCents]="totalRevenueCents()"
@@ -1376,10 +1378,10 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     this.loadCourts(clubId);
     this.loadBookings(clubId);
     this.loadBlocks(clubId);
+    this.loadBusinessHours(clubId);
     if (this.isOwnerOrAdmin()) {
       this.loadLayout(clubId);
       this.loadStaff(clubId);
-      this.loadBusinessHours(clubId);
       this.loadClubSettings(clubId);
     }
   }
@@ -1520,7 +1522,13 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
 
   onDurationChange(): void {
     const court = this.courts().find(c => c.id === this.modalCourtId);
-    const baseHourly = court?.price_per_hour_cents || 6000000;
+    let baseHourly = court?.price_per_hour_cents || 6000000;
+    if (court?.pricing_rules && court.pricing_rules.length > 0 && this.modalTime) {
+      const match = court.pricing_rules.find(r => this.modalTime >= r.start_time && this.modalTime < r.end_time);
+      if (match) {
+        baseHourly = match.price_cents;
+      }
+    }
     this.modalPriceCents = Math.round((baseHourly * (Number(this.modalDurationMinutes) || 60)) / 60);
   }
 
@@ -1668,15 +1676,15 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     });
     const sh = start.toLocaleTimeString('es-CO', {
       timeZone: 'America/Bogota',
-      hour: '2-digit',
+      hour: 'numeric',
       minute: '2-digit',
-      hour12: false
+      hour12: true
     });
     const eh = end.toLocaleTimeString('es-CO', {
       timeZone: 'America/Bogota',
-      hour: '2-digit',
+      hour: 'numeric',
       minute: '2-digit',
-      hour12: false
+      hour12: true
     });
     return `${dateStr} • ${sh} a ${eh}`;
   }
@@ -1693,15 +1701,15 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     });
     const sh = start.toLocaleTimeString('es-CO', {
       timeZone: 'America/Bogota',
-      hour: '2-digit',
+      hour: 'numeric',
       minute: '2-digit',
-      hour12: false
+      hour12: true
     });
     const eh = end.toLocaleTimeString('es-CO', {
       timeZone: 'America/Bogota',
-      hour: '2-digit',
+      hour: 'numeric',
       minute: '2-digit',
-      hour12: false
+      hour12: true
     });
     return `${dateStr} • ${sh} a ${eh}`;
   }
@@ -1822,7 +1830,8 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
       is_covered: !!event.data.is_covered,
       has_lighting: !!event.data.has_lighting,
       position: Number(event.data.position) || 1,
-      price_per_hour_cents: event.data.price_per_hour_cents
+      price_per_hour_cents: event.data.price_per_hour_cents,
+      pricing_rules: event.data.pricing_rules
     };
 
     if (event.courtId) {
@@ -2092,7 +2101,9 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   openWhatsAppChat(b?: AdminBooking | null): void {
     if (!b || !b.customer_phone) return;
     const phone = this.cleanPhoneForWhatsApp(b.customer_phone);
-    const msg = `¡Hola ${b.customer_name}! 👋 Te escribimos de ${this.clubName()} respecto a tu turno en ${b.court_name}.`;
+    const isAuto = this.settingsCourtSelectionMode() === 'by_category';
+    const courtPart = isAuto ? 'tu reserva deportiva' : `tu turno en ${b.court_name}`;
+    const msg = `¡Hola ${b.customer_name}! 👋 Te escribimos de ${this.clubName()} respecto a ${courtPart}.`;
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
     if (typeof window !== 'undefined') {
       window.open(url, '_blank');
@@ -2103,7 +2114,9 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     if (!b || !b.customer_phone) return;
     const phone = this.cleanPhoneForWhatsApp(b.customer_phone);
     const timeDisplay = this.formatBookingTime(b);
-    const msg = `¡Hola ${b.customer_name}! 👋 Te saludamos de ${this.clubName()}.\n\nQueremos confirmar los detalles de tu reserva:\n📍 Cancha: ${b.court_name}\n📅 Fecha y Horario: ${timeDisplay}\n🎫 Código de reserva: ${b.code}\n\n¿Nos confirmas tu asistencia? ¡Te esperamos en la pista! 🎾⚽`;
+    const isAuto = this.settingsCourtSelectionMode() === 'by_category';
+    const courtLine = isAuto ? '' : `📍 Cancha: ${b.court_name}\n`;
+    const msg = `¡Hola ${b.customer_name}! 👋 Te saludamos de ${this.clubName()}.\n\nQueremos confirmar los detalles de tu reserva:\n${courtLine}📅 Fecha y Horario: ${timeDisplay}\n🎫 Código de reserva: ${b.code}\n\n¿Nos confirmas tu asistencia? ¡Te esperamos en la pista! 🎾⚽`;
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
     if (typeof window !== 'undefined') {
       window.open(url, '_blank');

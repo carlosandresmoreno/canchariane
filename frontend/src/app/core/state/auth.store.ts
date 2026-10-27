@@ -3,6 +3,7 @@ import { User } from '../models/auth.models';
 
 const TOKEN_STORAGE_KEY = 'canchariane_access_token';
 const ACTIVE_CLUB_KEY = 'canchariane_active_club';
+const USER_STORAGE_KEY = 'canchariane_current_user';
 
 const ROLE_HIERARCHY: Record<string, number> = {
   staff: 1,
@@ -15,7 +16,7 @@ const ROLE_HIERARCHY: Record<string, number> = {
 })
 export class AuthStore {
   // State Signals
-  readonly currentUser = signal<User | null>(null);
+  readonly currentUser = signal<User | null>(this.getStoredUser());
   readonly accessToken = signal<string | null>(this.getStoredToken());
   readonly activeClubId = signal<string | null>(this.getStoredClubId());
   readonly isInitialized = signal<boolean>(false);
@@ -42,6 +43,7 @@ export class AuthStore {
     this.currentUser.set(user);
     try {
       localStorage.setItem(TOKEN_STORAGE_KEY, token);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
     } catch {
       // Ignore if localStorage unavailable
     }
@@ -63,6 +65,11 @@ export class AuthStore {
 
   setCurrentUser(user: User): void {
     this.currentUser.set(user);
+    try {
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    } catch {
+      // Ignore
+    }
     if (!this.activeClubId() && user.memberships.length > 0) {
       this.setActiveClub(user.memberships[0].club_id);
     }
@@ -83,6 +90,7 @@ export class AuthStore {
     this.activeClubId.set(null);
     try {
       localStorage.removeItem(TOKEN_STORAGE_KEY);
+      localStorage.removeItem(USER_STORAGE_KEY);
       localStorage.removeItem(ACTIVE_CLUB_KEY);
     } catch {
       // Ignore
@@ -101,6 +109,15 @@ export class AuthStore {
   private getStoredToken(): string | null {
     try {
       return localStorage.getItem(TOKEN_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  }
+
+  private getStoredUser(): User | null {
+    try {
+      const raw = localStorage.getItem(USER_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
     } catch {
       return null;
     }

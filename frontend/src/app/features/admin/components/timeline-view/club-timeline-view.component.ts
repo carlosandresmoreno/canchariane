@@ -10,7 +10,12 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AdminBlock, AdminBooking, AdminCourt } from '../../services/club-admin.service';
+import {
+  AdminBlock,
+  AdminBooking,
+  AdminCourt,
+  BusinessHoursAdminResponse
+} from '../../services/club-admin.service';
 
 interface TimelineRow {
   hourStr: string;
@@ -42,11 +47,20 @@ export interface WeekDayItem {
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <!-- Title & Badges -->
           <div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
               <h2 class="font-serif italic text-xl sm:text-2xl text-slate-900">Agenda & Calendario</h2>
               <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0056FB] border border-blue-200 text-[10px] font-mono tracking-wider uppercase font-semibold">
                 Turnos en Vivo
               </span>
+              @if (currentDayOperatingHours(); as oph) {
+                <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-mono font-medium">
+                  {{ formatHourAmPm(parseHour(oph.opens_at)) }} – {{ formatHourAmPm(parseHour(oph.closes_at)) }}
+                </span>
+              } @else if (isCurrentDayClosed()) {
+                <span class="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-mono font-medium">
+                  Cerrado hoy
+                </span>
+              }
             </div>
             <p class="text-xs text-slate-500 font-sans mt-0.5">
               Visualiza disponibilidad, agenda turnos y bloquea canchas estilo Google Calendar.
@@ -372,14 +386,14 @@ export interface WeekDayItem {
               </div>
 
               <!-- Hour Rows -->
-              @for (row of timelineRows; track row.hourStr) {
+              @for (row of timelineRows(); track row.hourStr) {
                 <div
                   class="grid border-b border-slate-100 hover:bg-slate-50/50 transition-colors relative"
                   [style.grid-template-columns]="dayGridColumnsStyle"
                 >
                   <!-- Sticky Hour Label -->
                   <div class="p-2 sm:p-3 border-r border-slate-200 text-xs font-mono font-semibold text-slate-600 flex items-center justify-center sticky left-0 bg-white z-20 shadow-xs select-none">
-                    {{ row.hourStr }}
+                    {{ formatHourAmPm(row.hourNum) }}
                   </div>
 
                   <!-- Cells per Court -->
@@ -496,13 +510,13 @@ export interface WeekDayItem {
               </div>
 
               <!-- Week Hour Rows -->
-              @for (row of timelineRows; track row.hourStr) {
+              @for (row of timelineRows(); track row.hourStr) {
                 <div
                   class="grid border-b border-slate-100 hover:bg-slate-50/50 transition-colors"
                   style="grid-template-columns: 75px repeat(7, minmax(110px, 1fr))"
                 >
                   <div class="p-2 border-r border-slate-200 text-xs font-mono font-semibold text-slate-600 flex items-center justify-center sticky left-0 bg-white z-20 shadow-xs select-none">
-                    {{ row.hourStr }}
+                    {{ formatHourAmPm(row.hourNum) }}
                   </div>
 
                   @for (day of weekDays(); track day.dateStr) {
@@ -719,9 +733,7 @@ export interface WeekDayItem {
 })
 export class ClubTimelineViewComponent implements OnInit {
   ngOnInit(): void {
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      this.viewMode.set('list');
-    }
+    // Default is calendar day mode on all devices as requested
   }
 
   readonly _courts = signal<AdminCourt[]>([]);
@@ -764,6 +776,14 @@ export class ClubTimelineViewComponent implements OnInit {
     return this._formattedDateDisplay();
   }
 
+  readonly _businessHours = signal<BusinessHoursAdminResponse[]>([]);
+  @Input() set businessHours(val: BusinessHoursAdminResponse[]) {
+    this._businessHours.set(val || []);
+  }
+  get businessHours(): BusinessHoursAdminResponse[] {
+    return this._businessHours();
+  }
+
   @Output() dayChanged = new EventEmitter<number>();
   @Output() dateSelected = new EventEmitter<string>();
   @Output() todayClicked = new EventEmitter<void>();
@@ -778,12 +798,88 @@ export class ClubTimelineViewComponent implements OnInit {
   readonly viewMode = signal<TimelineViewMode>('day');
   readonly selectedCourtFilter = signal<string>('all');
 
-  readonly timelineRows: TimelineRow[] = Array.from({ length: 16 }, (_, i) => {
-    const h = i + 7;
-    return {
-      hourStr: `${h.toString().padStart(2, '0')}:00`,
-      hourNum: h
-    };
+  readonly currentDayOperatingHours = computed<BusinessHoursAdminResponse | undefined>(() => {
+    const cur = this._currentDate();
+    const bHours = this._businessHours();
+    if (!cur || !bHours || bHours.length === 0) return undefined;
+
+    const [y, m, d] = cur.split('-').map(Number);
+    const dateObj = new Date(y, m - 1, d);
+    const jsDay = dateObj.getDay();
+    const weekday = jsDay === 0 ? 6 : jsDay - 1;
+
+    return bHours.find((bh) => bh.weekday === weekday);
+  });
+
+  readonly isCurrentDayClosed = computed<boolean>(() => {
+    const bHours = this._businessHours();
+    if (!bHours || bHours.length === 0) return false;
+    return this.currentDayOperatingHours() === undefined;
+  });
+
+  readonly timelineRows = computed<TimelineRow[]>(() => {
+    const bHours = this._businessHours();
+    const mode = this.viewMode();
+    const curDate = this._currentDate();
+    const bookings = this._bookings();
+    const blocks = this._blocks();
+
+    // Default fallback if no business hours are configured yet
+    let minHour = 7;
+    let maxHour = 22;
+
+    if (bHours && bHours.length > 0) {
+      if (mode === 'day') {
+        const dayConfig = this.currentDayOperatingHours();
+        if (dayConfig) {
+          minHour = parseInt(dayConfig.opens_at.split(':')[0], 10);
+          maxHour = parseInt(dayConfig.closes_at.split(':')[0], 10);
+        }
+      } else {
+        // Week view or List view: span across all configured open days
+        const openHours = bHours.map((h) => parseInt(h.opens_at.split(':')[0], 10));
+        const closeHours = bHours.map((h) => parseInt(h.closes_at.split(':')[0], 10));
+        if (openHours.length > 0) {
+          minHour = Math.min(...openHours);
+        }
+        if (closeHours.length > 0) {
+          maxHour = Math.max(...closeHours);
+        }
+      }
+    }
+
+    // Expand range if an existing booking or block falls outside normal business hours
+    const dateFilter = mode === 'day' ? curDate : null;
+    for (const b of bookings) {
+      if (dateFilter && !b.period_start.startsWith(dateFilter)) continue;
+      const bDate = new Date(b.period_start);
+      const bHour = new Date(bDate.toLocaleString('en-US', { timeZone: 'America/Bogota' })).getHours();
+      if (bHour < minHour) minHour = bHour;
+      if (bHour > maxHour) maxHour = bHour;
+    }
+    for (const blk of blocks) {
+      if (dateFilter && !blk.period_start.startsWith(dateFilter)) continue;
+      const blkDate = new Date(blk.period_start);
+      const blkHour = new Date(blkDate.toLocaleString('en-US', { timeZone: 'America/Bogota' })).getHours();
+      if (blkHour < minHour) minHour = blkHour;
+      if (blkHour > maxHour) maxHour = blkHour;
+    }
+
+    if (minHour < 0) minHour = 0;
+    if (maxHour > 23) maxHour = 23;
+    if (minHour > maxHour) {
+      minHour = 7;
+      maxHour = 22;
+    }
+
+    const rows: TimelineRow[] = [];
+    for (let h = minHour; h <= maxHour; h++) {
+      rows.push({
+        hourStr: `${h.toString().padStart(2, '0')}:00`,
+        hourNum: h
+      });
+    }
+    return rows;
   });
 
   // Week Days computation (7 days: Monday to Sunday)
@@ -1091,20 +1187,32 @@ export class ClubTimelineViewComponent implements OnInit {
     }
   }
 
+  parseHour(timeStr?: string): number {
+    if (!timeStr) return 0;
+    return parseInt(timeStr.split(':')[0], 10);
+  }
+
+  formatHourAmPm(h: number): string {
+    const period = h >= 12 ? 'pm' : 'am';
+    let hour = h % 12;
+    if (hour === 0) hour = 12;
+    return `${hour}:00 ${period}`;
+  }
+
   formatBlockTime(block: AdminBlock): string {
     const start = new Date(block.period_start);
     const end = new Date(block.period_end);
     const sh = start.toLocaleTimeString('es-CO', {
       timeZone: 'America/Bogota',
-      hour: '2-digit',
+      hour: 'numeric',
       minute: '2-digit',
-      hour12: false
+      hour12: true
     });
     const eh = end.toLocaleTimeString('es-CO', {
       timeZone: 'America/Bogota',
-      hour: '2-digit',
+      hour: 'numeric',
       minute: '2-digit',
-      hour12: false
+      hour12: true
     });
     return `${sh} - ${eh}`;
   }

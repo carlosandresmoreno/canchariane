@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     # Security
     JWT_SECRET: str = "canchariane_super_secret_key_minimum_32_bytes_secure_token"
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # 7 days for mobile session stability
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     # Business Defaults

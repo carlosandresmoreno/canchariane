@@ -7,6 +7,7 @@ from app.infrastructure.db.models.club import ClubModel
 from app.infrastructure.db.models.club_layout import ClubLayoutModel
 from app.infrastructure.db.models.club_member import ClubMemberModel
 from app.infrastructure.db.models.court import CourtModel
+from app.infrastructure.db.models.daily_store_sale import DailyStoreSaleModel
 from app.infrastructure.db.models.idempotency_key import IdempotencyKeyModel
 from app.infrastructure.db.models.payment import PaymentModel
 from app.infrastructure.db.models.pricing_rule import PricingRuleModel
@@ -23,6 +24,7 @@ __all__ = [
     "ClubMemberModel",
     "ClubModel",
     "CourtModel",
+    "DailyStoreSaleModel",
     "IdempotencyKeyModel",
     "PaymentModel",
     "PricingRuleModel",

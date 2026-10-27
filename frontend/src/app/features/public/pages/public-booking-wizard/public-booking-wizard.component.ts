@@ -259,7 +259,7 @@ interface DayOption {
                           ? 'bg-slate-50 border-slate-200/60 text-slate-300 opacity-50 cursor-not-allowed'
                           : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/70 shadow-xs'"
                     >
-                      <span class="text-xs sm:text-sm font-semibold">{{ hour }}</span>
+                      <span class="text-xs sm:text-sm font-semibold">{{ formatTimeAmPm(hour) }}</span>
                       @if (isAutoMode()) {
                         @if (isFull) {
                           <span class="text-[9px] font-mono opacity-80">Agotado</span>
@@ -978,6 +978,18 @@ export class PublicBookingWizardComponent implements OnInit {
     this.selectedCourtId.set(courtId);
   }
 
+  formatTimeAmPm(timeStr?: string): string {
+    if (!timeStr) return '';
+    const parts = timeStr.split(':');
+    let h = parseInt(parts[0], 10);
+    if (isNaN(h)) return timeStr;
+    const m = parts[1] || '00';
+    const period = h >= 12 ? 'pm' : 'am';
+    h = h % 12;
+    if (h === 0) h = 12;
+    return `${h}:${m} ${period}`;
+  }
+
   getSlotForCourt(courtId: string): PublicSlot | undefined {
     return this.slotsForSelectedHour().find((s) => s.court_id === courtId);
   }
@@ -1102,8 +1114,9 @@ export class PublicBookingWizardComponent implements OnInit {
   getWhatsAppShareUrl(): string {
     const b = this.confirmedBooking();
     if (!b) return '#';
+    const courtPart = this.isAutoMode() ? '' : `\nCancha: ${b.court_name}`;
     const text = encodeURIComponent(
-      `¡Hola! Confirmé mi reserva deportiva en ${b.club_name}.\nCancha: ${b.court_name}\nCódigo: ${b.code}\nFecha: ${b.start_time}`
+      `¡Hola! Confirmé mi reserva deportiva en ${b.club_name}.${courtPart}\nCódigo: ${b.code}\nFecha: ${b.start_time}`
     );
     return `https://wa.me/?text=${text}`;
   }

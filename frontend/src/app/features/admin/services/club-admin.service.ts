@@ -2,6 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+export interface PricingRuleSlot {
+  id?: string;
+  start_time: string;
+  end_time: string;
+  price_cents: number;
+  weekday_mask?: number;
+}
+
 export interface AdminCourt {
   id: string;
   name: string;
@@ -14,6 +22,7 @@ export interface AdminCourt {
   position: number;
   shape?: any;
   price_per_hour_cents?: number;
+  pricing_rules?: PricingRuleSlot[];
 }
 
 export interface AdminCourtCreate {
@@ -25,6 +34,7 @@ export interface AdminCourtCreate {
   has_lighting: boolean;
   position?: number;
   price_per_hour_cents?: number;
+  pricing_rules?: PricingRuleSlot[];
 }
 
 export interface AdminBooking {
@@ -273,20 +283,109 @@ export class ClubAdminService {
   }
 
   // --- Reports & KPIs ---
-  getOccupancyReport(clubId: string, startDate: string, endDate: string): Observable<any> {
+  getOccupancyReport(clubId: string, startDate: string, endDate: string): Observable<ClubOccupancyReport> {
     const params = new HttpParams().set('start_date', startDate).set('end_date', endDate);
-    return this.http.get(`${this.baseUrl}/${clubId}/reports/occupancy`, { params });
+    return this.http.get<ClubOccupancyReport>(`${this.baseUrl}/${clubId}/reports/occupancy`, {
+      params,
+      withCredentials: true
+    });
   }
 
-  getRevenueReport(clubId: string, startDate: string, endDate: string): Observable<any> {
+  getRevenueReport(clubId: string, startDate: string, endDate: string): Observable<ClubRevenueReport> {
     const params = new HttpParams().set('start_date', startDate).set('end_date', endDate);
-    return this.http.get(`${this.baseUrl}/${clubId}/reports/revenue`, { params });
+    return this.http.get<ClubRevenueReport>(`${this.baseUrl}/${clubId}/reports/revenue`, {
+      params,
+      withCredentials: true
+    });
   }
 
   // --- Real-time SSE ---
   connectSse(clubId: string): EventSource {
     return new EventSource(`${this.baseUrl}/${clubId}/events`);
   }
+
+  // --- Daily Store Sales ---
+  getStoreSales(clubId: string): Observable<DailyStoreSale[]> {
+    return this.http.get<DailyStoreSale[]>(`${this.baseUrl}/${clubId}/store-sales`, {
+      withCredentials: true
+    });
+  }
+
+  saveStoreSale(
+    clubId: string,
+    data: { sale_date: string; amount_cents: number; notes?: string }
+  ): Observable<DailyStoreSale> {
+    return this.http.post<DailyStoreSale>(`${this.baseUrl}/${clubId}/store-sales`, data, {
+      withCredentials: true
+    });
+  }
+
+  deleteStoreSale(clubId: string, saleId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${clubId}/store-sales/${saleId}`, {
+      withCredentials: true
+    });
+  }
+}
+
+export interface DailyStoreSale {
+  id: string;
+  club_id: string;
+  sale_date: string;
+  amount_cents: number;
+  notes?: string | null;
+  created_at: string;
+}
+
+export interface OccupancySlotReport {
+  time_bucket: string;
+  available_minutes: number;
+  booked_minutes: number;
+  occupancy_percentage: number;
+}
+
+export interface OccupancyCourtReport {
+  court_id: string;
+  court_name: string;
+  available_minutes: number;
+  booked_minutes: number;
+  occupancy_percentage: number;
+}
+
+export interface ClubOccupancyReport {
+  club_id: string;
+  start_date: string;
+  end_date: string;
+  total_available_minutes: number;
+  total_booked_minutes: number;
+  overall_occupancy_percentage: number;
+  by_time_of_day: OccupancySlotReport[];
+  by_court: OccupancyCourtReport[];
+}
+
+export interface RevenueDailyReport {
+  date: string;
+  booking_count: number;
+  total_revenue_cents: number;
+  average_ticket_cents: number;
+}
+
+export interface RevenueCourtReport {
+  court_id: string;
+  court_name: string;
+  booking_count: number;
+  total_revenue_cents: number;
+}
+
+export interface ClubRevenueReport {
+  club_id: string;
+  start_date: string;
+  end_date: string;
+  currency: string;
+  total_revenue_cents: number;
+  total_bookings: number;
+  average_ticket_cents: number;
+  daily: RevenueDailyReport[];
+  by_court: RevenueCourtReport[];
 }
 
 export interface ClubBookingSettings {
