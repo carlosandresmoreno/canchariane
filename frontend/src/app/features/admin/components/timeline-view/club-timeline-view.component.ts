@@ -54,7 +54,7 @@ export interface WeekDayItem {
               </span>
               @if (currentDayOperatingHours(); as oph) {
                 <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-mono font-medium">
-                  {{ formatHourAmPm(parseHour(oph.opens_at)) }} – {{ formatHourAmPm(parseHour(oph.closes_at)) }}
+                  {{ formatHourAmPm(parseHour(oph.opens_at)) }} – {{ oph.closes_next_day && parseHour(oph.closes_at) === 0 ? '12:00 am (medianoche)' : formatHourAmPm(parseHour(oph.closes_at)) }}
                 </span>
               } @else if (isCurrentDayClosed()) {
                 <span class="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-mono font-medium">
@@ -839,12 +839,23 @@ export class ClubTimelineViewComponent implements OnInit {
         const dayConfig = this.currentDayOperatingHours();
         if (dayConfig) {
           minHour = parseInt(dayConfig.opens_at.split(':')[0], 10);
-          maxHour = parseInt(dayConfig.closes_at.split(':')[0], 10);
+          const closeH = parseInt(dayConfig.closes_at.split(':')[0], 10);
+          if (dayConfig.closes_next_day) {
+            // Closes at midnight or early morning next day (00:00 or later)
+            // If it closes at 00:00 (midnight), the last turn is 23:00 (11:00 pm)
+            maxHour = closeH === 0 ? 23 : (closeH <= 6 ? 23 : closeH);
+          } else {
+            maxHour = (closeH === 0 || closeH === 24) ? 23 : closeH;
+          }
         }
       } else {
         // Week view or List view: span across all configured open days
         const openHours = bHours.map((h) => parseInt(h.opens_at.split(':')[0], 10));
-        const closeHours = bHours.map((h) => parseInt(h.closes_at.split(':')[0], 10));
+        const closeHours = bHours.map((h) => {
+          const ch = parseInt(h.closes_at.split(':')[0], 10);
+          if (h.closes_next_day || ch === 0 || ch === 24) return 23;
+          return ch;
+        });
         if (openHours.length > 0) {
           minHour = Math.min(...openHours);
         }
@@ -1126,9 +1137,8 @@ export class ClubTimelineViewComponent implements OnInit {
     const blks = this._blocks();
     if (!dateStr || !blks.length) return undefined;
     const hStr = hourNum.toString().padStart(2, '0');
-    const nextHStr = (hourNum + 1).toString().padStart(2, '0');
     const cellStart = new Date(`${dateStr}T${hStr}:00:00-05:00`).getTime();
-    const cellEnd = new Date(`${dateStr}T${nextHStr}:00:00-05:00`).getTime();
+    const cellEnd = cellStart + 3600000;
 
     return blks.find((b) => {
       if (b.court_id && b.court_id !== courtId) return false;
@@ -1142,9 +1152,8 @@ export class ClubTimelineViewComponent implements OnInit {
     const bkgs = this._bookings();
     if (!dateStr || !bkgs.length) return undefined;
     const hStr = hourNum.toString().padStart(2, '0');
-    const nextHStr = (hourNum + 1).toString().padStart(2, '0');
     const cellStart = new Date(`${dateStr}T${hStr}:00:00-05:00`).getTime();
-    const cellEnd = new Date(`${dateStr}T${nextHStr}:00:00-05:00`).getTime();
+    const cellEnd = cellStart + 3600000;
 
     return bkgs.find((b) => {
       if (b.court_id !== courtId) return false;
