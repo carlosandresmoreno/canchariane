@@ -290,43 +290,6 @@ export interface WeekDayItem {
             }
           </div>
         </div>
-
-        <!-- 4. QUICK STATS STRIP -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 border-t border-slate-100 font-mono text-xs">
-          <div class="p-2.5 rounded-2xl bg-blue-50/60 border border-blue-100/80 flex items-center gap-2.5">
-            <span class="text-base">📅</span>
-            <div>
-              <div class="text-[10px] uppercase text-blue-600 font-semibold tracking-wider">Reservas Hoy</div>
-              <div class="text-sm font-bold text-slate-900">{{ dayBookingsCount }} turno(s)</div>
-            </div>
-          </div>
-
-          <div class="p-2.5 rounded-2xl bg-emerald-50/60 border border-emerald-100/80 flex items-center gap-2.5">
-            <span class="text-base">💰</span>
-            <div>
-              <div class="text-[10px] uppercase text-emerald-700 font-semibold tracking-wider">Recaudo Estimado</div>
-              <div class="text-sm font-bold text-slate-900">
-                {{ (dayRevenueCents / 100).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }) }}
-              </div>
-            </div>
-          </div>
-
-          <div class="p-2.5 rounded-2xl bg-purple-50/60 border border-purple-100/80 flex items-center gap-2.5">
-            <span class="text-base">🔒</span>
-            <div>
-              <div class="text-[10px] uppercase text-purple-700 font-semibold tracking-wider">Bloqueos Activos</div>
-              <div class="text-sm font-bold text-slate-900">{{ todayBlocksCount }} horario(s)</div>
-            </div>
-          </div>
-
-          <div class="p-2.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center gap-2.5">
-            <span class="text-base">🎾</span>
-            <div>
-              <div class="text-[10px] uppercase text-slate-500 font-semibold tracking-wider">Canchas Club</div>
-              <div class="text-sm font-bold text-slate-900">{{ courts.length }} activa(s)</div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- ACTIVE BLOCKS BANNER -->
@@ -699,6 +662,49 @@ export interface WeekDayItem {
           }
         </div>
       }
+
+      <!-- QUICK STATS STRIP (AT THE BOTTOM OF THE VIEW) -->
+      <div class="p-4 sm:p-5 rounded-3xl bg-white border border-slate-200/90 shadow-xs space-y-3">
+        <div class="flex items-center justify-between text-xs font-mono text-slate-500">
+          <span class="font-semibold uppercase tracking-wider text-[11px] text-slate-700">Resumen Rápido del Día</span>
+          <span>{{ formattedDateDisplay }}</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono text-xs">
+          <div class="p-2.5 rounded-2xl bg-blue-50/60 border border-blue-100/80 flex items-center gap-2.5">
+            <span class="text-base">📅</span>
+            <div>
+              <div class="text-[10px] uppercase text-blue-600 font-semibold tracking-wider">Reservas Hoy</div>
+              <div class="text-sm font-bold text-slate-900">{{ dayBookingsCount }} turno(s)</div>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-2xl bg-emerald-50/60 border border-emerald-100/80 flex items-center gap-2.5">
+            <span class="text-base">💰</span>
+            <div>
+              <div class="text-[10px] uppercase text-emerald-700 font-semibold tracking-wider">Recaudo Estimado</div>
+              <div class="text-sm font-bold text-slate-900">
+                {{ (dayRevenueCents / 100).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }) }}
+              </div>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-2xl bg-purple-50/60 border border-purple-100/80 flex items-center gap-2.5">
+            <span class="text-base">🔒</span>
+            <div>
+              <div class="text-[10px] uppercase text-purple-700 font-semibold tracking-wider">Bloqueos Activos</div>
+              <div class="text-sm font-bold text-slate-900">{{ todayBlocksCount }} horario(s)</div>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center gap-2.5">
+            <span class="text-base">🎾</span>
+            <div>
+              <div class="text-[10px] uppercase text-slate-500 font-semibold tracking-wider">Canchas Club</div>
+              <div class="text-sm font-bold text-slate-900">{{ courts.length }} activa(s)</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- MOBILE BOTTOM FLOATING BAR -->
       <div class="sm:hidden fixed bottom-4 left-4 right-4 z-40 flex items-center gap-2 p-2 rounded-2xl bg-slate-950/90 backdrop-blur-md border border-slate-800 shadow-2xl">
