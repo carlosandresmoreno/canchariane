@@ -117,6 +117,18 @@ export interface WeekDayItem {
               >
                 Hoy
               </button>
+
+              <!-- Botón Refrescar / En Vivo -->
+              <button
+                type="button"
+                (click)="refreshClicked.emit()"
+                [disabled]="isSyncing"
+                class="px-2 py-1.5 hover:bg-emerald-50 text-emerald-700 rounded-xl text-[11px] font-semibold tracking-wider uppercase transition-colors shrink-0 flex items-center gap-1 active:scale-95"
+                title="Sincronización en vivo automática. Clic para refrescar ya."
+              >
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" [ngClass]="isSyncing ? 'animate-ping' : ''"></span>
+                <span [class.animate-spin]="isSyncing">🔄</span>
+              </button>
             </div>
 
             <!-- Botones de Acción (Desktop/Tablet) -->
@@ -799,6 +811,8 @@ export class ClubTimelineViewComponent implements OnInit {
   @Output() selectBooking = new EventEmitter<AdminBooking>();
   @Output() selectBlock = new EventEmitter<AdminBlock>();
   @Output() openShareModal = new EventEmitter<void>();
+  @Input() isSyncing = false;
+  @Output() refreshClicked = new EventEmitter<void>();
 
   // Interactive UI State
   readonly viewMode = signal<TimelineViewMode>('day');

@@ -58,6 +58,37 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
       <!-- Clean Luminous Ambient Glow -->
       <div class="ambient-lighting"></div>
 
+      <!-- LIVE NEW BOOKING FLOATING TOAST -->
+      @if (newBookingAlert(); as alert) {
+        <div class="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 animate-in slide-in-from-top-4 fade-in duration-300">
+          <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/95 text-white shadow-2xl border border-emerald-500/60 flex items-center gap-3 backdrop-blur-md max-w-sm ring-4 ring-emerald-500/10">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl shrink-0 animate-bounce">
+              🔔
+            </div>
+            <div class="min-w-0 pr-1">
+              <div class="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-bold flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>¡Nueva Reserva en Vivo!</span>
+              </div>
+              <div class="text-sm font-semibold text-white truncate font-sans">
+                {{ alert.customerName }}
+              </div>
+              <div class="text-xs text-slate-300 font-mono">
+                {{ alert.timeStr }} {{ alert.courtName ? '• ' + alert.courtName : '' }}
+              </div>
+            </div>
+            <button
+              type="button"
+              (click)="newBookingAlert.set(null)"
+              class="text-slate-400 hover:text-white p-1 text-sm shrink-0"
+              title="Cerrar notificación"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      }
+
       <!-- Top Architectural Navbar -->
       <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur-xl sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
@@ -238,6 +269,8 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
             [currentDate]="currentDate()"
             [formattedDateDisplay]="formattedDateDisplay()"
             [businessHours]="businessHours()"
+            [isSyncing]="isSyncing()"
+            (refreshClicked)="manualRefresh()"
             (dayChanged)="navigateDay($event)"
             (dateSelected)="setDate($event)"
             (todayClicked)="goToToday()"
@@ -1228,6 +1261,12 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   readonly isUpdatingBookingStatus = signal<boolean>(false);
   readonly isDeletingBooking = signal<boolean>(false);
   adminCancelReason = '';
+
+  // Live Background Sync Signals & State
+  readonly isSyncing = signal<boolean>(false);
+  readonly newBookingAlert = signal<{ customerName: string; timeStr: string; courtName?: string } | null>(null);
+  private syncTimer: any = null;
+  private visibilityHandler: any = null;
   readonly showCreateBookingModal = signal<boolean>(false);
   readonly showCreateBlockModal = signal<boolean>(false);
   readonly showShareModal = signal<boolean>(false);
@@ -1351,6 +1390,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     if (clubId) {
       this.loadAllData(clubId);
       this.initSse(clubId);
+      this.startBackgroundSync();
     }
   }
 
@@ -1359,6 +1399,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
       this.sseConnection.close();
       this.sseConnection = null;
     }
+    this.stopBackgroundSync();
   }
 
   getActiveClubId(): string | null {
@@ -1459,10 +1500,124 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     try {
       this.sseConnection = this.adminService.connectSse(clubId);
       this.sseConnection.onmessage = () => {
-        this.loadBookings(clubId);
+        this.pollLatestBookings();
       };
     } catch (e) {
       console.warn('SSE not supported or failed to connect', e);
+    }
+  }
+
+  // --- Real-Time Background Synchronization ---
+  startBackgroundSync(): void {
+    this.stopBackgroundSync();
+
+    // Sincronización periódica cada 12 segundos
+    this.syncTimer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        this.pollLatestBookings();
+      }
+    }, 12000);
+
+    // Refresco inmediato al desbloquear el celular o volver a la pestaña
+    if (typeof document !== 'undefined') {
+      this.visibilityHandler = () => {
+        if (document.visibilityState === 'visible') {
+          this.pollLatestBookings();
+        }
+      };
+      document.addEventListener('visibilitychange', this.visibilityHandler);
+    }
+  }
+
+  stopBackgroundSync(): void {
+    if (this.syncTimer) {
+      clearInterval(this.syncTimer);
+      this.syncTimer = null;
+    }
+    if (this.visibilityHandler && typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.visibilityHandler = null;
+    }
+  }
+
+  manualRefresh(): void {
+    this.pollLatestBookings(true);
+  }
+
+  pollLatestBookings(isManual = false): void {
+    const clubId = this.getActiveClubId();
+    if (!clubId) return;
+
+    if (isManual) this.isSyncing.set(true);
+
+    const { start, end } = this.getWeekRange(this.currentDate());
+    this.adminService.getBookings(clubId, start, end).subscribe({
+      next: (incomingBookings) => {
+        this.isSyncing.set(false);
+        const currentBookings = this.bookings();
+
+        if (currentBookings.length > 0) {
+          const currentIds = new Set(currentBookings.map((b) => b.id));
+          const newOnes = incomingBookings.filter((b) => !currentIds.has(b.id) && b.status !== 'cancelled');
+
+          if (newOnes.length > 0) {
+            const latest = newOnes[0];
+            const court = this.courts().find((c) => c.id === latest.court_id);
+            this.triggerNewBookingAlert(latest.customer_name, latest.period_start, court?.name);
+          }
+        }
+
+        this.bookings.set(incomingBookings);
+      },
+      error: () => this.isSyncing.set(false)
+    });
+
+    this.loadBlocks(clubId);
+  }
+
+  triggerNewBookingAlert(customerName: string, startIso: string, courtName?: string): void {
+    const timeStr = new Date(startIso).toLocaleTimeString('es-CO', {
+      timeZone: 'America/Bogota',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    this.newBookingAlert.set({
+      customerName,
+      timeStr,
+      courtName
+    });
+
+    this.playNotificationSound();
+
+    setTimeout(() => {
+      this.newBookingAlert.set(null);
+    }, 7000);
+  }
+
+  playNotificationSound(): void {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.4);
+    } catch {
+      // Audio autoplay policy or AudioContext unavailable: ignore gracefully
     }
   }
 
