@@ -15,6 +15,7 @@ import { PublicBookingService } from '../../services/public-booking.service';
 import { CourtMapComponent } from '../../components/court-map/court-map.component';
 import { CountdownTimerComponent } from '../../components/countdown-timer/countdown-timer.component';
 import {
+  ClubAnnouncement,
   CourtGroupPublicDTO,
   CreateHoldResponse,
   PublicBookingResponse,
@@ -77,6 +78,114 @@ interface DayOption {
 
       <!-- Main Step Container -->
       <main class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 w-full flex-1">
+        <!-- ============================================================= -->
+        <!-- POPUP MODAL: PUBLICIDAD / CAMPEONATO CONFIGURABLE DEL CLUB   -->
+        <!-- ============================================================= -->
+        @if (showAnnouncementModal() && club()?.announcement?.is_active) {
+          @let ann = club()!.announcement!;
+          <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200">
+            <div class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 text-left animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+              <!-- Close Button -->
+              <button
+                type="button"
+                (click)="dismissAnnouncement()"
+                class="absolute top-3.5 right-3.5 z-20 w-8 h-8 rounded-full bg-slate-900/60 hover:bg-slate-900 text-white flex items-center justify-center transition-all shadow-md cursor-pointer text-xs"
+                title="Cerrar y continuar"
+              >
+                ✕
+              </button>
+
+              <!-- Optional Poster Image -->
+              @if (ann.image_url) {
+                <div class="relative w-full h-48 sm:h-56 bg-slate-100 overflow-hidden shrink-0">
+                  <img
+                    [src]="ann.image_url"
+                    [alt]="ann.title"
+                    class="w-full h-full object-cover"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                  <span class="absolute bottom-3 left-4 px-3 py-1 rounded-full bg-purple-600 text-white text-[10px] font-mono uppercase tracking-wider font-bold shadow-md">
+                    {{ ann.tag || 'Campeonato' }}
+                  </span>
+                </div>
+              }
+
+              <div class="p-5 sm:p-6 space-y-4 overflow-y-auto">
+                @if (!ann.image_url) {
+                  <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-[10px] font-mono uppercase tracking-wider font-bold">
+                    <span>🏆</span>
+                    <span>{{ ann.tag || 'Campeonato' }}</span>
+                  </div>
+                }
+
+                <div>
+                  <h3 class="font-serif italic text-2xl sm:text-3xl text-slate-950 leading-tight">
+                    {{ ann.title }}
+                  </h3>
+                  <p class="text-xs sm:text-sm text-slate-600 font-sans leading-relaxed mt-2 whitespace-pre-line">
+                    {{ ann.description }}
+                  </p>
+                </div>
+
+                <div class="pt-2 flex flex-col sm:flex-row gap-2.5">
+                  @if (ann.action_type === 'whatsapp' && ann.action_phone) {
+                    <a
+                      [href]="getAnnouncementWhatsAppUrl(ann)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      (click)="dismissAnnouncement()"
+                      class="flex-1 py-3 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
+                    >
+                      <span>💬</span>
+                      <span>{{ ann.action_label || 'Hablar con Encargado' }}</span>
+                      <span class="text-xs">↗</span>
+                    </a>
+                  } @else if (ann.action_type === 'link' && ann.action_url) {
+                    <a
+                      [href]="ann.action_url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      (click)="dismissAnnouncement()"
+                      class="flex-1 py-3 px-4 rounded-2xl bg-[#0056FB] hover:bg-[#0048d6] text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
+                    >
+                      <span>🌐</span>
+                      <span>{{ ann.action_label || 'Más Información' }}</span>
+                      <span class="text-xs">↗</span>
+                    </a>
+                  }
+
+                  <button
+                    type="button"
+                    (click)="dismissAnnouncement()"
+                    class="py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer"
+                  >
+                    Continuar a Reservas
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Top Announcement Re-open Pill Banner -->
+        @if (club()?.announcement?.is_active) {
+          <button
+            type="button"
+            (click)="showAnnouncementModal.set(true)"
+            class="w-full mb-4 p-3 rounded-2xl bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 text-purple-950 text-xs flex items-center justify-between gap-2 shadow-2xs hover:border-purple-300 transition-all cursor-pointer group"
+          >
+            <div class="flex items-center gap-2.5 truncate">
+              <span class="px-2 py-0.5 rounded-full bg-purple-600 text-white font-mono text-[10px] font-bold uppercase tracking-wider shrink-0">
+                {{ club()!.announcement!.tag || 'Campeonato' }}
+              </span>
+              <span class="font-semibold truncate text-slate-900">{{ club()!.announcement!.title }}</span>
+            </div>
+            <span class="text-[11px] font-mono text-purple-700 font-bold shrink-0 group-hover:underline">
+              Ver información ↗
+            </span>
+          </button>
+        }
+
         <!-- ============================================================= -->
         <!-- PASO 1: SELECCIÓN DE FECHA, HORA Y CANCHA                     -->
         <!-- ============================================================= -->
@@ -192,7 +301,7 @@ interface DayOption {
               </div>
             }
 
-            <!-- Hour Selector with Interval Toggle -->
+            <!-- Hour Selector with Day Part Filter and Big Responsive Cards Grid -->
             <div>
               <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
                 <div class="flex items-center gap-3">
@@ -200,7 +309,7 @@ interface DayOption {
                     {{ isAutoMode() && courtGroups().length > 1 ? '4.' : '3.' }} Franja Horaria
                   </span>
                   <span class="font-mono text-xs text-slate-400">
-                    {{ distinctHours().length }} horarios disponibles
+                    {{ distinctHours().length }} turnos disponibles
                   </span>
                 </div>
 
@@ -230,6 +339,51 @@ interface DayOption {
                 }
               </div>
 
+              <!-- Day-Part Filters (Mañana / Tarde / Noche) -->
+              @if (!isCurrentDayClosed() && distinctHours().length > 0) {
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none text-xs">
+                  <button
+                    type="button"
+                    (click)="selectedDayPart.set('all')"
+                    [ngClass]="selectedDayPart() === 'all' ? 'bg-[#0056FB] text-white font-semibold shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                    class="px-3 py-1.5 rounded-xl font-mono transition-all shrink-0 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>⏱️</span>
+                    <span>Todos ({{ distinctHours().length }})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="selectedDayPart.set('morning')"
+                    [ngClass]="selectedDayPart() === 'morning' ? 'bg-[#0056FB] text-white font-semibold shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                    class="px-3 py-1.5 rounded-xl font-mono transition-all shrink-0 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>🌅</span>
+                    <span>Mañana</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="selectedDayPart.set('afternoon')"
+                    [ngClass]="selectedDayPart() === 'afternoon' ? 'bg-[#0056FB] text-white font-semibold shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                    class="px-3 py-1.5 rounded-xl font-mono transition-all shrink-0 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>☀️</span>
+                    <span>Tarde</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="selectedDayPart.set('night')"
+                    [ngClass]="selectedDayPart() === 'night' ? 'bg-[#0056FB] text-white font-semibold shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                    class="px-3 py-1.5 rounded-xl font-mono transition-all shrink-0 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>🌙</span>
+                    <span>Noche</span>
+                  </button>
+                </div>
+              }
+
               @if (isCurrentDayClosed()) {
                 <div class="p-8 rounded-3xl bg-amber-50/70 border border-amber-200 text-center text-amber-800 text-sm shadow-xs flex flex-col items-center justify-center gap-2">
                   <span class="text-3xl">🚪</span>
@@ -242,33 +396,60 @@ interface DayOption {
                 <div class="p-8 rounded-3xl bg-slate-50 border border-slate-200 text-center text-slate-500 font-light text-sm shadow-xs">
                   No hay horarios programados para esta fecha y duración. Selecciona otro día o ajusta la duración.
                 </div>
+              } @else if (filteredHours().length === 0 && !isLoadingSlots()) {
+                <div class="p-8 rounded-3xl bg-slate-50 border border-slate-200 text-center text-slate-500 font-mono text-xs">
+                  No hay turnos disponibles en esta franja. Prueba seleccionando "Todos".
+                </div>
               } @else {
-                <div class="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none snap-x">
-                  @for (hour of distinctHours(); track hour) {
+                <!-- Prominent, Vistoso & Legible Hour Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-3">
+                  @for (hour of filteredHours(); track hour) {
                     @let count = getAvailableCountForHour(hour);
                     @let isSelected = selectedHour() === hour;
                     @let isFull = isAutoMode() ? count === 0 : false;
+                    @let priceCents = getPriceForHour(hour);
                     <button
                       type="button"
                       (click)="!isFull && selectHour(hour)"
                       [disabled]="isFull"
-                      class="min-w-[68px] sm:min-w-[76px] px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border font-mono text-xs shrink-0 transition-all duration-300 flex flex-col items-center gap-0.5 snap-start"
+                      class="p-3.5 sm:p-4 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between gap-2.5 group relative"
                       [ngClass]="isSelected 
-                        ? 'bg-[#0056FB] text-white font-bold border-[#0056FB] shadow-md' 
+                        ? 'bg-[#0056FB] text-white border-[#0056FB] shadow-lg ring-4 ring-[#0056FB]/20 scale-[1.02]' 
                         : isFull
-                          ? 'bg-slate-50 border-slate-200/60 text-slate-300 opacity-50 cursor-not-allowed'
-                          : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/70 shadow-xs'"
+                          ? 'bg-slate-50 border-slate-200/70 text-slate-400 opacity-60 cursor-not-allowed'
+                          : 'bg-white border-slate-200 hover:border-[#0056FB]/60 hover:bg-blue-50/40 text-slate-800 shadow-2xs cursor-pointer'"
                     >
-                      <span class="text-xs sm:text-sm font-semibold">{{ formatTimeAmPm(hour) }}</span>
-                      @if (isAutoMode()) {
-                        @if (isFull) {
-                          <span class="text-[9px] font-mono opacity-80">Agotado</span>
-                        } @else if (count === 1) {
-                          <span class="text-[9px] font-mono text-amber-500 font-semibold" [class.text-amber-200]="isSelected">¡1 cupo!</span>
-                        } @else {
-                          <span class="text-[9px] font-mono opacity-80">{{ count }} libres</span>
+                      <div class="flex items-center justify-between gap-1 w-full">
+                        <span class="text-base sm:text-lg font-bold font-sans tracking-tight" [class.text-white]="isSelected">
+                          {{ formatTimeAmPm(hour) }}
+                        </span>
+                        @if (isSelected) {
+                          <span class="text-xs px-2 py-0.5 rounded-full bg-white/20 text-white font-mono font-bold">
+                            ✓
+                          </span>
                         }
-                      }
+                      </div>
+
+                      <div class="flex items-center justify-between gap-1 pt-1.5 border-t text-[11px] font-mono"
+                        [ngClass]="isSelected ? 'border-white/20 text-white/90' : 'border-slate-100 text-slate-500'">
+                        @if (isAutoMode()) {
+                          @if (isFull) {
+                            <span class="text-rose-500 font-semibold">Agotado</span>
+                          } @else if (count === 1) {
+                            <span class="text-amber-500 font-bold" [class.text-amber-200]="isSelected">¡1 cupo!</span>
+                          } @else {
+                            <span>{{ count }} libres</span>
+                          }
+                        } @else {
+                          <span>Disponible</span>
+                        }
+
+                        @if (priceCents) {
+                          <span class="font-bold font-sans text-xs" [class.text-white]="isSelected" [class.text-slate-900]="!isSelected && !isFull">
+                            {{ formatCurrencyCop(priceCents) }}
+                          </span>
+                        }
+                      </div>
                     </button>
                   }
                 </div>
@@ -800,6 +981,10 @@ export class PublicBookingWizardComponent implements OnInit {
     return dayOpt ? !dayOpt.isOpen : false;
   });
 
+  // Announcement & Day Part Signals
+  readonly showAnnouncementModal = signal<boolean>(false);
+  readonly selectedDayPart = signal<'all' | 'morning' | 'afternoon' | 'night'>('all');
+
   readonly distinctHours = computed<string[]>(() => {
     const slots = this.allDaySlots();
     const isAuto = this.isAutoMode();
@@ -814,6 +999,19 @@ export class PublicBookingWizardComponent implements OnInit {
       }
     }
     return Array.from(set).sort();
+  });
+
+  readonly filteredHours = computed<string[]>(() => {
+    const hours = this.distinctHours();
+    const part = this.selectedDayPart();
+    if (part === 'all') return hours;
+    return hours.filter((h) => {
+      const num = parseInt(h.split(':')[0], 10);
+      if (part === 'morning') return num < 12;
+      if (part === 'afternoon') return num >= 12 && num < 18;
+      if (part === 'night') return num >= 18;
+      return true;
+    });
   });
 
   readonly slotsForSelectedHour = computed<PublicSlot[]>(() => {
@@ -841,6 +1039,15 @@ export class PublicBookingWizardComponent implements OnInit {
     this.publicService.getClub(clubSlug).subscribe({
       next: (c) => {
         this.club.set(c);
+
+        // Check Announcement
+        if (c.announcement && c.announcement.is_active) {
+          const dismissed = sessionStorage.getItem(`canchariane_announcement_${c.slug}`);
+          if (!dismissed) {
+            this.showAnnouncementModal.set(true);
+          }
+        }
+
         if (c.court_groups && c.court_groups.length > 0) {
           this.selectedGroupId.set(c.court_groups[0].id);
         }
@@ -992,6 +1199,42 @@ export class PublicBookingWizardComponent implements OnInit {
 
   getSlotForCourt(courtId: string): PublicSlot | undefined {
     return this.slotsForSelectedHour().find((s) => s.court_id === courtId);
+  }
+
+  getPriceForHour(hour: string): number | null {
+    const grp = this.activeGroup();
+    const slots = this.allDaySlots().filter((s) => s.local_start_time === hour);
+    if (!slots.length) return null;
+    if (grp) {
+      const grpSlot = slots.find((s) => grp.court_ids.includes(s.court_id));
+      if (grpSlot) return grpSlot.price_cents;
+    }
+    return slots[0].price_cents;
+  }
+
+  formatCurrencyCop(cents: number | null): string {
+    if (cents == null) return '';
+    return (cents / 100).toLocaleString('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      maximumFractionDigits: 0
+    });
+  }
+
+  dismissAnnouncement(): void {
+    const c = this.club();
+    if (c) {
+      sessionStorage.setItem(`canchariane_announcement_${c.slug}`, 'true');
+    }
+    this.showAnnouncementModal.set(false);
+  }
+
+  getAnnouncementWhatsAppUrl(ann: ClubAnnouncement): string {
+    if (!ann.action_phone) return '#';
+    const clean = ann.action_phone.replace(/\D/g, '');
+    const phone = clean.length === 10 ? `57${clean}` : clean;
+    const msg = encodeURIComponent(`Hola! Vengo de Canchariane y deseo información sobre: ${ann.title}`);
+    return `https://wa.me/${phone}?text=${msg}`;
   }
 
   proceedToHold(): void {

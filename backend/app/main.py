@@ -61,6 +61,60 @@ def create_app() -> FastAPI:
             await conn.execute(text("SELECT 1"))
         return {"status": "ready", "database": "connected"}
 
+    @app.get("/robots.txt", include_in_schema=False)
+    async def robots_txt():
+        from fastapi.responses import PlainTextResponse
+        content = (
+            "User-agent: *\n"
+            "Allow: /\n"
+            "Allow: /c/\n"
+            "Allow: /lookup\n"
+            "Disallow: /admin/\n"
+            "Disallow: /auth/\n"
+            "Disallow: /api/\n\n"
+            "Sitemap: https://cancha.arianedevs.com/sitemap.xml\n"
+        )
+        return PlainTextResponse(content)
+
+    @app.get("/sitemap.xml", include_in_schema=False)
+    async def sitemap_xml():
+        from fastapi.responses import Response
+        content = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+            '  <url>\n'
+            '    <loc>https://cancha.arianedevs.com/</loc>\n'
+            '    <lastmod>2026-10-28</lastmod>\n'
+            '    <changefreq>daily</changefreq>\n'
+            '    <priority>1.0</priority>\n'
+            '  </url>\n'
+            '  <url>\n'
+            '    <loc>https://cancha.arianedevs.com/lookup</loc>\n'
+            '    <lastmod>2026-10-28</lastmod>\n'
+            '    <changefreq>weekly</changefreq>\n'
+            '    <priority>0.8</priority>\n'
+            '  </url>\n'
+            '  <url>\n'
+            '    <loc>https://cancha.arianedevs.com/c/padel-club-alpha</loc>\n'
+            '    <lastmod>2026-10-28</lastmod>\n'
+            '    <changefreq>daily</changefreq>\n'
+            '    <priority>0.9</priority>\n'
+            '  </url>\n'
+            '  <url>\n'
+            '    <loc>https://cancha.arianedevs.com/c/club-campestre-pereira</loc>\n'
+            '    <lastmod>2026-10-28</lastmod>\n'
+            '    <changefreq>daily</changefreq>\n'
+            '    <priority>0.9</priority>\n'
+            '  </url>\n'
+            '</urlset>'
+        )
+        return Response(content=content, media_type="application/xml")
+
+    @app.get("/google06726a552e008e9f.html")
+    async def google_verification():
+        from fastapi.responses import PlainTextResponse
+        return PlainTextResponse("google-site-verification: google06726a552e008e9f.html")
+
     return app
 
 

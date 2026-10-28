@@ -445,96 +445,150 @@ export interface WeekDayItem {
       }
 
       <!-- ============================================================ -->
+      <!-- ============================================================ -->
       <!-- VIEW 2: VISTA SEMANA (7 DÍAS EN COLUMNAS ESTILO CALENDAR)   -->
       <!-- ============================================================ -->
       @if (viewMode() === 'week') {
-        <div class="rounded-3xl border border-slate-200 bg-white shadow-xs overflow-hidden">
-          <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200 text-xs font-mono text-slate-600 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-slate-900">Vista Semanal:</span>
-              <span>{{ activeCourtNameForWeek }}</span>
-            </div>
-            <span class="text-[11px] text-slate-400 hidden sm:inline">Haz clic en cualquier hora libre para agendar</span>
-          </div>
-
-          <div class="overflow-x-auto relative">
-            <div class="min-w-[840px]">
-              <!-- Week Columns Header -->
-              <div
-                class="grid border-b border-slate-200 bg-slate-50 text-xs font-mono font-medium text-slate-700 sticky top-0 z-10"
-                style="grid-template-columns: 75px repeat(7, minmax(110px, 1fr))"
+        <div class="space-y-6">
+          <!-- Week Court Switcher Bar -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
+            <div class="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5">
+              <span class="text-xs font-mono font-semibold text-slate-500 shrink-0">Canchas en Semana:</span>
+              <button
+                type="button"
+                (click)="selectedCourtFilter.set('all')"
+                [ngClass]="selectedCourtFilter() === 'all' ? 'bg-[#0056FB] text-white shadow-xs font-bold' : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'"
+                class="px-3 py-1.5 rounded-xl text-xs font-mono transition-all shrink-0 flex items-center gap-1.5"
               >
-                <div class="p-3 text-center border-r border-slate-200 text-slate-500 text-[10px] tracking-[0.2em] uppercase font-mono sticky left-0 bg-slate-100 z-20 shadow-xs">
-                  HORA
-                </div>
-
-                @for (day of weekDays(); track day.dateStr) {
-                  <div
-                    (click)="dateSelected.emit(day.dateStr)"
-                    class="p-3 text-center border-r border-slate-200 last:border-r-0 cursor-pointer hover:bg-slate-100/80 transition-colors"
-                    [ngClass]="day.isSelected ? 'bg-blue-50/70' : ''"
-                  >
-                    <div class="text-[10px] font-bold uppercase font-mono" [ngClass]="(day.isSelected || day.isToday) ? 'text-blue-600 font-bold' : 'text-slate-600'">
-                      {{ day.dayName }}
-                    </div>
-                    <div class="text-sm font-bold font-sans" [ngClass]="(day.isSelected || day.isToday) ? 'text-blue-600 font-bold' : 'text-slate-900'">
-                      {{ day.dayNumber }}
-                    </div>
-                  </div>
-                }
-              </div>
-
-              <!-- Week Hour Rows -->
-              @for (row of timelineRows(); track row.hourStr) {
-                <div
-                  class="grid border-b border-slate-100 hover:bg-slate-50/50 transition-colors"
-                  style="grid-template-columns: 75px repeat(7, minmax(110px, 1fr))"
+                <span>🎾</span>
+                <span>Ver Todas ({{ courts.length }})</span>
+              </button>
+              @for (c of courts; track c.id) {
+                <button
+                  type="button"
+                  (click)="selectedCourtFilter.set(c.id)"
+                  [ngClass]="selectedCourtFilter() === c.id ? 'bg-[#0056FB] text-white shadow-xs font-bold' : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'"
+                  class="px-3 py-1.5 rounded-xl text-xs font-mono transition-all shrink-0 flex items-center gap-1.5"
                 >
-                  <div class="p-2 border-r border-slate-200 text-xs font-mono font-semibold text-slate-600 flex items-center justify-center sticky left-0 bg-white z-20 shadow-xs select-none">
-                    {{ formatHourAmPm(row.hourNum) }}
-                  </div>
-
-                  @for (day of weekDays(); track day.dateStr) {
-                    @let courtIdForWeek = selectedCourtFilter() === 'all' ? (courts.length > 0 ? courts[0].id : '') : selectedCourtFilter();
-                    @let block = getBlockForCell(day.dateStr, courtIdForWeek, row.hourNum);
-                    @let booking = getBookingForCell(day.dateStr, courtIdForWeek, row.hourNum);
-                    <div class="p-1 border-r border-slate-100 last:border-r-0 min-h-[64px] flex items-center justify-center transition-colors relative">
-                      @if (block) {
-                        <div
-                          (click)="selectBlock.emit(block)"
-                          class="w-full h-full p-1.5 rounded-lg text-left cursor-pointer border-l-2 text-[10px] font-mono flex flex-col justify-between truncate"
-                          [ngClass]="getBlockBadgeClass(block.kind)"
-                        >
-                          <span class="font-bold truncate">{{ block.reason || getBlockKindLabel(block.kind) }}</span>
-                          <span class="text-[9px] opacity-75">Bloqueado</span>
-                        </div>
-                      } @else if (booking) {
-                        <div
-                          (click)="selectBooking.emit(booking)"
-                          class="w-full h-full p-1.5 rounded-lg text-left cursor-pointer border-l-2 text-[10px] font-mono flex flex-col justify-between truncate"
-                          [ngClass]="getBookingBadgeClass(booking.status)"
-                        >
-                          <span class="font-bold truncate text-slate-900">{{ booking.customer_name }}</span>
-                          <span class="text-[9px] font-semibold text-slate-600">Cod: {{ booking.code }}</span>
-                        </div>
-                      } @else {
-                        <button
-                          type="button"
-                          (click)="slotClicked.emit({ courtId: courtIdForWeek, hourStr: row.hourStr, dateStr: day.dateStr })"
-                          class="w-full h-full rounded-lg border border-dashed border-slate-200/80 hover:border-[#0056FB] hover:bg-blue-50/50 flex items-center justify-center transition-all group"
-                          title="Reservar el {{ day.dayName }} {{ day.dayNumber }} a las {{ row.hourStr }}"
-                        >
-                          <span class="text-[10px] font-mono text-slate-300 group-hover:text-[#0056FB]">
-                            +
-                          </span>
-                        </button>
-                      }
-                    </div>
-                  }
-                </div>
+                  <span>{{ getSportIcon(c.sport) }}</span>
+                  <span>{{ c.name }}</span>
+                </button>
               }
             </div>
+            <div class="hidden sm:flex items-center gap-2 text-xs font-mono text-slate-500 shrink-0">
+              <span>Semana: <strong class="text-slate-800">{{ weekRangeDisplay }}</strong></span>
+            </div>
           </div>
+
+          @if (courts.length === 0) {
+            <div class="p-12 text-center bg-white rounded-3xl border border-slate-200 text-slate-500 font-mono text-xs">
+              No hay canchas configuradas en este club.
+            </div>
+          } @else {
+            @for (weekCourt of (selectedCourtFilter() === 'all' ? courts : displayedCourts()); track weekCourt.id) {
+              <div class="rounded-3xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+                <div class="px-4 py-3 bg-gradient-to-r from-slate-50 to-blue-50/30 border-b border-slate-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-3 h-3 rounded-full bg-[#0056FB] shrink-0"></span>
+                    <span class="font-bold text-slate-900 text-sm font-sans">{{ weekCourt.name }}</span>
+                    <span class="text-[11px] px-2 py-0.5 rounded-full bg-slate-200/80 text-slate-700 font-mono font-medium">
+                      {{ getSportIcon(weekCourt.sport) }} {{ weekCourt.sport }}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-3 text-[11px] font-mono text-slate-500">
+                    <span class="hidden md:inline">Haz clic en <strong>+</strong> para agendar directamente en {{ weekCourt.name }}</span>
+                    @if (selectedCourtFilter() === 'all') {
+                      <button
+                        type="button"
+                        (click)="selectedCourtFilter.set(weekCourt.id)"
+                        class="text-[#0056FB] hover:underline font-semibold"
+                      >
+                        Enfocar sólo esta cancha ↗
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <div class="overflow-x-auto relative">
+                  <div class="min-w-[840px]">
+                    <!-- Week Columns Header -->
+                    <div
+                      class="grid border-b border-slate-200 bg-slate-50 text-xs font-mono font-medium text-slate-700 sticky top-0 z-10"
+                      style="grid-template-columns: 75px repeat(7, minmax(110px, 1fr))"
+                    >
+                      <div class="p-3 text-center border-r border-slate-200 text-slate-500 text-[10px] tracking-[0.2em] uppercase font-mono sticky left-0 bg-slate-100 z-20 shadow-xs">
+                        HORA
+                      </div>
+
+                      @for (day of weekDays(); track day.dateStr) {
+                        <div
+                          (click)="dateSelected.emit(day.dateStr)"
+                          class="p-3 text-center border-r border-slate-200 last:border-r-0 cursor-pointer hover:bg-slate-100/80 transition-colors"
+                          [ngClass]="day.isSelected ? 'bg-blue-50/70' : ''"
+                        >
+                          <div class="text-[10px] font-bold uppercase font-mono" [ngClass]="(day.isSelected || day.isToday) ? 'text-blue-600 font-bold' : 'text-slate-600'">
+                            {{ day.dayName }}
+                          </div>
+                          <div class="text-sm font-bold font-sans" [ngClass]="(day.isSelected || day.isToday) ? 'text-blue-600 font-bold' : 'text-slate-900'">
+                            {{ day.dayNumber }}
+                          </div>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Week Hour Rows for weekCourt -->
+                    @for (row of timelineRows(); track row.hourStr) {
+                      <div
+                        class="grid border-b border-slate-100 hover:bg-slate-50/50 transition-colors"
+                        style="grid-template-columns: 75px repeat(7, minmax(110px, 1fr))"
+                      >
+                        <div class="p-2 border-r border-slate-200 text-xs font-mono font-semibold text-slate-600 flex items-center justify-center sticky left-0 bg-white z-20 shadow-xs select-none">
+                          {{ formatHourAmPm(row.hourNum) }}
+                        </div>
+
+                        @for (day of weekDays(); track day.dateStr) {
+                          @let block = getBlockForCell(day.dateStr, weekCourt.id, row.hourNum);
+                          @let booking = getBookingForCell(day.dateStr, weekCourt.id, row.hourNum);
+                          <div class="p-1 border-r border-slate-100 last:border-r-0 min-h-[64px] flex items-center justify-center transition-colors relative">
+                            @if (block) {
+                              <div
+                                (click)="selectBlock.emit(block)"
+                                class="w-full h-full p-1.5 rounded-lg text-left cursor-pointer border-l-2 text-[10px] font-mono flex flex-col justify-between truncate"
+                                [ngClass]="getBlockBadgeClass(block.kind)"
+                              >
+                                <span class="font-bold truncate">{{ block.reason || getBlockKindLabel(block.kind) }}</span>
+                                <span class="text-[9px] opacity-75">Bloqueado</span>
+                              </div>
+                            } @else if (booking) {
+                              <div
+                                (click)="selectBooking.emit(booking)"
+                                class="w-full h-full p-1.5 rounded-lg text-left cursor-pointer border-l-2 text-[10px] font-mono flex flex-col justify-between truncate"
+                                [ngClass]="getBookingBadgeClass(booking.status)"
+                              >
+                                <span class="font-bold truncate text-slate-900">{{ booking.customer_name }}</span>
+                                <span class="text-[9px] font-semibold text-slate-600">Cod: {{ booking.code }}</span>
+                              </div>
+                            } @else {
+                              <button
+                                type="button"
+                                (click)="slotClicked.emit({ courtId: weekCourt.id, hourStr: row.hourStr, dateStr: day.dateStr })"
+                                class="w-full h-full rounded-lg border border-dashed border-slate-200/80 hover:border-[#0056FB] hover:bg-blue-50/50 flex items-center justify-center transition-all group"
+                                title="Reservar en {{ weekCourt.name }} el {{ day.dayName }} {{ day.dayNumber }} a las {{ row.hourStr }}"
+                              >
+                                <span class="text-[10px] font-mono text-slate-300 group-hover:text-[#0056FB]">
+                                  +
+                                </span>
+                              </button>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          }
         </div>
       }
 
@@ -1214,6 +1268,16 @@ export class ClubTimelineViewComponent implements OnInit {
       default:
         return 'bg-slate-100 border-slate-300 text-slate-800 hover:border-slate-500 border-l-slate-600';
     }
+  }
+
+  getSportIcon(sport?: string): string {
+    if (!sport) return '🎾';
+    const s = sport.toLowerCase();
+    if (s.includes('futbol') || s.includes('fútbol')) return '⚽';
+    if (s.includes('padel') || s.includes('pádel')) return '🎾';
+    if (s.includes('tenis') || s.includes('tennis')) return '🎾';
+    if (s.includes('basket') || s.includes('baloncesto')) return '🏀';
+    return '🏟️';
   }
 
   parseHour(timeStr?: string): number {

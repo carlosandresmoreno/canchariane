@@ -388,6 +388,18 @@ export interface ClubRevenueReport {
   by_court: RevenueCourtReport[];
 }
 
+export interface ClubAnnouncement {
+  is_active: boolean;
+  title: string;
+  description: string;
+  tag?: string;
+  image_url?: string | null;
+  action_type: 'whatsapp' | 'link' | 'none';
+  action_label?: string;
+  action_phone?: string | null;
+  action_url?: string | null;
+}
+
 export interface ClubBookingSettings {
   allowed_durations: number[];
   default_duration: number;
@@ -399,5 +411,6 @@ export interface ClubBookingSettings {
   city?: string | null;
   address?: string | null;
   phone?: string | null;
+  announcement?: ClubAnnouncement | null;
 }
 

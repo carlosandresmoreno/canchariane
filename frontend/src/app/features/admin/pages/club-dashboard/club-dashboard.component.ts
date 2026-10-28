@@ -448,6 +448,183 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
               </div>
             </div>
 
+            <!-- PUBLICIDAD, CAMPEONATOS Y AVISOS DEL CLUB -->
+            <div class="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-xs space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="w-2.5 h-2.5 rounded-full bg-purple-600"></span>
+                    <span class="font-mono text-[10px] tracking-widest uppercase text-purple-600 font-semibold">Anuncios & Difusión</span>
+                  </div>
+                  <h3 class="font-serif italic text-xl text-slate-900">Publicidad y Campeonatos para Visitantes</h3>
+                  <p class="text-xs text-slate-500 font-light mt-0.5">
+                    Muestra un banner o ventana emergente al entrar al portal público para promocionar torneos, avisos o patrocinios, con enlace directo a WhatsApp del encargado.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  (click)="handleSaveSettings()"
+                  [disabled]="isSavingSettings()"
+                  class="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-mono text-xs font-semibold uppercase tracking-wider transition-all shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-2 self-start sm:self-auto shrink-0"
+                >
+                  @if (isSavingSettings()) {
+                    <span class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span>Guardando...</span>
+                  } @else {
+                    <span>💾 Guardar Publicidad</span>
+                  }
+                </button>
+              </div>
+
+              <!-- Toggle Active -->
+              <div class="p-4 rounded-2xl border transition-all flex items-center justify-between gap-4"
+                [ngClass]="announcementActive() ? 'bg-purple-50/60 border-purple-200' : 'bg-slate-50/70 border-slate-200'">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-base">{{ announcementActive() ? '📢' : '💤' }}</span>
+                    <span class="text-sm font-semibold text-slate-900">
+                      {{ announcementActive() ? 'Publicidad Activa en el Portal' : 'Publicidad Desactivada' }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500 mt-0.5">
+                    {{ announcementActive() 
+                      ? 'Los visitantes verán este anuncio al abrir el enlace de reservas de tu club.' 
+                      : 'Nadie verá el anuncio emergente actualmente.' }}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  (click)="announcementActive.set(!announcementActive())"
+                  class="px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer"
+                  [ngClass]="announcementActive() 
+                    ? 'bg-purple-600 text-white shadow-xs' 
+                    : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'"
+                >
+                  {{ announcementActive() ? '✓ Activada' : 'Activar' }}
+                </button>
+              </div>
+
+              <!-- Form Fields -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5" [class.opacity-60]="!announcementActive()">
+                <div>
+                  <label class="text-[11px] font-mono uppercase tracking-wider text-slate-600 font-semibold block mb-1.5">
+                    Categoría / Etiqueta del Anuncio
+                  </label>
+                  <select
+                    [ngModel]="announcementTag()"
+                    (ngModelChange)="announcementTag.set($event)"
+                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-purple-600 transition-colors"
+                  >
+                    <option value="Campeonato">🏆 Campeonato</option>
+                    <option value="Torneo Relámpago">⚡ Torneo Relámpago</option>
+                    <option value="Promoción">🏷️ Promoción / Descuento</option>
+                    <option value="Aviso Importante">📢 Aviso Importante</option>
+                    <option value="Evento">🎪 Evento Especial</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="text-[11px] font-mono uppercase tracking-wider text-slate-600 font-semibold block mb-1.5">
+                    Título Principal
+                  </label>
+                  <input
+                    type="text"
+                    [ngModel]="announcementTitle()"
+                    (ngModelChange)="announcementTitle.set($event)"
+                    placeholder="Ej. Gran Torneo Nocturno de Fútbol 5 y Pádel"
+                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:border-purple-600 transition-colors"
+                  />
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="text-[11px] font-mono uppercase tracking-wider text-slate-600 font-semibold block mb-1.5">
+                    Descripción / Información del Anuncio
+                  </label>
+                  <textarea
+                    [ngModel]="announcementDescription()"
+                    (ngModelChange)="announcementDescription.set($event)"
+                    rows="3"
+                    placeholder="Ej. Premios en efectivo: $2.000.000 al campeón. Inscripciones abiertas hasta el 15 de noviembre. Cupos limitados."
+                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:border-purple-600 transition-colors resize-none"
+                  ></textarea>
+                </div>
+
+                <div>
+                  <label class="text-[11px] font-mono uppercase tracking-wider text-slate-600 font-semibold block mb-1.5">
+                    URL de Afiche / Imagen (Opcional)
+                  </label>
+                  <input
+                    type="url"
+                    [ngModel]="announcementImageUrl()"
+                    (ngModelChange)="announcementImageUrl.set($event)"
+                    placeholder="https://ejemplo.com/afiche-campeonato.jpg"
+                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:border-purple-600 transition-colors"
+                  />
+                  <p class="text-[11px] text-slate-400 mt-1">Si dejas este campo vacío, se mostrará un banner elegante sin imagen.</p>
+                </div>
+
+                <div>
+                  <label class="text-[11px] font-mono uppercase tracking-wider text-slate-600 font-semibold block mb-1.5">
+                    Tipo de Acción al Cliquear
+                  </label>
+                  <select
+                    [ngModel]="announcementActionType()"
+                    (ngModelChange)="announcementActionType.set($event)"
+                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-purple-600 transition-colors"
+                  >
+                    <option value="whatsapp">💬 WhatsApp del Encargado / Organizador</option>
+                    <option value="link">🌐 Enlace Web Externo</option>
+                    <option value="none">Solo informativo (Sin botón de redirección)</option>
+                  </select>
+                </div>
+
+                @if (announcementActionType() === 'whatsapp') {
+                  <div>
+                    <label class="text-[11px] font-mono uppercase tracking-wider text-slate-600 font-semibold block mb-1.5">
+                      Número de WhatsApp del Encargado
+                    </label>
+                    <input
+                      type="tel"
+                      [ngModel]="announcementActionPhone()"
+                      (ngModelChange)="announcementActionPhone.set($event)"
+                      placeholder="Ej. 3123456789 o 573123456789"
+                      class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-purple-600 transition-colors"
+                    />
+                    <p class="text-[11px] text-slate-400 mt-1">El usuario abrirá chat directamente con este número para inscribirse o consultar.</p>
+                  </div>
+                }
+
+                @if (announcementActionType() === 'link') {
+                  <div>
+                    <label class="text-[11px] font-mono uppercase tracking-wider text-slate-600 font-semibold block mb-1.5">
+                      URL del Enlace Web
+                    </label>
+                    <input
+                      type="url"
+                      [ngModel]="announcementActionUrl()"
+                      (ngModelChange)="announcementActionUrl.set($event)"
+                      placeholder="https://torneos.ejemplo.com/inscripcion"
+                      class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-purple-600 transition-colors"
+                    />
+                  </div>
+                }
+
+                <div>
+                  <label class="text-[11px] font-mono uppercase tracking-wider text-slate-600 font-semibold block mb-1.5">
+                    Texto del Botón de Contacto
+                  </label>
+                  <input
+                    type="text"
+                    [ngModel]="announcementActionLabel()"
+                    (ngModelChange)="announcementActionLabel.set($event)"
+                    placeholder="Ej. Hablar con el Encargado del Torneo"
+                    class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:border-purple-600 transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
+
             <!-- Business Hours Component -->
             <app-club-business-hours-manager
               [hours]="businessHours()"
@@ -1245,6 +1422,17 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   readonly settingsDefaultDuration = signal<number>(60);
   readonly settingsSlotStep = signal<number | null>(null);
   readonly settingsCourtSelectionMode = signal<'manual' | 'by_category'>('manual');
+
+  // Club Publicity / Announcement
+  readonly announcementActive = signal<boolean>(false);
+  readonly announcementTitle = signal<string>('');
+  readonly announcementTag = signal<string>('Campeonato');
+  readonly announcementDescription = signal<string>('');
+  readonly announcementImageUrl = signal<string>('');
+  readonly announcementActionType = signal<'whatsapp' | 'link' | 'none'>('whatsapp');
+  readonly announcementActionLabel = signal<string>('Hablar con el Encargado');
+  readonly announcementActionPhone = signal<string>('');
+  readonly announcementActionUrl = signal<string>('');
 
   readonly allDurationChoices = [
     { minutes: 30, label: '30 min', sub: 'Media hora' },
@@ -2085,6 +2273,29 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
         this.settingsDefaultDuration.set(s.default_duration || 60);
         this.settingsSlotStep.set(s.slot_step_minutes ?? null);
         this.settingsCourtSelectionMode.set(s.court_selection_mode || 'manual');
+
+        const a = s.announcement;
+        if (a) {
+          this.announcementActive.set(!!a.is_active);
+          this.announcementTitle.set(a.title || '');
+          this.announcementTag.set(a.tag || 'Campeonato');
+          this.announcementDescription.set(a.description || '');
+          this.announcementImageUrl.set(a.image_url || '');
+          this.announcementActionType.set(a.action_type || 'whatsapp');
+          this.announcementActionLabel.set(a.action_label || 'Hablar con el Encargado');
+          this.announcementActionPhone.set(a.action_phone || '');
+          this.announcementActionUrl.set(a.action_url || '');
+        } else {
+          this.announcementActive.set(false);
+          this.announcementTitle.set('');
+          this.announcementTag.set('Campeonato');
+          this.announcementDescription.set('');
+          this.announcementImageUrl.set('');
+          this.announcementActionType.set('whatsapp');
+          this.announcementActionLabel.set('Hablar con el Encargado');
+          this.announcementActionPhone.set('');
+          this.announcementActionUrl.set('');
+        }
       },
       error: (e) => console.error('Error fetching club settings', e)
     });
@@ -2121,7 +2332,18 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
         allowed_durations: this.settingsAllowedDurations(),
         default_duration: this.settingsDefaultDuration(),
         slot_step_minutes: this.settingsSlotStep(),
-        court_selection_mode: this.settingsCourtSelectionMode()
+        court_selection_mode: this.settingsCourtSelectionMode(),
+        announcement: {
+          is_active: this.announcementActive(),
+          title: this.announcementTitle(),
+          tag: this.announcementTag(),
+          description: this.announcementDescription(),
+          image_url: this.announcementImageUrl() || null,
+          action_type: this.announcementActionType(),
+          action_label: this.announcementActionLabel() || 'Hablar con el Encargado',
+          action_phone: this.announcementActionPhone() || null,
+          action_url: this.announcementActionUrl() || null
+        }
       })
       .subscribe({
         next: (updated) => {
@@ -2130,7 +2352,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
           this.settingsDefaultDuration.set(updated.default_duration);
           this.settingsSlotStep.set(updated.slot_step_minutes ?? null);
           this.settingsCourtSelectionMode.set(updated.court_selection_mode || 'manual');
-          this.feedbackMessage.set('Políticas de duración y reservas guardadas exitosamente.');
+          this.feedbackMessage.set('Configuración y publicidad guardadas exitosamente.');
         },
         error: (err) => {
           this.isSavingSettings.set(false);

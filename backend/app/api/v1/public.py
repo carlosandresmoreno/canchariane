@@ -214,6 +214,7 @@ async def get_club_by_slug(
         slot_step_minutes=slot_step_minutes,
         court_selection_mode=court_selection_mode,
         court_groups=court_groups,
+        announcement=s.get("announcement"),
     )
 
 

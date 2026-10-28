@@ -267,6 +267,18 @@ class ClubStaffCreateRequest(BaseModel):
         return v.strip() if isinstance(v, str) else v
 
 
+class ClubAnnouncementDTO(BaseModel):
+    is_active: bool = False
+    title: str = ""
+    description: str = ""
+    tag: str = "Campeonato"
+    image_url: str | None = None
+    action_type: str = "whatsapp"  # "whatsapp" | "link" | "none"
+    action_label: str = "Contactar al Encargado"
+    action_phone: str | None = None
+    action_url: str | None = None
+
+
 class ClubSettingsResponse(BaseModel):
     allowed_durations: list[int]
     default_duration: int
@@ -278,6 +290,7 @@ class ClubSettingsResponse(BaseModel):
     city: str | None = None
     address: str | None = None
     phone: str | None = None
+    announcement: ClubAnnouncementDTO | None = None
 
 
 class ClubSettingsUpdateRequest(BaseModel):
@@ -290,6 +303,7 @@ class ClubSettingsUpdateRequest(BaseModel):
     city: str | None = None
     address: str | None = None
     phone: str | None = None
+    announcement: ClubAnnouncementDTO | None = None
 
 
 # --- Daily Store Sales ---

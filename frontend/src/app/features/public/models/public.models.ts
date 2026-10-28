@@ -32,6 +32,18 @@ export interface CourtGroupPublicDTO {
   selection_mode: 'auto' | 'manual';
 }
 
+export interface ClubAnnouncement {
+  is_active: boolean;
+  title: string;
+  description: string;
+  tag?: string;
+  image_url?: string | null;
+  action_type: 'whatsapp' | 'link' | 'none';
+  action_label?: string;
+  action_phone?: string | null;
+  action_url?: string | null;
+}
+
 export interface PublicClub {
   id: string;
   name: string;
@@ -51,6 +63,7 @@ export interface PublicClub {
   slot_step_minutes?: number | null;
   court_selection_mode?: 'manual' | 'by_category';
   court_groups?: CourtGroupPublicDTO[];
+  announcement?: ClubAnnouncement | null;
 }
 
 

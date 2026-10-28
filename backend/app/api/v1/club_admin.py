@@ -120,6 +120,7 @@ async def get_club_settings(
         city=s.get("city", "Pereira"),
         address=club.address,
         phone=club.phone,
+        announcement=s.get("announcement"),
     )
 
 
@@ -172,6 +173,8 @@ async def update_club_settings(
         club.address = data.address
     if data.phone is not None:
         club.phone = data.phone
+    if data.announcement is not None:
+        s["announcement"] = data.announcement.model_dump()
 
     club.settings = s
     await db.commit()
@@ -189,6 +192,7 @@ async def update_club_settings(
         city=s.get("city", "Pereira"),
         address=club.address,
         phone=club.phone,
+        announcement=s.get("announcement"),
     )
 
 

@@ -49,6 +49,18 @@ class CourtGroupPublicDTO(BaseModel):
     selection_mode: str = "auto"  # "auto" | "manual"
 
 
+class ClubAnnouncementDTO(BaseModel):
+    is_active: bool = False
+    title: str = ""
+    description: str = ""
+    tag: str = "Campeonato"
+    image_url: str | None = None
+    action_type: str = "whatsapp"  # "whatsapp" | "link" | "none"
+    action_label: str = "Contactar al Encargado"
+    action_phone: str | None = None
+    action_url: str | None = None
+
+
 class ClubPublicDetail(BaseModel):
     id: UUID
     slug: str
@@ -67,6 +79,7 @@ class ClubPublicDetail(BaseModel):
     slot_step_minutes: int | None = None
     court_selection_mode: str = "manual"  # "manual" | "by_category"
     court_groups: list[CourtGroupPublicDTO] = Field(default_factory=list)
+    announcement: ClubAnnouncementDTO | None = None
 
 
 class SlotPublicDTO(BaseModel):

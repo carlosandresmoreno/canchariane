@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /c/
+Allow: /lookup
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /api/
+
+Sitemap: https://cancha.arianedevs.com/sitemap.xml

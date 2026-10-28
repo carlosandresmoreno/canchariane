@@ -76,11 +76,11 @@ type ViewMode = 'list' | 'map';
           </div>
 
           <h2 class="text-3xl sm:text-5xl font-serif italic text-slate-950 tracking-tight leading-tight mb-4">
-            Tu cancha lista para jugar, <br class="hidden sm:inline"/>en el momento exacto.
+            Alquiler de canchas sintéticas, <br class="hidden sm:inline"/>fútbol y pádel en Pereira.
           </h2>
 
           <p class="text-sm sm:text-base text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto">
-            Explora los clubes deportivos disponibles, consulta la disponibilidad de horarios en tiempo real y reserva tu cancha de pádel, fútbol o tenis al instante sin intermediarios ni llamadas.
+            Explora las canchas disponibles en tiempo real directamente en el mapa, consulta horarios libres y reserva al instante sin intermediarios ni llamadas.
           </p>
 
           <!-- Expansion Notice Badge -->
@@ -302,89 +302,157 @@ type ViewMode = 'list' | 'map';
             }
           }
 
-          <!-- VIEW MODE: MAP -->
+          <!-- VIEW MODE: MAP (AWWWARDS MODERN MAP-FIRST EXPERIENCE) -->
           @if (viewMode() === 'map') {
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <!-- Left Sidebar / Club List (4 cols) -->
-              <div class="lg:col-span-4 space-y-3 max-h-[620px] overflow-y-auto pr-1">
-                <div class="p-3 bg-blue-50/80 border border-blue-200/80 rounded-2xl text-xs font-mono text-blue-900 flex items-center justify-between">
-                  <span>📍 Mostrando {{ filteredClubs().length }} clubes en Pereira</span>
-                  <span class="text-[10px] text-blue-600">Haz clic para enfocar</span>
-                </div>
-
-                @for (club of filteredClubs(); track club.id) {
-                  <div
-                    (click)="focusClubOnMap(club)"
-                    class="p-4 bg-white rounded-2xl border border-slate-200 hover:border-blue-400 hover:shadow-md cursor-pointer transition-all space-y-2 group"
-                    [class.border-blue-500]="selectedMapClub()?.id === club.id"
-                    [class.bg-blue-50]="selectedMapClub()?.id === club.id"
-                  >
-                    <div class="flex items-start justify-between gap-2">
-                      <h4 class="font-serif italic text-base text-slate-950 group-hover:text-[#0056FB] transition-colors">
-                        {{ club.name }}
-                      </h4>
-                      <span class="text-[10px] font-mono text-slate-400">Pereira</span>
-                    </div>
-
-                    <p class="text-xs text-slate-500 line-clamp-1">
-                      📍 {{ club.address || 'Pereira, Risaralda' }}
-                    </p>
-
-                    <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-                      <div class="flex gap-1">
-                        @for (sport of club.sports || []; track sport) {
-                          <span class="text-xs" [title]="sport">{{ getSportEmoji(sport) }}</span>
-                        }
-                      </div>
-
-                      <div class="flex items-center gap-2">
-                        <a
-                          [href]="getDirectionsUrl(club)"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          (click)="$event.stopPropagation()"
-                          class="text-[11px] font-mono text-slate-500 hover:text-slate-900 underline"
-                        >
-                          Cómo llegar ↗
-                        </a>
-                        <a
-                          [routerLink]="['/c', club.slug]"
-                          (click)="$event.stopPropagation()"
-                          class="px-2.5 py-1 bg-[#0056FB] hover:bg-[#0048d6] text-white rounded-lg text-[10px] font-mono uppercase tracking-wider font-semibold"
-                        >
-                          Reservar
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                }
-              </div>
-
-              <!-- Interactive Map Container (8 cols) -->
-              <div class="lg:col-span-8 bg-white rounded-3xl border border-slate-200/80 p-2 shadow-xs">
-                <div class="relative w-full h-[540px] sm:h-[620px] rounded-2xl overflow-hidden bg-slate-100">
+            <div class="flex flex-col lg:grid lg:grid-cols-12 gap-5 lg:gap-6">
+              <!-- Interactive Map Container (Order 1 on mobile, 8 cols on desktop) -->
+              <div class="order-1 lg:order-2 lg:col-span-8 bg-white rounded-3xl border border-slate-200/90 p-2 sm:p-2.5 shadow-sm">
+                <div class="relative w-full h-[400px] sm:h-[500px] lg:h-[620px] rounded-2xl overflow-hidden bg-slate-100">
                   <div #mapContainer class="w-full h-full z-10"></div>
 
                   <!-- Overlay Legend on Map -->
-                  <div class="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-slate-200/80 shadow-md text-xs font-mono text-slate-700 pointer-events-none flex items-center gap-3">
+                  <div class="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 bg-white/95 backdrop-blur-md px-3 py-2 rounded-2xl border border-slate-200/80 shadow-md text-xs font-mono text-slate-700 pointer-events-none flex items-center gap-2.5">
                     <div class="flex items-center gap-1.5">
-                      <span class="w-2.5 h-2.5 rounded-full bg-[#0056FB]"></span>
-                      <span class="text-[11px]">Sede del Club</span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#0056FB] animate-pulse"></span>
+                      <span class="text-[11px] font-semibold">Canchas Disponibles</span>
                     </div>
                     <span class="text-slate-300">|</span>
-                    <span class="text-[10px] text-slate-500">Pereira (Centro)</span>
+                    <span class="text-[10px] text-slate-500">Pereira</span>
                   </div>
 
                   <!-- Center on Pereira Button -->
                   <button
                     type="button"
                     (click)="centerOnPereira()"
-                    class="absolute top-4 right-4 z-20 px-3 py-2 rounded-xl bg-white/95 hover:bg-white text-slate-800 text-xs font-mono tracking-wider shadow-md border border-slate-200 transition-all flex items-center gap-1.5"
+                    class="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 px-3 py-2 rounded-xl bg-white/95 hover:bg-white text-slate-800 text-xs font-mono tracking-wider shadow-md border border-slate-200 transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
                     title="Centrar mapa en Pereira"
                   >
                     <span>📍</span>
-                    <span>Centrar Pereira</span>
+                    <span class="hidden sm:inline">Centrar</span>
+                    <span>Pereira</span>
                   </button>
+                </div>
+              </div>
+
+              <!-- Club Cards (Order 2 on mobile: horizontal touch swipe on mobile, vertical sidebar on desktop) -->
+              <div class="order-2 lg:order-1 lg:col-span-4">
+                <div class="hidden lg:flex items-center justify-between p-3 mb-3 bg-blue-50/80 border border-blue-200/80 rounded-2xl text-xs font-mono text-blue-900">
+                  <span>📍 {{ filteredClubs().length }} clubes en Pereira</span>
+                  <span class="text-[10px] text-blue-600">Haz clic para enfocar</span>
+                </div>
+
+                <!-- Desktop Vertical List -->
+                <div class="hidden lg:block space-y-3 max-h-[580px] overflow-y-auto pr-1 scrollbar-thin">
+                  @for (club of filteredClubs(); track club.id) {
+                    <div
+                      (click)="focusClubOnMap(club)"
+                      class="p-4 bg-white rounded-2xl border transition-all duration-200 space-y-2 group cursor-pointer"
+                      [ngClass]="selectedMapClub()?.id === club.id
+                        ? 'border-[#0056FB] bg-blue-50/60 shadow-md ring-2 ring-[#0056FB]/20'
+                        : 'border-slate-200 hover:border-blue-300 hover:shadow-xs'"
+                    >
+                      <div class="flex items-start justify-between gap-2">
+                        <h4 class="font-serif italic text-base text-slate-950 group-hover:text-[#0056FB] transition-colors leading-tight">
+                          {{ club.name }}
+                        </h4>
+                        <span class="text-[10px] font-mono text-slate-400 shrink-0">{{ club.city || 'Pereira' }}</span>
+                      </div>
+
+                      <p class="text-xs text-slate-500 line-clamp-1">
+                        📍 {{ club.address || 'Pereira, Risaralda' }}
+                      </p>
+
+                      <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                        <div class="flex gap-1.5 items-center">
+                          @for (sport of club.sports || []; track sport) {
+                            <span class="text-xs px-1.5 py-0.5 rounded-md bg-slate-100" [title]="sport">
+                              {{ getSportEmoji(sport) }}
+                            </span>
+                          }
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                          <a
+                            [href]="getDirectionsUrl(club)"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            (click)="$event.stopPropagation()"
+                            class="text-[11px] font-mono text-slate-500 hover:text-slate-900 underline"
+                          >
+                            Cómo llegar ↗
+                          </a>
+                          <a
+                            [routerLink]="['/c', club.slug]"
+                            (click)="$event.stopPropagation()"
+                            class="px-3 py-1.5 bg-[#0056FB] hover:bg-[#0048d6] text-white rounded-xl text-[11px] font-mono uppercase tracking-wider font-semibold shadow-xs"
+                          >
+                            Reservar ➔
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Mobile Horizontal Touch Carousel -->
+                <div class="block lg:hidden">
+                  <div class="flex items-center justify-between text-xs font-mono text-slate-500 px-1 mb-2">
+                    <span>Desliza los {{ filteredClubs().length }} clubes en Pereira:</span>
+                    <span class="text-[11px] text-[#0056FB] font-semibold">Toca para enfocar</span>
+                  </div>
+
+                  <div class="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none snap-x">
+                    @for (club of filteredClubs(); track club.id) {
+                      <div
+                        (click)="focusClubOnMap(club)"
+                        class="min-w-[270px] max-w-[300px] p-4 bg-white rounded-2xl border shrink-0 snap-start transition-all duration-200 flex flex-col justify-between gap-3 shadow-xs"
+                        [ngClass]="selectedMapClub()?.id === club.id
+                          ? 'border-[#0056FB] bg-blue-50/50 shadow-md ring-2 ring-[#0056FB]/20'
+                          : 'border-slate-200'"
+                      >
+                        <div>
+                          <div class="flex items-start justify-between gap-2 mb-1">
+                            <h4 class="font-serif italic text-base text-slate-950 font-bold truncate">
+                              {{ club.name }}
+                            </h4>
+                            <span class="text-[10px] font-mono text-slate-400 shrink-0">{{ club.city || 'Pereira' }}</span>
+                          </div>
+                          <p class="text-xs text-slate-500 truncate">
+                            📍 {{ club.address || 'Pereira, Risaralda' }}
+                          </p>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                          <div class="flex gap-1 items-center">
+                            @for (sport of club.sports || []; track sport) {
+                              <span class="text-xs px-1.5 py-0.5 rounded-md bg-slate-100" [title]="sport">
+                                {{ getSportEmoji(sport) }}
+                              </span>
+                            }
+                          </div>
+
+                          <div class="flex items-center gap-2">
+                            <a
+                              [href]="getDirectionsUrl(club)"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              (click)="$event.stopPropagation()"
+                              class="text-[10px] font-mono text-slate-500 hover:text-slate-900 underline"
+                            >
+                              Mapa ↗
+                            </a>
+                            <a
+                              [routerLink]="['/c', club.slug]"
+                              (click)="$event.stopPropagation()"
+                              class="px-3 py-1.5 bg-[#0056FB] text-white rounded-xl text-[10px] font-mono uppercase tracking-wider font-semibold shadow-xs"
+                            >
+                              Reservar ➔
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
                 </div>
               </div>
             </div>
@@ -425,7 +493,7 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
   readonly isLoading = signal<boolean>(true);
   readonly searchQuery = signal<string>('');
   readonly selectedSport = signal<string>('all');
-  readonly viewMode = signal<ViewMode>('list');
+  readonly viewMode = signal<ViewMode>('map');
   readonly selectedMapClub = signal<PublicClubSummary | null>(null);
 
   // Map state
@@ -481,8 +549,14 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
       next: (clubs) => {
         this.clubs.set(clubs);
         this.isLoading.set(false);
-        if (this.viewMode() === 'map' && this.map) {
-          this.refreshMapMarkers();
+        if (this.viewMode() === 'map') {
+          setTimeout(() => {
+            if (!this.map) {
+              this.initMap();
+            } else {
+              this.refreshMapMarkers();
+            }
+          }, 150);
         }
       },
       error: () => {
