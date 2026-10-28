@@ -10,6 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Title, Meta } from '@angular/platform-browser';
 
 import { PublicBookingService } from '../../services/public-booking.service';
 import { CourtMapComponent } from '../../components/court-map/court-map.component';
@@ -878,6 +879,8 @@ interface DayOption {
 })
 export class PublicBookingWizardComponent implements OnInit {
   private readonly publicService = inject(PublicBookingService);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   readonly slug = input<string>('club-alpha');
 
@@ -1039,6 +1042,31 @@ export class PublicBookingWizardComponent implements OnInit {
     this.publicService.getClub(clubSlug).subscribe({
       next: (c) => {
         this.club.set(c);
+
+        // Dynamic On-Page SEO per Club (Pereira & Risaralda targeting)
+        const clubCity = c.city || 'Pereira';
+        const sportsList = Array.from(new Set(c.courts?.map((ct) => ct.sport).filter(Boolean) || []));
+        const sportsText = sportsList.length > 0 ? sportsList.join(', ') : 'Fútbol y Pádel';
+        this.titleService.setTitle(`Alquilar Cancha en ${c.name} | ${sportsText} en ${clubCity} | Canchariane`);
+
+        this.metaService.updateTag({
+          name: 'description',
+          content: `Reserva canchas en ${c.name} (${clubCity}, Risaralda). Disponibilidad en tiempo real, horarios libres, tarifas y confirmación instantánea sin llamadas.`
+        });
+        this.metaService.updateTag({
+          property: 'og:title',
+          content: `${c.name} — Canchas Sintéticas y Pádel en ${clubCity}`
+        });
+        this.metaService.updateTag({
+          property: 'og:description',
+          content: `Consulta turnos y reserva tu cancha en ${c.name}. Rápido, fácil y 100% en tiempo real.`
+        });
+        if (c.logo_url) {
+          this.metaService.updateTag({
+            property: 'og:image',
+            content: c.logo_url
+          });
+        }
 
         // Check Announcement
         if (c.announcement && c.announcement.is_active) {

@@ -143,6 +143,63 @@ type ViewMode = 'list' | 'map';
             </div>
           </div>
 
+          <!-- City / Municipality Filter Badges (Local SEO & Quick Geonavigation) -->
+          <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-100 text-xs">
+            <span class="text-slate-400 font-mono text-[11px] uppercase tracking-wider mr-1 shrink-0 hidden sm:inline">Ciudad:</span>
+
+            <button
+              type="button"
+              (click)="selectCity('all')"
+              [class.bg-slate-900]="selectedCity() === 'all'"
+              [class.text-white]="selectedCity() === 'all'"
+              [class.bg-slate-100]="selectedCity() !== 'all'"
+              [class.text-slate-700]="selectedCity() !== 'all'"
+              class="px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider font-semibold transition-all shrink-0 hover:bg-slate-200 flex items-center gap-1.5"
+            >
+              <span>📍</span>
+              <span>Todo Risaralda</span>
+            </button>
+
+            <button
+              type="button"
+              (click)="selectCity('pereira')"
+              [class.bg-[#0056FB]]="selectedCity() === 'pereira'"
+              [class.text-white]="selectedCity() === 'pereira'"
+              [class.bg-slate-100]="selectedCity() !== 'pereira'"
+              [class.text-slate-700]="selectedCity() !== 'pereira'"
+              class="px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider font-medium transition-all shrink-0 hover:bg-slate-200 flex items-center gap-1.5"
+            >
+              <span>⚽</span>
+              <span>Pereira</span>
+            </button>
+
+            <button
+              type="button"
+              (click)="selectCity('dosquebradas')"
+              [class.bg-[#0056FB]]="selectedCity() === 'dosquebradas'"
+              [class.text-white]="selectedCity() === 'dosquebradas'"
+              [class.bg-slate-100]="selectedCity() !== 'dosquebradas'"
+              [class.text-slate-700]="selectedCity() !== 'dosquebradas'"
+              class="px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider font-medium transition-all shrink-0 hover:bg-slate-200 flex items-center gap-1.5"
+            >
+              <span>⚡</span>
+              <span>Dosquebradas</span>
+            </button>
+
+            <button
+              type="button"
+              (click)="selectCity('santa_rosa')"
+              [class.bg-[#0056FB]]="selectedCity() === 'santa_rosa'"
+              [class.text-white]="selectedCity() === 'santa_rosa'"
+              [class.bg-slate-100]="selectedCity() !== 'santa_rosa'"
+              [class.text-slate-700]="selectedCity() !== 'santa_rosa'"
+              class="px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider font-medium transition-all shrink-0 hover:bg-slate-200 flex items-center gap-1.5"
+            >
+              <span>🏆</span>
+              <span>Santa Rosa de Cabal</span>
+            </button>
+          </div>
+
           <!-- Sport Filter Badges -->
           <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
             <span class="text-slate-400 font-mono text-[11px] uppercase tracking-wider mr-1 hidden sm:inline">Deporte:</span>
@@ -458,6 +515,43 @@ type ViewMode = 'list' | 'map';
             </div>
           }
         }
+
+        <!-- Section: Preguntas Frecuentes (FAQ Local SEO Pereira & Risaralda) -->
+        <section class="mt-16 pt-12 border-t border-slate-200/80">
+          <div class="max-w-3xl mx-auto">
+            <div class="text-center mb-10">
+              <span class="text-xs font-mono text-[#0056FB] uppercase tracking-widest font-semibold">Preguntas Frecuentes</span>
+              <h3 class="text-2xl sm:text-3xl font-serif italic text-slate-950 mt-1">
+                Alquiler de canchas en Pereira y el Eje Cafetero
+              </h3>
+              <p class="text-xs sm:text-sm text-slate-500 mt-2 font-normal">
+                Todo lo que necesitas saber para reservar tus partidos de fútbol y pádel al instante en Risaralda.
+              </p>
+            </div>
+
+            <div class="space-y-3">
+              @for (faq of faqs; track faq.id) {
+                <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden transition-all shadow-2xs">
+                  <button
+                    type="button"
+                    (click)="toggleFaq(faq.id)"
+                    class="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-slate-50/60 transition-colors"
+                  >
+                    <span class="text-sm font-semibold text-slate-900 leading-snug">{{ faq.question }}</span>
+                    <span class="text-slate-400 font-mono text-sm shrink-0 transition-transform duration-200" [class.rotate-180]="expandedFaq() === faq.id">
+                      ▼
+                    </span>
+                  </button>
+                  @if (expandedFaq() === faq.id) {
+                    <div class="px-5 pb-4 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3 bg-slate-50/30">
+                      {{ faq.answer }}
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </section>
       </main>
 
       <!-- Clean Quiet Luxury Footer -->
@@ -505,10 +599,42 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
   private readonly PEREIRA_LNG = -75.6961;
   private readonly PEREIRA_ZOOM = 13;
 
+  readonly selectedCity = signal<string>('all');
+  readonly expandedFaq = signal<number | null>(null);
+
+  readonly faqs = [
+    {
+      id: 1,
+      question: '¿Cómo alquilar una cancha sintética de fútbol o pádel en Pereira y Dosquebradas?',
+      answer: 'En Canchariane puedes consultar la disponibilidad en tiempo real de canchas de fútbol 5, fútbol 7 y pádel en Pereira, Dosquebradas y Santa Rosa de Cabal. Seleccionas el club, la cancha y la hora libre, y reservas al instante sin necesidad de llamadas telefónicas.'
+    },
+    {
+      id: 2,
+      question: '¿Cuánto cuesta alquilar una cancha sintética en Pereira?',
+      answer: 'Los precios oscilan habitualmente entre $50.000 y $120.000 COP por hora dependiendo del tipo de cancha (fútbol 5, fútbol 7 o pádel), si cuenta con cubierta techada y el horario (diurno o nocturno con iluminación).'
+    },
+    {
+      id: 3,
+      question: '¿Hay canchas sintéticas techadas disponibles en Pereira y Dosquebradas?',
+      answer: 'Sí, en Canchariane puedes encontrar clubes con canchas techadas e iluminación profesional para jugar protegidos de la lluvia tanto en Pereira como en Dosquebradas.'
+    },
+    {
+      id: 4,
+      question: '¿Qué medios de pago reciben los clubes en Canchariane?',
+      answer: 'Cada club ofrece opciones de pago cómodas, incluyendo transferencias por Nequi, Daviplata, Bancolombia o pago directo en la recepción del club.'
+    },
+    {
+      id: 5,
+      question: '¿Cómo puedo inscribir mi club de fútbol o pádel a Canchariane?',
+      answer: 'Los clubes y administradores deportivos de Pereira y Risaralda pueden unirse a Canchariane para automatizar sus reservas y recibir pagos. Contáctanos a través del enlace de Acceso Clubes en el menú superior.'
+    }
+  ];
+
   readonly filteredClubs = computed(() => {
     const list = this.clubs();
     const query = this.searchQuery().toLowerCase().trim();
     const sport = this.selectedSport();
+    const city = this.selectedCity();
 
     return list.filter((club) => {
       // Search text match
@@ -523,7 +649,14 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
         sport === 'all' ||
         (club.sports && club.sports.some((s) => s.toLowerCase() === sport.toLowerCase()));
 
-      return matchSearch && matchSport;
+      // City filter match
+      const matchCity =
+        city === 'all' ||
+        (city === 'pereira' && (!club.city || club.city.toLowerCase().includes('pereira'))) ||
+        (city === 'dosquebradas' && (club.city?.toLowerCase().includes('dosquebradas') || club.address?.toLowerCase().includes('dosquebradas'))) ||
+        (city === 'santa_rosa' && (club.city?.toLowerCase().includes('santa rosa') || club.address?.toLowerCase().includes('santa rosa')));
+
+      return matchSearch && matchSport && matchCity;
     });
   });
 
@@ -579,9 +712,30 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
+  selectCity(city: string): void {
+    this.selectedCity.set(city);
+    if (this.map) {
+      if (city === 'pereira') {
+        this.map.flyTo([this.PEREIRA_LAT, this.PEREIRA_LNG], 13);
+      } else if (city === 'dosquebradas') {
+        this.map.flyTo([4.8360, -75.6790], 13);
+      } else if (city === 'santa_rosa') {
+        this.map.flyTo([4.8689, -75.6214], 13);
+      } else {
+        this.map.flyTo([this.PEREIRA_LAT, this.PEREIRA_LNG], 12);
+      }
+    }
+    setTimeout(() => this.refreshMapMarkers(), 100);
+  }
+
+  toggleFaq(id: number): void {
+    this.expandedFaq.set(this.expandedFaq() === id ? null : id);
+  }
+
   resetFilters(): void {
     this.searchQuery.set('');
     this.selectedSport.set('all');
+    this.selectedCity.set('all');
   }
 
   getSportEmoji(sport: string): string {
