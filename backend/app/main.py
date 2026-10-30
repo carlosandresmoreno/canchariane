@@ -11,13 +11,50 @@ from app.config import settings
 from app.infrastructure.db.session import engine
 
 
+import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+async def _expire_stuck_holds_worker() -> None:
+    """Periodic task that marks held bookings as expired once their expires_at has elapsed."""
+    while True:
+        try:
+            await asyncio.sleep(60)
+            async with engine.begin() as conn:
+                result = await conn.execute(
+                    text(
+                        "UPDATE bookings "
+                        "SET status = 'expired' "
+                        "WHERE status = 'held' AND expires_at < NOW()"
+                    )
+                )
+                if result.rowcount > 0:
+                    logger.info("Automatically expired %d held booking(s)", result.rowcount)
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            logger.warning("Error running hold expiration cleanup task: %s", e)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Startup: ensure db connectivity
     async with engine.connect() as conn:
         await conn.execute(text("SELECT 1"))
+
+    # Launch periodic hold cleaner
+    cleanup_task = asyncio.create_task(_expire_stuck_holds_worker())
+
     yield
-    # Shutdown: dispose db pool
+
+    # Shutdown: cancel cleanup task and dispose db pool
+    cleanup_task.cancel()
+    try:
+        await cleanup_task
+    except asyncio.CancelledError:
+        pass
     await engine.dispose()
 
 

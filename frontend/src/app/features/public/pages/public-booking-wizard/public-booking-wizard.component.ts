@@ -800,6 +800,19 @@ interface DayOption {
               </div>
 
               <div class="grid grid-cols-2 gap-4 text-xs font-sans">
+                <!-- Fecha y Hora (Prominente) -->
+                <div class="col-span-2 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-lg">📅</span>
+                    <div>
+                      <span class="text-slate-400 uppercase font-mono text-[10px] block leading-none mb-1">Fecha y Horario Reservado</span>
+                      <span class="font-bold text-slate-900 text-sm tracking-tight block">
+                        {{ formatBookingDateTime(confirmedBooking()?.start_time, confirmedBooking()?.end_time) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <span class="text-slate-400 uppercase font-mono text-[10px] block">Cancha</span>
                   <span class="font-semibold text-slate-900 text-sm">{{ confirmedBooking()?.court_name }}</span>
@@ -828,6 +841,7 @@ interface DayOption {
                 </div>
               </div>
 
+              <!-- Actions: WhatsApp, Calendar, Cancelar -->
               <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
                 <a
                   [href]="getWhatsAppShareUrl()"
@@ -846,15 +860,60 @@ interface DayOption {
                 </button>
               </div>
 
-              <div class="pt-1">
-                <a
-                  [routerLink]="['/lookup']"
-                  [queryParams]="{ code: confirmedBooking()?.code }"
-                  class="w-full py-2.5 px-4 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 text-xs font-mono uppercase tracking-wider transition-all block text-center"
-                >
-                  🔍 Consultar o Cancelar este turno
-                </a>
-              </div>
+              <!-- Cancellation Area (Subtle, elegant & clear) -->
+              @if (confirmedBooking()?.status !== 'cancelled') {
+                <div class="pt-2 border-t border-slate-100">
+                  @if (!showCancelModal()) {
+                    <div class="text-center pt-1">
+                      <button
+                        type="button"
+                        (click)="showCancelModal.set(true)"
+                        class="text-xs text-slate-400 hover:text-rose-600 font-medium transition-colors inline-flex items-center gap-1.5 py-1 px-3 rounded-lg hover:bg-rose-50/50"
+                      >
+                        <span>✕</span>
+                        <span>¿Necesitas cancelar este turno?</span>
+                      </button>
+                    </div>
+                  } @else {
+                    <div class="p-4 rounded-2xl bg-rose-50/70 border border-rose-200 space-y-3 animate-in fade-in">
+                      <div class="flex items-start gap-2.5">
+                        <span class="text-rose-600 text-sm mt-0.5">⚠️</span>
+                        <div class="text-xs text-rose-900 leading-relaxed">
+                          <strong class="font-semibold block text-rose-950 mb-0.5">Cancelar reserva</strong>
+                          ¿Seguro que deseas cancelar? La cancha quedará disponible inmediatamente para que otra persona la reserve.
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-2 pt-1">
+                        <button
+                          type="button"
+                          [disabled]="isCancellingBooking()"
+                          (click)="handleCancelConfirmedBooking()"
+                          class="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                        >
+                          @if (isCancellingBooking()) {
+                            <span class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span>Cancelando...</span>
+                          } @else {
+                            <span>Sí, cancelar reserva</span>
+                          }
+                        </button>
+                        <button
+                          type="button"
+                          (click)="showCancelModal.set(false)"
+                          class="py-2 px-4 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-medium transition-colors"
+                        >
+                          Mantener
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="p-3 rounded-xl bg-slate-100 text-slate-500 text-xs text-center font-medium">
+                  Esta reserva fue cancelada exitosamente.
+                </div>
+              }
             </div>
 
             <div class="pt-4">
@@ -931,6 +990,8 @@ export class PublicBookingWizardComponent implements OnInit {
   readonly isLoadingSlots = signal<boolean>(false);
   readonly hold = signal<CreateHoldResponse | null>(null);
   readonly confirmedBooking = signal<PublicBookingResponse | null>(null);
+  readonly showCancelModal = signal<boolean>(false);
+  readonly isCancellingBooking = signal<boolean>(false);
 
   // Form Fields
   readonly countryCodes = COUNTRY_DIAL_CODES;
@@ -1340,6 +1401,26 @@ export class PublicBookingWizardComponent implements OnInit {
       });
   }
 
+  handleCancelConfirmedBooking(): void {
+    const booking = this.confirmedBooking();
+    if (!booking) return;
+
+    this.isCancellingBooking.set(true);
+    this.publicService.cancelBooking(booking.code, 'Cancelada por el cliente desde el portal web').subscribe({
+      next: (updatedBooking) => {
+        this.isCancellingBooking.set(false);
+        this.showCancelModal.set(false);
+        this.confirmedBooking.set(updatedBooking);
+        this.loadAvailability();
+      },
+      error: (err) => {
+        this.isCancellingBooking.set(false);
+        const detail = err.error?.detail ?? 'No se pudo cancelar el turno. Verifica que no haya iniciado aún.';
+        alert(detail);
+      }
+    });
+  }
+
   cancelHoldAndGoBack(): void {
     this.currentStep.set(1);
     this.hold.set(null);
@@ -1367,6 +1448,43 @@ export class PublicBookingWizardComponent implements OnInit {
   formatCents(cents?: number): string {
     if (!cents) return '$0 COP';
     return '$' + (cents / 100).toLocaleString('es-CO') + ' COP';
+  }
+
+  formatBookingDateTime(startIso?: string, endIso?: string): string {
+    if (!startIso) {
+      const slot = this.selectedSlot();
+      if (slot) {
+        return `${this.selectedDate()} • ${slot.start_time} - ${slot.end_time}`;
+      }
+      return '';
+    }
+    const start = new Date(startIso);
+    const end = endIso ? new Date(endIso) : null;
+
+    const dateStr = start.toLocaleDateString('es-CO', {
+      timeZone: 'America/Bogota',
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short'
+    });
+
+    const startTimeStr = start.toLocaleTimeString('es-CO', {
+      timeZone: 'America/Bogota',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    const endTimeStr = end
+      ? end.toLocaleTimeString('es-CO', {
+          timeZone: 'America/Bogota',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        })
+      : '';
+
+    return `${dateStr.toUpperCase()} • ${startTimeStr}${endTimeStr ? ' - ' + endTimeStr : ''}`;
   }
 
   formatDurationText(minutes?: number): string {

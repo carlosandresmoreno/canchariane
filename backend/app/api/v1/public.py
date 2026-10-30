@@ -418,10 +418,14 @@ async def get_club_availability(
     ).astimezone(UTC)
     search_range = asyncpg.Range(day_start_utc, day_end_utc, lower_inc=True, upper_inc=False)
 
-    # Active bookings (held or confirmed)
+    # Active bookings: confirmed bookings OR unexpired held bookings
+    now_utc = datetime.now(UTC)
     bookings_query = select(BookingModel).where(
         BookingModel.club_id == club.id,
-        BookingModel.status.in_(["held", "confirmed"]),
+        or_(
+            BookingModel.status == "confirmed",
+            and_(BookingModel.status == "held", BookingModel.expires_at > now_utc),
+        ),
         BookingModel.period.op("&&")(search_range),
     )
     occupied_records = (await db.scalars(bookings_query)).all()
@@ -570,12 +574,15 @@ async def create_hold(
         if not candidate_courts:
             raise HTTPException(status_code=404, detail="No hay canchas disponibles para esta modalidad.")
 
-        candidate_ids = [c.id for c in candidate_courts]
-        # Query busy bookings
+        # Query busy bookings (confirmed OR unexpired holds)
+        now_utc = datetime.now(UTC)
         busy_bookings_query = select(BookingModel.court_id).where(
             BookingModel.club_id == club.id,
             BookingModel.court_id.in_(candidate_ids),
-            BookingModel.status.in_(["held", "confirmed"]),
+            or_(
+                BookingModel.status == "confirmed",
+                and_(BookingModel.status == "held", BookingModel.expires_at > now_utc),
+            ),
             BookingModel.period.op("&&")(period_range),
         )
         busy_court_ids = set((await db.scalars(busy_bookings_query)).all())
@@ -643,10 +650,23 @@ async def create_hold(
             detail=f"La cancha no está disponible en este horario por mantenimiento o evento{reason_str}.",
         )
 
-    # 4. Attempt atomic hold insert directly guarded by GiST constraint
+    # 4. Clean up any expired holds on this court and period so GiST exclusion allows the new hold
+    now_utc = datetime.now(UTC)
+    await db.execute(
+        update(BookingModel)
+        .where(
+            BookingModel.court_id == court.id,
+            BookingModel.status == "held",
+            BookingModel.expires_at < now_utc,
+            BookingModel.period.op("&&")(period_range),
+        )
+        .values(status="expired")
+    )
+
+    # 5. Attempt atomic hold insert directly guarded by GiST constraint
     hold_id = uuid6.uuid7()
     code = BookingCode.generate().value
-    expires_at = datetime.now(UTC) + timedelta(minutes=settings.HOLD_EXPIRATION_MINUTES)
+    expires_at = now_utc + timedelta(minutes=settings.HOLD_EXPIRATION_MINUTES)
 
     booking = BookingModel(
         id=hold_id,

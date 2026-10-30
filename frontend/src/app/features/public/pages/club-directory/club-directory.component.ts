@@ -685,10 +685,10 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
 
   getDirectionsUrl(club: PublicClubSummary): string {
     if (club.latitude != null && club.longitude != null) {
-      return `https://www.google.com/maps/dir/?api=1&destination=${club.latitude},${club.longitude}`;
+      return `https://www.google.com/maps/dir/?destination=${club.latitude},${club.longitude}`;
     }
     const query = encodeURIComponent(`${club.name}, ${club.address || 'Pereira, Risaralda'}`);
-    return `https://www.google.com/maps/search/?api=1&query=${query}`;
+    return `https://www.google.com/maps/search/?query=${query}`;
   }
 
   centerOnPereira(): void {

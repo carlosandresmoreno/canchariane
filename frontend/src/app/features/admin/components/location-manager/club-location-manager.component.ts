@@ -394,7 +394,7 @@ export class ClubLocationManagerComponent implements OnInit, AfterViewInit, OnDe
   }
 
   getDirectionsUrl(): string {
-    return `https://www.google.com/maps/dir/?api=1&destination=${this.latitude},${this.longitude}`;
+    return `https://www.google.com/maps/dir/?destination=${this.latitude},${this.longitude}`;
   }
 
   saveLocation(): void {

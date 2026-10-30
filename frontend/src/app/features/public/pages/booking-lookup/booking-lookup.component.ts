@@ -146,9 +146,10 @@ import { PublicBookingResponse } from '../../models/public.models';
                   <button
                     type="button"
                     (click)="showCancelConfirm.set(true)"
-                    class="w-full py-3 rounded-xl border border-slate-200 hover:border-rose-300 text-slate-600 hover:text-rose-700 hover:bg-rose-50/50 text-xs font-mono uppercase tracking-wider transition-all duration-300"
+                    class="w-full py-2.5 rounded-xl border border-slate-200 hover:border-rose-300 text-slate-500 hover:text-rose-600 hover:bg-rose-50/50 text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
                   >
-                    Cancelar este turno
+                    <span>✕</span>
+                    <span>Cancelar esta reserva</span>
                   </button>
                 } @else {
                   <div class="p-5 rounded-2xl bg-rose-50/60 border border-rose-200 space-y-3">
