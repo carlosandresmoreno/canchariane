@@ -113,3 +113,23 @@ def test_booking_invalid_transition_cancelled_to_confirmed() -> None:
 
     with pytest.raises(InvalidBookingStatusTransitionError):
         booking.confirm()
+
+
+def test_admin_update_booking_request_dto() -> None:
+    from app.application.dto.admin import AdminUpdateBookingRequest
+
+    req = AdminUpdateBookingRequest(
+        customer_name="Carlos Moreno",
+        customer_phone="+573111234567",
+        customer_email="carlos@example.com",
+        price_cents=6500000,
+    )
+    assert req.customer_name == "Carlos Moreno"
+    assert req.customer_phone == "+573111234567"
+    assert req.customer_email == "carlos@example.com"
+    assert req.price_cents == 6500000
+
+    # Negative price should fail validation
+    with pytest.raises(ValueError):
+        AdminUpdateBookingRequest(price_cents=-100)
+

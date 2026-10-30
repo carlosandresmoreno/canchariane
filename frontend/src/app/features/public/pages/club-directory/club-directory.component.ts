@@ -25,39 +25,35 @@ type ViewMode = 'list' | 'map';
   imports: [CommonModule, FormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="relative min-h-screen bg-slate-50/50 text-slate-900 flex flex-col justify-between selection:bg-[#0056FB] selection:text-white font-sans overflow-x-hidden">
-      <!-- Clean Luminous Ambient Background Glow -->
-      <div class="ambient-lighting"></div>
-
-      <!-- Top Header Navigation -->
-      <header class="relative z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl sticky top-0 shadow-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
-          <div class="flex items-center gap-3.5">
-            <img src="logo-mark.svg" alt="Canchariane" class="w-10 h-10 rounded-2xl shadow-xs" />
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="font-mono text-[10px] tracking-[0.25em] text-[#0056FB] font-semibold uppercase">Canchariane</span>
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span class="text-[11px] text-slate-500 font-mono">Pereira, COL</span>
-              </div>
-              <h1 class="font-serif italic text-xl sm:text-2xl text-slate-900 tracking-tight leading-none mt-0.5">
-                Reserva de Canchas
-              </h1>
+    <div class="min-h-screen bg-white text-slate-900 flex flex-col justify-between selection:bg-[#0056FB] selection:text-white font-sans antialiased">
+      
+      <!-- TOP NAVIGATION BAR (Nubank Clean / Minimalist) -->
+      <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          
+          <!-- Logo & Brand -->
+          <a routerLink="/" class="flex items-center gap-2.5 active:opacity-80 transition-opacity">
+            <img src="logo-mark.svg" alt="Canchariane" class="w-8 h-8 rounded-xl" />
+            <div class="flex flex-col">
+              <span class="font-bold text-base tracking-tight text-slate-900 leading-none">Canchariane</span>
+              <span class="text-[11px] text-slate-400 font-medium">Reservas deportivas</span>
             </div>
-          </div>
+          </a>
 
-          <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Right Action Pills -->
+          <div class="flex items-center gap-2">
             <a
               routerLink="/lookup"
-              class="text-xs font-mono uppercase tracking-wider text-slate-700 hover:text-slate-950 px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 transition-all shadow-xs hidden sm:inline-flex items-center gap-1.5"
+              class="text-xs font-semibold text-slate-600 hover:text-slate-900 px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5"
             >
               <span>🔍</span>
-              <span>Consultar Reserva</span>
+              <span class="hidden sm:inline">Consultar</span>
+              <span class="sm:hidden">Buscar</span>
             </a>
+
             <a
               routerLink="/auth/login"
-              class="text-xs font-mono uppercase tracking-wider text-[#0056FB] hover:text-[#0048d6] px-4 py-2.5 rounded-xl bg-blue-50/80 hover:bg-blue-100/80 border border-blue-200/80 transition-all shadow-xs flex items-center gap-1.5 font-semibold"
-              title="Acceso para administradores y recepcionistas de clubes"
+              class="text-xs font-semibold text-[#0056FB] bg-blue-50/70 hover:bg-blue-100/70 px-3.5 py-2 rounded-xl transition-colors flex items-center gap-1.5"
             >
               <span>Acceso Clubes</span>
               <span class="text-[10px]">➔</span>
@@ -66,144 +62,95 @@ type ViewMode = 'list' | 'map';
         </div>
       </header>
 
-      <!-- Main Directory Experience -->
-      <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 w-full flex-1">
-        <!-- Hero Explanation Section -->
-        <div class="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
-          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/60 text-[#0056FB] text-xs font-mono uppercase tracking-widest mb-4 shadow-2xs">
-            <span class="w-2 h-2 rounded-full bg-[#0056FB] animate-ping"></span>
-            <span>📍 Operando en Pereira, Risaralda</span>
+      <!-- MAIN CONTENT -->
+      <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-5 pb-24 w-full flex-1">
+        
+        <!-- HEADER TITLE & MUNICIPALITY SELECTOR -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="text-xs font-medium text-slate-500">Disponibilidad en vivo</span>
+            </div>
+            
+            <div class="flex items-baseline gap-2 flex-wrap">
+              <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                Canchas en
+              </h1>
+              
+              <!-- Subtle City Dropdown Trigger (Nubank selector style) -->
+              <div class="relative inline-block">
+                <select
+                  [ngModel]="selectedCity()"
+                  (ngModelChange)="selectCity($event)"
+                  aria-label="Seleccionar ciudad o municipio"
+                  class="appearance-none bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold text-xl sm:text-2xl tracking-tight pl-3 pr-8 py-1 rounded-xl cursor-pointer border-none focus:outline-none focus:ring-2 focus:ring-[#0056FB] transition-colors"
+                >
+                  <option value="all">Todo Risaralda</option>
+                  <option value="pereira">Pereira</option>
+                  <option value="dosquebradas">Dosquebradas</option>
+                  <option value="santa_rosa">Santa Rosa de Cabal</option>
+                </select>
+                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-xs">▼</span>
+              </div>
+            </div>
           </div>
 
-          <h2 class="text-3xl sm:text-5xl font-serif italic text-slate-950 tracking-tight leading-tight mb-4">
-            Alquiler de canchas sintéticas, <br class="hidden sm:inline"/>fútbol y pádel en Pereira.
-          </h2>
-
-          <p class="text-sm sm:text-base text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto">
-            Explora las canchas disponibles en tiempo real directamente en el mapa, consulta horarios libres y reserva al instante sin intermediarios ni llamadas.
-          </p>
-
-          <!-- Expansion Notice Badge -->
-          <div class="mt-4 text-[11px] font-mono text-slate-400">
-            <span>✨ Cobertura inicial en el Eje Cafetero. Próximamente en Manizales, Armenia y más ciudades.</span>
+          <!-- Desktop View Switcher (List vs Map) -->
+          <div class="hidden md:flex items-center bg-slate-100 p-1 rounded-2xl">
+            <button
+              type="button"
+              (click)="setViewMode('list')"
+              [class.bg-white]="viewMode() === 'list'"
+              [class.text-slate-900]="viewMode() === 'list'"
+              [class.shadow-xs]="viewMode() === 'list'"
+              [class.text-slate-500]="viewMode() !== 'list'"
+              class="px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5"
+            >
+              <span>📋</span>
+              <span>Lista</span>
+            </button>
+            <button
+              type="button"
+              (click)="setViewMode('map')"
+              [class.bg-white]="viewMode() === 'map'"
+              [class.text-slate-900]="viewMode() === 'map'"
+              [class.shadow-xs]="viewMode() === 'map'"
+              [class.text-slate-500]="viewMode() !== 'map'"
+              class="px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5"
+            >
+              <span>🗺️</span>
+              <span>Mapa</span>
+            </button>
           </div>
         </div>
 
-        <!-- Controls Bar: Search, Sport Filters & View Mode Toggle -->
-        <div class="bg-white rounded-3xl border border-slate-200/80 p-4 sm:p-5 shadow-xs mb-8 space-y-4">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <!-- Search Input -->
-            <div class="relative flex-1">
-              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
-              <input
-                type="text"
-                [ngModel]="searchQuery()"
-                (ngModelChange)="searchQuery.set($event)"
-                placeholder="Buscar club por nombre, sector o dirección..."
-                class="w-full pl-10 pr-4 py-2.5 bg-slate-50/80 hover:bg-slate-50 focus:bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#0056FB] focus:ring-1 focus:ring-[#0056FB] transition-all"
-              />
-              @if (searchQuery()) {
-                <button
-                  type="button"
-                  (click)="searchQuery.set('')"
-                  class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-xs"
-                >
-                  ✕
-                </button>
-              }
-            </div>
-
-            <!-- View Mode Switcher -->
-            <div class="flex items-center gap-1.5 p-1 bg-slate-100 rounded-2xl self-start md:self-auto border border-slate-200/60">
+        <!-- SEARCH INPUT & QUICK SPORT FILTER PILLS (Thumb-friendly Nubank Feed) -->
+        <div class="space-y-3 mb-6">
+          
+          <!-- Compact Search Bar -->
+          <div class="relative">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+            <input
+              type="text"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+              placeholder="Buscar por club, sector o dirección..."
+              class="w-full pl-10 pr-9 py-2.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-sm text-slate-900 placeholder:text-slate-400 rounded-2xl border border-slate-200/80 focus:border-[#0056FB] focus:outline-none focus:ring-1 focus:ring-[#0056FB] transition-all"
+            />
+            @if (searchQuery()) {
               <button
                 type="button"
-                (click)="setViewMode('list')"
-                [class.bg-white]="viewMode() === 'list'"
-                [class.text-slate-950]="viewMode() === 'list'"
-                [class.shadow-2xs]="viewMode() === 'list'"
-                [class.text-slate-500]="viewMode() !== 'list'"
-                class="px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-wider font-semibold transition-all flex items-center gap-2"
+                (click)="searchQuery.set('')"
+                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-xs p-1"
               >
-                <span>📋</span>
-                <span>Modo Lista</span>
+                ✕
               </button>
-
-              <button
-                type="button"
-                (click)="setViewMode('map')"
-                [class.bg-white]="viewMode() === 'map'"
-                [class.text-slate-950]="viewMode() === 'map'"
-                [class.shadow-2xs]="viewMode() === 'map'"
-                [class.text-slate-500]="viewMode() !== 'map'"
-                class="px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-wider font-semibold transition-all flex items-center gap-2"
-              >
-                <span>🗺️</span>
-                <span>Modo Mapa</span>
-              </button>
-            </div>
+            }
           </div>
 
-          <!-- City / Municipality Filter Badges (Local SEO & Quick Geonavigation) -->
-          <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-100 text-xs">
-            <span class="text-slate-400 font-mono text-[11px] uppercase tracking-wider mr-1 shrink-0 hidden sm:inline">Ciudad:</span>
-
-            <button
-              type="button"
-              (click)="selectCity('all')"
-              [class.bg-slate-900]="selectedCity() === 'all'"
-              [class.text-white]="selectedCity() === 'all'"
-              [class.bg-slate-100]="selectedCity() !== 'all'"
-              [class.text-slate-700]="selectedCity() !== 'all'"
-              class="px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider font-semibold transition-all shrink-0 hover:bg-slate-200 flex items-center gap-1.5"
-            >
-              <span>📍</span>
-              <span>Todo Risaralda</span>
-            </button>
-
-            <button
-              type="button"
-              (click)="selectCity('pereira')"
-              [class.bg-[#0056FB]]="selectedCity() === 'pereira'"
-              [class.text-white]="selectedCity() === 'pereira'"
-              [class.bg-slate-100]="selectedCity() !== 'pereira'"
-              [class.text-slate-700]="selectedCity() !== 'pereira'"
-              class="px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider font-medium transition-all shrink-0 hover:bg-slate-200 flex items-center gap-1.5"
-            >
-              <span>⚽</span>
-              <span>Pereira</span>
-            </button>
-
-            <button
-              type="button"
-              (click)="selectCity('dosquebradas')"
-              [class.bg-[#0056FB]]="selectedCity() === 'dosquebradas'"
-              [class.text-white]="selectedCity() === 'dosquebradas'"
-              [class.bg-slate-100]="selectedCity() !== 'dosquebradas'"
-              [class.text-slate-700]="selectedCity() !== 'dosquebradas'"
-              class="px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider font-medium transition-all shrink-0 hover:bg-slate-200 flex items-center gap-1.5"
-            >
-              <span>⚡</span>
-              <span>Dosquebradas</span>
-            </button>
-
-            <button
-              type="button"
-              (click)="selectCity('santa_rosa')"
-              [class.bg-[#0056FB]]="selectedCity() === 'santa_rosa'"
-              [class.text-white]="selectedCity() === 'santa_rosa'"
-              [class.bg-slate-100]="selectedCity() !== 'santa_rosa'"
-              [class.text-slate-700]="selectedCity() !== 'santa_rosa'"
-              class="px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider font-medium transition-all shrink-0 hover:bg-slate-200 flex items-center gap-1.5"
-            >
-              <span>🏆</span>
-              <span>Santa Rosa de Cabal</span>
-            </button>
-          </div>
-
-          <!-- Sport Filter Badges -->
-          <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-            <span class="text-slate-400 font-mono text-[11px] uppercase tracking-wider mr-1 hidden sm:inline">Deporte:</span>
-            
+          <!-- Sport Pills (Horizontal swipe on mobile) -->
+          <div class="flex items-center gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
             <button
               type="button"
               (click)="selectedSport.set('all')"
@@ -211,7 +158,7 @@ type ViewMode = 'list' | 'map';
               [class.text-white]="selectedSport() === 'all'"
               [class.bg-slate-100]="selectedSport() !== 'all'"
               [class.text-slate-700]="selectedSport() !== 'all'"
-              class="px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider font-medium transition-all shrink-0 hover:bg-slate-200"
+              class="px-4 py-2 rounded-xl text-xs font-semibold shrink-0 transition-colors"
             >
               Todos ({{ clubs().length }})
             </button>
@@ -223,7 +170,7 @@ type ViewMode = 'list' | 'map';
               [class.text-white]="selectedSport() === 'padel'"
               [class.bg-slate-100]="selectedSport() !== 'padel'"
               [class.text-slate-700]="selectedSport() !== 'padel'"
-              class="px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider font-medium transition-all shrink-0 hover:bg-slate-200 flex items-center gap-1.5"
+              class="px-4 py-2 rounded-xl text-xs font-semibold shrink-0 transition-colors flex items-center gap-1.5"
             >
               <span>🎾</span>
               <span>Pádel</span>
@@ -236,7 +183,7 @@ type ViewMode = 'list' | 'map';
               [class.text-white]="selectedSport() === 'futbol'"
               [class.bg-slate-100]="selectedSport() !== 'futbol'"
               [class.text-slate-700]="selectedSport() !== 'futbol'"
-              class="px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider font-medium transition-all shrink-0 hover:bg-slate-200 flex items-center gap-1.5"
+              class="px-4 py-2 rounded-xl text-xs font-semibold shrink-0 transition-colors flex items-center gap-1.5"
             >
               <span>⚽</span>
               <span>Fútbol</span>
@@ -249,7 +196,7 @@ type ViewMode = 'list' | 'map';
               [class.text-white]="selectedSport() === 'tennis'"
               [class.bg-slate-100]="selectedSport() !== 'tennis'"
               [class.text-slate-700]="selectedSport() !== 'tennis'"
-              class="px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider font-medium transition-all shrink-0 hover:bg-slate-200 flex items-center gap-1.5"
+              class="px-4 py-2 rounded-xl text-xs font-semibold shrink-0 transition-colors flex items-center gap-1.5"
             >
               <span>🎾</span>
               <span>Tenis</span>
@@ -257,99 +204,93 @@ type ViewMode = 'list' | 'map';
           </div>
         </div>
 
-        <!-- Loading State -->
+        <!-- LOADING STATE -->
         @if (isLoading()) {
-          <div class="py-20 text-center space-y-3">
+          <div class="py-24 text-center space-y-3">
             <div class="w-8 h-8 border-2 border-[#0056FB] border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p class="text-xs font-mono text-slate-500 uppercase tracking-widest">Cargando clubes en Pereira...</p>
+            <p class="text-xs font-medium text-slate-400">Buscando canchas disponibles...</p>
           </div>
         } @else {
-          <!-- VIEW MODE: LIST -->
-          @if (viewMode() === 'list') {
-            @if (filteredClubs().length === 0) {
-              <div class="p-12 text-center bg-white rounded-3xl border border-slate-200/80 max-w-lg mx-auto space-y-4">
-                <span class="text-3xl">🏟️</span>
-                <h3 class="text-base font-serif italic text-slate-900">No encontramos clubes con ese criterio</h3>
-                <p class="text-xs text-slate-500">Prueba ajustando el término de búsqueda o selecciona "Todos" los deportes.</p>
-                <button
-                  type="button"
-                  (click)="resetFilters()"
-                  class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-mono uppercase tracking-wider hover:bg-slate-800 transition-all"
-                >
-                  Restablecer Filtros
-                </button>
-              </div>
-            } @else {
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <!-- EMPTY STATE -->
+          @if (filteredClubs().length === 0) {
+            <div class="py-16 px-4 text-center max-w-sm mx-auto space-y-3">
+              <span class="text-3xl">🏟️</span>
+              <h3 class="text-base font-bold text-slate-900">No encontramos canchas con esos filtros</h3>
+              <p class="text-xs text-slate-500">Prueba cambiando la búsqueda o seleccionando "Todos" los deportes.</p>
+              <button
+                type="button"
+                (click)="resetFilters()"
+                class="px-4 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800 transition-colors"
+              >
+                Restablecer filtros
+              </button>
+            </div>
+          } @else {
+
+            <!-- VIEW MODE: LIST -->
+            @if (viewMode() === 'list') {
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 @for (club of filteredClubs(); track club.id) {
-                  <div class="group bg-white rounded-3xl border border-slate-200/80 hover:border-blue-300 hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden">
-                    <div class="p-6">
-                      <!-- Club Header Card -->
-                      <div class="flex items-start justify-between gap-3 mb-4">
-                        <div class="flex items-center gap-3">
-                          @if (club.logo_url) {
-                            <img [src]="club.logo_url" [alt]="club.name" class="w-12 h-12 rounded-2xl object-cover border border-slate-100 shadow-2xs" />
-                          } @else {
-                            <div class="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-xl shadow-2xs group-hover:scale-105 transition-transform">
-                              🏟️
-                            </div>
-                          }
-                          <div>
-                            <span class="text-[10px] font-mono uppercase tracking-widest text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md">
+                  <div class="bg-white rounded-2xl border border-slate-200/80 hover:border-slate-300 p-4 transition-all duration-200 flex flex-col justify-between shadow-xs">
+                    <div>
+                      <!-- Card Header -->
+                      <div class="flex items-start gap-3 mb-3">
+                        @if (club.logo_url) {
+                          <img [src]="club.logo_url" [alt]="club.name" class="w-12 h-12 rounded-xl object-cover border border-slate-100 shrink-0" />
+                        } @else {
+                          <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-xl shrink-0">
+                            🏟️
+                          </div>
+                        }
+
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
                               Abierto
                             </span>
-                            <h3 class="text-lg font-serif italic text-slate-950 mt-1 leading-snug group-hover:text-[#0056FB] transition-colors">
-                              {{ club.name }}
-                            </h3>
+                            <span class="text-[11px] text-slate-400 truncate">• {{ club.city || 'Pereira' }}</span>
                           </div>
+                          <h2 class="text-base font-bold text-slate-900 truncate mt-0.5">
+                            {{ club.name }}
+                          </h2>
                         </div>
                       </div>
 
-                      <!-- Sports Tags -->
-                      <div class="flex flex-wrap gap-1.5 mb-4">
+                      <!-- Sport Tags -->
+                      <div class="flex flex-wrap gap-1 mb-3">
                         @for (sport of club.sports || []; track sport) {
-                          <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[11px] font-mono capitalize">
+                          <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[11px] font-medium capitalize">
                             {{ getSportEmoji(sport) }} {{ sport }}
                           </span>
                         }
                       </div>
 
-                      <!-- Address & Location info -->
-                      <div class="space-y-1.5 text-xs text-slate-600 border-t border-slate-100 pt-3">
-                        <div class="flex items-start gap-2">
-                          <span class="text-slate-400 mt-0.5">📍</span>
-                          <span class="line-clamp-2">{{ club.address || 'Pereira, Risaralda' }}</span>
-                        </div>
-                        @if (club.phone) {
-                          <div class="flex items-center gap-2 text-slate-500">
-                            <span class="text-slate-400">📞</span>
-                            <span>{{ club.phone }}</span>
-                          </div>
-                        }
-                      </div>
+                      <!-- Address -->
+                      <p class="text-xs text-slate-500 line-clamp-1 mb-4 flex items-center gap-1">
+                        <span>📍</span>
+                        <span>{{ club.address || 'Pereira, Risaralda' }}</span>
+                      </p>
                     </div>
 
-                    <!-- Card Actions -->
-                    <div class="p-4 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between gap-2">
-                      <!-- Cómo Llegar -->
+                    <!-- Bottom Actions (Thumb-friendly) -->
+                    <div class="pt-3 border-t border-slate-100 flex items-center gap-2">
                       <a
                         [href]="getDirectionsUrl(club)"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300 text-xs font-mono uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-2xs"
-                        title="Abrir indicaciones en Google Maps / Waze"
+                        class="px-3 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-semibold transition-colors flex items-center justify-center gap-1"
+                        title="Cómo llegar"
                       >
                         <span>🧭</span>
-                        <span>Cómo llegar</span>
-                        <span class="text-[10px]">↗</span>
+                        <span class="hidden sm:inline">Mapa</span>
                       </a>
 
-                      <!-- Reservar Cancha Button -->
                       <a
                         [routerLink]="['/c', club.slug]"
-                        class="px-4 py-2 rounded-xl bg-[#0056FB] hover:bg-[#0048d6] text-white text-xs font-mono uppercase tracking-wider font-semibold transition-all shadow-md active:scale-95 flex items-center gap-1.5"
+                        class="flex-1 py-2.5 rounded-xl bg-[#0056FB] hover:bg-[#0048d6] active:scale-[0.98] text-white text-xs font-bold text-center transition-all shadow-xs flex items-center justify-center gap-1.5"
                       >
-                        <span>Reservar</span>
+                        <span>Reservar Cancha</span>
                         <span class="text-xs">➔</span>
                       </a>
                     </div>
@@ -357,216 +298,204 @@ type ViewMode = 'list' | 'map';
                 }
               </div>
             }
-          }
 
-          <!-- VIEW MODE: MAP (AWWWARDS MODERN MAP-FIRST EXPERIENCE) -->
-          @if (viewMode() === 'map') {
-            <div class="flex flex-col lg:grid lg:grid-cols-12 gap-5 lg:gap-6">
-              <!-- Interactive Map Container (Order 1 on mobile, 8 cols on desktop) -->
-              <div class="order-1 lg:order-2 lg:col-span-8 bg-white rounded-3xl border border-slate-200/90 p-2 sm:p-2.5 shadow-sm">
-                <div class="relative w-full h-[400px] sm:h-[500px] lg:h-[620px] rounded-2xl overflow-hidden bg-slate-100">
-                  <div #mapContainer class="w-full h-full z-10"></div>
-
-                  <!-- Overlay Legend on Map -->
-                  <div class="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 bg-white/95 backdrop-blur-md px-3 py-2 rounded-2xl border border-slate-200/80 shadow-md text-xs font-mono text-slate-700 pointer-events-none flex items-center gap-2.5">
-                    <div class="flex items-center gap-1.5">
-                      <span class="w-2.5 h-2.5 rounded-full bg-[#0056FB] animate-pulse"></span>
-                      <span class="text-[11px] font-semibold">Canchas Disponibles</span>
-                    </div>
-                    <span class="text-slate-300">|</span>
-                    <span class="text-[10px] text-slate-500">Pereira</span>
+            <!-- VIEW MODE: MAP -->
+            @if (viewMode() === 'map') {
+              <div class="flex flex-col lg:grid lg:grid-cols-12 gap-4">
+                
+                <!-- Interactive Leaflet Map Container -->
+                <div class="lg:col-span-8 bg-slate-100 rounded-2xl overflow-hidden border border-slate-200/80 relative shadow-xs">
+                  <div class="w-full h-[360px] sm:h-[460px] lg:h-[580px]">
+                    <div #mapContainer class="w-full h-full z-10"></div>
                   </div>
 
                   <!-- Center on Pereira Button -->
                   <button
                     type="button"
                     (click)="centerOnPereira()"
-                    class="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 px-3 py-2 rounded-xl bg-white/95 hover:bg-white text-slate-800 text-xs font-mono tracking-wider shadow-md border border-slate-200 transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
-                    title="Centrar mapa en Pereira"
+                    class="absolute top-3 right-3 z-20 px-3 py-1.5 rounded-xl bg-white/95 text-slate-700 text-xs font-semibold shadow-xs border border-slate-200 transition-colors flex items-center gap-1 active:scale-95"
                   >
                     <span>📍</span>
-                    <span class="hidden sm:inline">Centrar</span>
-                    <span>Pereira</span>
+                    <span>Centrar</span>
                   </button>
                 </div>
-              </div>
 
-              <!-- Club Cards (Order 2 on mobile: horizontal touch swipe on mobile, vertical sidebar on desktop) -->
-              <div class="order-2 lg:order-1 lg:col-span-4">
-                <div class="hidden lg:flex items-center justify-between p-3 mb-3 bg-blue-50/80 border border-blue-200/80 rounded-2xl text-xs font-mono text-blue-900">
-                  <span>📍 {{ filteredClubs().length }} clubes en Pereira</span>
-                  <span class="text-[10px] text-blue-600">Haz clic para enfocar</span>
-                </div>
-
-                <!-- Desktop Vertical List -->
-                <div class="hidden lg:block space-y-3 max-h-[580px] overflow-y-auto pr-1 scrollbar-thin">
-                  @for (club of filteredClubs(); track club.id) {
-                    <div
-                      (click)="focusClubOnMap(club)"
-                      class="p-4 bg-white rounded-2xl border transition-all duration-200 space-y-2 group cursor-pointer"
-                      [ngClass]="selectedMapClub()?.id === club.id
-                        ? 'border-[#0056FB] bg-blue-50/60 shadow-md ring-2 ring-[#0056FB]/20'
-                        : 'border-slate-200 hover:border-blue-300 hover:shadow-xs'"
-                    >
-                      <div class="flex items-start justify-between gap-2">
-                        <h4 class="font-serif italic text-base text-slate-950 group-hover:text-[#0056FB] transition-colors leading-tight">
-                          {{ club.name }}
-                        </h4>
-                        <span class="text-[10px] font-mono text-slate-400 shrink-0">{{ club.city || 'Pereira' }}</span>
-                      </div>
-
-                      <p class="text-xs text-slate-500 line-clamp-1">
-                        📍 {{ club.address || 'Pereira, Risaralda' }}
-                      </p>
-
-                      <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-                        <div class="flex gap-1.5 items-center">
-                          @for (sport of club.sports || []; track sport) {
-                            <span class="text-xs px-1.5 py-0.5 rounded-md bg-slate-100" [title]="sport">
-                              {{ getSportEmoji(sport) }}
-                            </span>
-                          }
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                          <a
-                            [href]="getDirectionsUrl(club)"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            (click)="$event.stopPropagation()"
-                            class="text-[11px] font-mono text-slate-500 hover:text-slate-900 underline"
-                          >
-                            Cómo llegar ↗
-                          </a>
-                          <a
-                            [routerLink]="['/c', club.slug]"
-                            (click)="$event.stopPropagation()"
-                            class="px-3 py-1.5 bg-[#0056FB] hover:bg-[#0048d6] text-white rounded-xl text-[11px] font-mono uppercase tracking-wider font-semibold shadow-xs"
-                          >
-                            Reservar ➔
-                          </a>
-                        </div>
-                      </div>
+                <!-- Clubs Sidebar (Desktop) / Horizontal Swipe (Mobile) -->
+                <div class="lg:col-span-4">
+                  
+                  <!-- Desktop Vertical Sidebar -->
+                  <div class="hidden lg:block space-y-2.5 max-h-[580px] overflow-y-auto pr-1">
+                    <div class="text-xs font-medium text-slate-500 px-1 mb-1">
+                      {{ filteredClubs().length }} canchas disponibles
                     </div>
-                  }
-                </div>
 
-                <!-- Mobile Horizontal Touch Carousel -->
-                <div class="block lg:hidden">
-                  <div class="flex items-center justify-between text-xs font-mono text-slate-500 px-1 mb-2">
-                    <span>Desliza los {{ filteredClubs().length }} clubes en Pereira:</span>
-                    <span class="text-[11px] text-[#0056FB] font-semibold">Toca para enfocar</span>
-                  </div>
-
-                  <div class="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none snap-x">
                     @for (club of filteredClubs(); track club.id) {
                       <div
                         (click)="focusClubOnMap(club)"
-                        class="min-w-[270px] max-w-[300px] p-4 bg-white rounded-2xl border shrink-0 snap-start transition-all duration-200 flex flex-col justify-between gap-3 shadow-xs"
+                        class="p-3.5 bg-white rounded-2xl border transition-all duration-150 cursor-pointer"
                         [ngClass]="selectedMapClub()?.id === club.id
-                          ? 'border-[#0056FB] bg-blue-50/50 shadow-md ring-2 ring-[#0056FB]/20'
-                          : 'border-slate-200'"
+                          ? 'border-[#0056FB] bg-blue-50/40 ring-1 ring-[#0056FB]'
+                          : 'border-slate-200/80 hover:border-slate-300'"
                       >
-                        <div>
-                          <div class="flex items-start justify-between gap-2 mb-1">
-                            <h4 class="font-serif italic text-base text-slate-950 font-bold truncate">
-                              {{ club.name }}
-                            </h4>
-                            <span class="text-[10px] font-mono text-slate-400 shrink-0">{{ club.city || 'Pereira' }}</span>
-                          </div>
-                          <p class="text-xs text-slate-500 truncate">
-                            📍 {{ club.address || 'Pereira, Risaralda' }}
-                          </p>
+                        <div class="flex items-start justify-between gap-2 mb-1">
+                          <h4 class="text-sm font-bold text-slate-900 leading-snug">
+                            {{ club.name }}
+                          </h4>
+                          <span class="text-[10px] text-slate-400 font-medium shrink-0">{{ club.city || 'Pereira' }}</span>
                         </div>
 
-                        <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                        <p class="text-xs text-slate-500 line-clamp-1 mb-3">
+                          📍 {{ club.address || 'Pereira, Risaralda' }}
+                        </p>
+
+                        <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
                           <div class="flex gap-1 items-center">
                             @for (sport of club.sports || []; track sport) {
-                              <span class="text-xs px-1.5 py-0.5 rounded-md bg-slate-100" [title]="sport">
+                              <span class="text-xs bg-slate-100 px-1.5 py-0.5 rounded-md">
                                 {{ getSportEmoji(sport) }}
                               </span>
                             }
                           </div>
 
-                          <div class="flex items-center gap-2">
-                            <a
-                              [href]="getDirectionsUrl(club)"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              (click)="$event.stopPropagation()"
-                              class="text-[10px] font-mono text-slate-500 hover:text-slate-900 underline"
-                            >
-                              Mapa ↗
-                            </a>
+                          <a
+                            [routerLink]="['/c', club.slug]"
+                            (click)="$event.stopPropagation()"
+                            class="px-3 py-1.5 bg-[#0056FB] hover:bg-[#0048d6] text-white rounded-xl text-xs font-bold transition-colors"
+                          >
+                            Reservar ➔
+                          </a>
+                        </div>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Mobile Horizontal Snap Carousel -->
+                  <div class="block lg:hidden mt-2">
+                    <div class="text-xs font-medium text-slate-500 mb-2 px-1">
+                      Toca un club para ubicarlo en el mapa:
+                    </div>
+
+                    <div class="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none snap-x">
+                      @for (club of filteredClubs(); track club.id) {
+                        <div
+                          (click)="focusClubOnMap(club)"
+                          class="min-w-[260px] max-w-[280px] p-3.5 bg-white rounded-2xl border shrink-0 snap-start transition-all"
+                          [ngClass]="selectedMapClub()?.id === club.id
+                            ? 'border-[#0056FB] bg-blue-50/40 ring-1 ring-[#0056FB]'
+                            : 'border-slate-200/80'"
+                        >
+                          <div class="flex items-start justify-between gap-2 mb-1">
+                            <h4 class="text-sm font-bold text-slate-900 truncate">
+                              {{ club.name }}
+                            </h4>
+                            <span class="text-[10px] text-slate-400 shrink-0">{{ club.city || 'Pereira' }}</span>
+                          </div>
+
+                          <p class="text-xs text-slate-500 truncate mb-3">
+                            📍 {{ club.address || 'Pereira, Risaralda' }}
+                          </p>
+
+                          <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                            <div class="flex gap-1 items-center">
+                              @for (sport of club.sports || []; track sport) {
+                                <span class="text-xs bg-slate-100 px-1.5 py-0.5 rounded-md">
+                                  {{ getSportEmoji(sport) }}
+                                </span>
+                              }
+                            </div>
+
                             <a
                               [routerLink]="['/c', club.slug]"
                               (click)="$event.stopPropagation()"
-                              class="px-3 py-1.5 bg-[#0056FB] text-white rounded-xl text-[10px] font-mono uppercase tracking-wider font-semibold shadow-xs"
+                              class="px-3 py-1.5 bg-[#0056FB] text-white rounded-xl text-xs font-bold"
                             >
                               Reservar ➔
                             </a>
                           </div>
                         </div>
-                      </div>
-                    }
+                      }
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            }
           }
         }
 
-        <!-- Section: Preguntas Frecuentes (FAQ Local SEO Pereira & Risaralda) -->
-        <section class="mt-16 pt-12 border-t border-slate-200/80">
-          <div class="max-w-3xl mx-auto">
-            <div class="text-center mb-10">
-              <span class="text-xs font-mono text-[#0056FB] uppercase tracking-widest font-semibold">Preguntas Frecuentes</span>
-              <h3 class="text-2xl sm:text-3xl font-serif italic text-slate-950 mt-1">
-                Alquiler de canchas en Pereira y el Eje Cafetero
-              </h3>
-              <p class="text-xs sm:text-sm text-slate-500 mt-2 font-normal">
-                Todo lo que necesitas saber para reservar tus partidos de fútbol y pádel al instante en Risaralda.
-              </p>
-            </div>
+        <!-- FAQ SECTION (Clean Accordion) -->
+        <section class="mt-14 pt-10 border-t border-slate-100 max-w-2xl mx-auto">
+          <div class="text-center mb-6">
+            <h3 class="text-lg font-bold text-slate-900">
+              Preguntas frecuentes
+            </h3>
+            <p class="text-xs text-slate-500 mt-1">
+              Todo lo que necesitas saber para reservar en Pereira y Risaralda.
+            </p>
+          </div>
 
-            <div class="space-y-3">
-              @for (faq of faqs; track faq.id) {
-                <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden transition-all shadow-2xs">
-                  <button
-                    type="button"
-                    (click)="toggleFaq(faq.id)"
-                    class="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-slate-50/60 transition-colors"
-                  >
-                    <span class="text-sm font-semibold text-slate-900 leading-snug">{{ faq.question }}</span>
-                    <span class="text-slate-400 font-mono text-sm shrink-0 transition-transform duration-200" [class.rotate-180]="expandedFaq() === faq.id">
-                      ▼
-                    </span>
-                  </button>
-                  @if (expandedFaq() === faq.id) {
-                    <div class="px-5 pb-4 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3 bg-slate-50/30">
-                      {{ faq.answer }}
-                    </div>
-                  }
-                </div>
-              }
-            </div>
+          <div class="space-y-2">
+            @for (faq of faqs; track faq.id) {
+              <div class="bg-slate-50/70 rounded-xl border border-slate-100 overflow-hidden">
+                <button
+                  type="button"
+                  (click)="toggleFaq(faq.id)"
+                  class="w-full px-4 py-3 text-left flex items-center justify-between gap-3 hover:bg-slate-100/60 transition-colors"
+                >
+                  <span class="text-xs sm:text-sm font-semibold text-slate-900">{{ faq.question }}</span>
+                  <span class="text-slate-400 text-xs shrink-0 transition-transform duration-200" [class.rotate-180]="expandedFaq() === faq.id">
+                    ▼
+                  </span>
+                </button>
+                @if (expandedFaq() === faq.id) {
+                  <div class="px-4 pb-3 text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-2.5">
+                    {{ faq.answer }}
+                  </div>
+                }
+              </div>
+            }
           </div>
         </section>
       </main>
 
-      <!-- Clean Quiet Luxury Footer -->
-      <footer class="relative z-20 border-t border-slate-200/80 bg-white/80 py-8 text-xs font-sans text-slate-500">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <img src="logo-mark.svg" alt="Canchariane" class="w-6 h-6 rounded-lg opacity-80" />
-            <span class="font-mono text-slate-400">© 2026 Canchariane • Eje Cafetero, Colombia</span>
+      <!-- MOBILE BOTTOM FLOATING SWITCHER (Airbnb / Nubank Style - thumb reach) -->
+      <div class="md:hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-30">
+        <div class="bg-slate-900 text-white p-1 rounded-full shadow-lg flex items-center gap-1 border border-slate-800">
+          <button
+            type="button"
+            (click)="setViewMode('list')"
+            [class.bg-[#0056FB]]="viewMode() === 'list'"
+            [class.text-white]="viewMode() === 'list'"
+            [class.text-slate-300]="viewMode() !== 'list'"
+            class="px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1.5"
+          >
+            <span>📋</span>
+            <span>Lista</span>
+          </button>
+          <button
+            type="button"
+            (click)="setViewMode('map')"
+            [class.bg-[#0056FB]]="viewMode() === 'map'"
+            [class.text-white]="viewMode() === 'map'"
+            [class.text-slate-300]="viewMode() !== 'map'"
+            class="px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1.5"
+          >
+            <span>🗺️</span>
+            <span>Mapa</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <footer class="border-t border-slate-100 bg-white py-6 text-xs text-slate-500">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div class="flex items-center gap-2">
+            <img src="logo-mark.svg" alt="Canchariane" class="w-5 h-5 opacity-70" />
+            <span class="text-slate-400">© 2026 Canchariane • Pereira, Colombia</span>
           </div>
 
-          <div class="flex items-center gap-6 font-mono text-[11px]">
+          <div class="flex items-center gap-5 text-[11px] text-slate-500">
             <a routerLink="/lookup" class="hover:text-slate-900 transition-colors">Consultar Reserva</a>
-            <a routerLink="/auth/login" class="hover:text-slate-900 transition-colors">Administración Clubes</a>
-            <span class="text-slate-300">|</span>
-            <span class="text-slate-400">Mapas libres cortesía de OpenStreetMap & CARTO</span>
+            <a routerLink="/auth/login" class="hover:text-slate-900 transition-colors">Acceso Clubes</a>
           </div>
         </div>
       </footer>
@@ -587,8 +516,10 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
   readonly isLoading = signal<boolean>(true);
   readonly searchQuery = signal<string>('');
   readonly selectedSport = signal<string>('all');
-  readonly viewMode = signal<ViewMode>('map');
+  readonly viewMode = signal<ViewMode>('list');
   readonly selectedMapClub = signal<PublicClubSummary | null>(null);
+  readonly selectedCity = signal<string>('all');
+  readonly expandedFaq = signal<number | null>(null);
 
   // Map state
   private map?: L.Map;
@@ -599,14 +530,11 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
   private readonly PEREIRA_LNG = -75.6961;
   private readonly PEREIRA_ZOOM = 13;
 
-  readonly selectedCity = signal<string>('all');
-  readonly expandedFaq = signal<number | null>(null);
-
   readonly faqs = [
     {
       id: 1,
-      question: '¿Cómo alquilar una cancha sintética de fútbol o pádel en Pereira y Dosquebradas?',
-      answer: 'En Canchariane puedes consultar la disponibilidad en tiempo real de canchas de fútbol 5, fútbol 7 y pádel en Pereira, Dosquebradas y Santa Rosa de Cabal. Seleccionas el club, la cancha y la hora libre, y reservas al instante sin necesidad de llamadas telefónicas.'
+      question: '¿Cómo alquilar una cancha de fútbol o pádel en Pereira?',
+      answer: 'En Canchariane puedes consultar la disponibilidad en tiempo real en Pereira, Dosquebradas y Santa Rosa de Cabal. Seleccionas el club, la cancha y la hora libre, y reservas al instante sin necesidad de llamadas telefónicas.'
     },
     {
       id: 2,
@@ -615,7 +543,7 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
     },
     {
       id: 3,
-      question: '¿Hay canchas sintéticas techadas disponibles en Pereira y Dosquebradas?',
+      question: '¿Hay canchas sintéticas techadas disponibles?',
       answer: 'Sí, en Canchariane puedes encontrar clubes con canchas techadas e iluminación profesional para jugar protegidos de la lluvia tanto en Pereira como en Dosquebradas.'
     },
     {
@@ -626,7 +554,7 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
     {
       id: 5,
       question: '¿Cómo puedo inscribir mi club de fútbol o pádel a Canchariane?',
-      answer: 'Los clubes y administradores deportivos de Pereira y Risaralda pueden unirse a Canchariane para automatizar sus reservas y recibir pagos. Contáctanos a través del enlace de Acceso Clubes en el menú superior.'
+      answer: 'Los clubes y administradores deportivos de Risaralda pueden unirse a Canchariane para automatizar sus reservas y recibir pagos. Contáctanos a través del enlace de Acceso Clubes en el menú superior.'
     }
   ];
 
@@ -638,25 +566,33 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
 
     return list.filter((club) => {
       // Search text match
-      const matchSearch =
-        !query ||
-        club.name.toLowerCase().includes(query) ||
-        (club.address && club.address.toLowerCase().includes(query)) ||
-        (club.city && club.city.toLowerCase().includes(query));
+      const nameMatch = club.name?.toLowerCase().includes(query) ?? false;
+      const addrMatch = club.address?.toLowerCase().includes(query) ?? false;
+      const cityTextMatch = club.city?.toLowerCase().includes(query) ?? false;
+      const matchesSearch = !query || nameMatch || addrMatch || cityTextMatch;
 
-      // Sport filter match
-      const matchSport =
-        sport === 'all' ||
-        (club.sports && club.sports.some((s) => s.toLowerCase() === sport.toLowerCase()));
+      // Sport match
+      let matchesSport = true;
+      if (sport !== 'all') {
+        matchesSport = (club.sports || []).some((s) =>
+          s.toLowerCase().includes(sport)
+        );
+      }
 
       // City filter match
-      const matchCity =
-        city === 'all' ||
-        (city === 'pereira' && (!club.city || club.city.toLowerCase().includes('pereira'))) ||
-        (city === 'dosquebradas' && (club.city?.toLowerCase().includes('dosquebradas') || club.address?.toLowerCase().includes('dosquebradas'))) ||
-        (city === 'santa_rosa' && (club.city?.toLowerCase().includes('santa rosa') || club.address?.toLowerCase().includes('santa rosa')));
+      let matchesCity = true;
+      if (city !== 'all') {
+        const clubCity = (club.city || '').toLowerCase();
+        if (city === 'pereira') {
+          matchesCity = clubCity.includes('pereira');
+        } else if (city === 'dosquebradas') {
+          matchesCity = clubCity.includes('dosquebradas');
+        } else if (city === 'santa_rosa') {
+          matchesCity = clubCity.includes('santa rosa');
+        }
+      }
 
-      return matchSearch && matchSport && matchCity;
+      return matchesSearch && matchesSport && matchesCity;
     });
   });
 
@@ -666,13 +602,14 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
 
   ngAfterViewInit(): void {
     if (this.viewMode() === 'map') {
-      setTimeout(() => this.initMap(), 100);
+      setTimeout(() => this.initMap(), 150);
     }
   }
 
   ngOnDestroy(): void {
     if (this.map) {
       this.map.remove();
+      this.map = undefined;
     }
   }
 
@@ -782,14 +719,18 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
     this.map = L.map(this.mapContainer.nativeElement, {
       center: [this.PEREIRA_LAT, this.PEREIRA_LNG],
       zoom: this.PEREIRA_ZOOM,
-      zoomControl: true
+      zoomControl: false // Cleaner interface
     });
 
-    // OpenStreetMap 100% Free Tile Layer
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Add minimal zoom control top-left
+    L.control.zoom({ position: 'topleft' }).addTo(this.map);
+
+    // CartoDB Positron (Ultra-clean, crisp vector aesthetic - No visual noise)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
     }).addTo(this.map);
 
     this.refreshMapMarkers();
@@ -812,58 +753,58 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
       const lat = club.latitude ?? this.PEREIRA_LAT;
       const lng = club.longitude ?? this.PEREIRA_LNG;
 
+      // Clean circular pin with Canchariane blue and white border (Nubank minimalist pin style)
       const markerIcon = L.divIcon({
-        className: 'custom-directory-pin',
+        className: 'canchariane-clean-pin',
         html: `
           <div style="
-            width: 38px;
-            height: 38px;
-            border-radius: 50% 50% 50% 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
             background: #0056FB;
-            transform: rotate(-45deg);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 20px rgba(0, 86, 251, 0.4);
-            border: 2.5px solid white;
+            box-shadow: 0 4px 12px rgba(0, 86, 251, 0.35);
+            border: 2px solid #ffffff;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: transform 0.15s ease;
           ">
-            <div style="transform: rotate(45deg); color: white; font-size: 16px;">
+            <span style="font-size: 15px; line-height: 1;">
               ${this.getSportEmoji(club.sports?.[0] || 'club')}
-            </div>
+            </span>
           </div>
         `,
-        iconSize: [38, 38],
-        iconAnchor: [19, 38],
-        popupAnchor: [0, -38]
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+        popupAnchor: [0, -18]
       });
 
       const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(this.map!);
 
       const popupHtml = `
-        <div style="padding: 12px 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-width: 200px;">
-          <div style="font-size: 10px; font-family: monospace; text-transform: uppercase; color: #0056FB; font-weight: 600; margin-bottom: 2px;">
+        <div style="padding: 10px 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-width: 190px;">
+          <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: #0056FB; margin-bottom: 2px;">
             ${club.city || 'Pereira, Risaralda'}
           </div>
-          <strong style="color: #0F172A; font-size: 14px; font-family: Georgia, serif; font-style: italic; display: block; margin-bottom: 4px;">
+          <strong style="color: #0F172A; font-size: 13px; font-weight: 700; display: block; margin-bottom: 2px;">
             ${club.name}
           </strong>
           <p style="color: #64748B; font-size: 11px; margin: 0 0 10px 0; line-height: 1.3;">
             ${club.address || 'Pereira, Colombia'}
           </p>
-          <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between; border-top: 1px solid #E2E8F0; padding-top: 8px;">
+          <div style="display: flex; gap: 6px; align-items: center; justify-content: space-between; border-top: 1px solid #F1F5F9; padding-top: 8px;">
             <a
               href="${this.getDirectionsUrl(club)}"
               target="_blank"
               rel="noopener noreferrer"
-              style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-family: monospace; color: #475569; text-decoration: none; padding: 4px 8px; border: 1px solid #CBD5E1; border-radius: 8px;"
+              style="font-size: 11px; color: #64748B; text-decoration: none; padding: 4px 8px; border: 1px solid #E2E8F0; border-radius: 8px; font-weight: 600;"
             >
-              🧭 Cómo llegar
+              🧭 Mapa
             </a>
             <a
               href="/c/${club.slug}"
-              style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-family: monospace; color: white; background: #0056FB; text-decoration: none; padding: 5px 10px; border-radius: 8px; font-weight: 600;"
+              style="font-size: 11px; color: white; background: #0056FB; text-decoration: none; padding: 5px 10px; border-radius: 8px; font-weight: 700;"
             >
               Reservar ➔
             </a>

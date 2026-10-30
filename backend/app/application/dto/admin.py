@@ -215,6 +215,10 @@ class AdminUpdateBookingRequest(BaseModel):
     cancellation_reason: str | None = None
     period_start: datetime | None = None
     court_id: UUID | None = None
+    customer_name: str | None = Field(default=None, min_length=2, max_length=100)
+    customer_phone: str | None = Field(default=None, min_length=3, max_length=50)
+    customer_email: str | None = None
+    price_cents: int | None = Field(default=None, ge=0)
 
 
 class AdminBookingResponse(BaseModel):

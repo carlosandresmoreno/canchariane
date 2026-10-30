@@ -55,6 +55,16 @@ export interface AdminBooking {
   cancellation_reason?: string;
 }
 
+export interface AdminUpdateBooking {
+  status?: 'held' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
+  payment_status?: string;
+  cancellation_reason?: string;
+  customer_name?: string;
+  customer_phone?: string;
+  customer_email?: string;
+  price_cents?: number;
+}
+
 export interface AdminCreateBooking {
   court_id: string;
   period_start: string; // ISO
@@ -219,6 +229,14 @@ export class ClubAdminService {
       status,
       cancellation_reason
     });
+  }
+
+  updateBooking(
+    clubId: string,
+    bookingId: string,
+    data: AdminUpdateBooking
+  ): Observable<AdminBooking> {
+    return this.http.patch<AdminBooking>(`${this.baseUrl}/${clubId}/bookings/${bookingId}`, data);
   }
 
   deleteBooking(clubId: string, bookingId: string): Observable<void> {

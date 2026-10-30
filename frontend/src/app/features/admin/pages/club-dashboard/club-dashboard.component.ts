@@ -829,39 +829,150 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                 <span class="text-[10px] uppercase tracking-[0.2em] text-[#0056FB] font-mono block">Reserva {{ selectedBooking()?.code }}</span>
                 <h3 class="font-serif italic text-xl sm:text-2xl text-slate-900">{{ selectedBooking()?.customer_name }}</h3>
               </div>
-              <button
-                type="button"
-                (click)="closeBookingDetails()"
-                class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-800 transition-colors text-sm"
-              >
-                ✕
-              </button>
+              <div class="flex items-center gap-2">
+                @if (!isEditingBooking()) {
+                  <button
+                    type="button"
+                    (click)="startEditingBooking()"
+                    class="px-3 py-1.5 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100 text-[#0056FB] font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center gap-1.5 shadow-2xs active:scale-95"
+                    title="Editar nombre, teléfono, correo o valor de la reserva"
+                  >
+                    <span>✏️</span>
+                    <span>Editar</span>
+                  </button>
+                }
+                <button
+                  type="button"
+                  (click)="closeBookingDetails()"
+                  class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-800 transition-colors text-sm"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
-            <div class="space-y-3 text-xs">
-              <div class="flex justify-between py-1.5 border-b border-slate-100">
-                <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Cancha</span>
-                <span class="font-medium text-slate-900">{{ selectedBooking()?.court_name }}</span>
+            @if (isEditingBooking()) {
+              <!-- FORMULARIO DE EDICIÓN DE RESERVA -->
+              <form (ngSubmit)="saveBookingEdits()" class="space-y-4 py-1 animate-in fade-in">
+                <div class="p-3 rounded-2xl bg-blue-50/70 border border-blue-100 text-xs text-blue-900 font-sans flex items-start gap-2">
+                  <span class="text-sm">✏️</span>
+                  <span>Modifica los datos del cliente, teléfono, correo o valor de la reserva si hubo alguna equivocación.</span>
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1">Nombre del Cliente *</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="editBookingCustomerName"
+                    name="editCustomerName"
+                    required
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-sans focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
+                    placeholder="Nombre completo"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1">Teléfono / WhatsApp *</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="editBookingCustomerPhone"
+                    name="editCustomerPhone"
+                    required
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
+                    placeholder="Ej: +57 300 123 4567"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1">Correo Electrónico</label>
+                  <input
+                    type="email"
+                    [(ngModel)]="editBookingCustomerEmail"
+                    name="editCustomerEmail"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-sans focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
+                    placeholder="cliente@ejemplo.com"
+                  />
+                </div>
+
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <label class="text-[11px] font-mono uppercase tracking-wider text-slate-500">Valor Turno (COP) *</label>
+                    <span class="text-xs font-serif italic text-[#0056FB] font-semibold">
+                      {{ formatCents(editBookingPricePesos * 100) }}
+                    </span>
+                  </div>
+                  <div class="relative">
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-xs">$</span>
+                    <input
+                      type="number"
+                      step="1000"
+                      min="0"
+                      [(ngModel)]="editBookingPricePesos"
+                      name="editPricePesos"
+                      required
+                      class="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
+                      placeholder="Ej: 80000"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    (click)="cancelEditingBooking()"
+                    class="flex-1 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-mono text-xs uppercase tracking-wider transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    [disabled]="isSavingBookingEdits() || !editBookingCustomerName.trim() || !editBookingCustomerPhone.trim() || editBookingPricePesos < 0"
+                    class="flex-1 py-2.5 rounded-xl bg-[#0056FB] hover:bg-[#0048d6] disabled:opacity-40 text-white font-mono text-xs uppercase tracking-wider font-semibold transition-all shadow-md flex items-center justify-center gap-1.5 active:scale-95"
+                  >
+                    @if (isSavingBookingEdits()) {
+                      <span>Guardando...</span>
+                    } @else {
+                      <span>💾 Guardar Cambios</span>
+                    }
+                  </button>
+                </div>
+              </form>
+            } @else {
+              <!-- DETALLES DE RESERVA (MODO LECTURA) -->
+              <div class="space-y-3 text-xs">
+                <div class="flex justify-between py-1.5 border-b border-slate-100">
+                  <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Cancha</span>
+                  <span class="font-medium text-slate-900">{{ selectedBooking()?.court_name }}</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-100">
+                  <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Horario</span>
+                  <span class="font-medium text-[#0056FB]">{{ formatBookingTime(selectedBooking()) }}</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-100">
+                  <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Cliente</span>
+                  <span class="font-medium text-slate-900">{{ selectedBooking()?.customer_name }}</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-100">
+                  <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Teléfono</span>
+                  <span class="font-mono text-slate-900">{{ selectedBooking()?.customer_phone }}</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-100">
+                  <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Correo</span>
+                  <span class="text-slate-700 font-mono text-[11px] truncate max-w-[200px]" [title]="selectedBooking()?.customer_email || ''">
+                    {{ selectedBooking()?.customer_email || 'Sin registrar' }}
+                  </span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-100">
+                  <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Valor</span>
+                  <span class="font-serif italic text-slate-900 text-base font-semibold">{{ formatCents(selectedBooking()?.price_cents) }}</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-100">
+                  <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Estado</span>
+                  <span class="font-mono text-[#0056FB] uppercase px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-[10px]">
+                    {{ selectedBooking()?.status }}
+                  </span>
+                </div>
               </div>
-              <div class="flex justify-between py-1.5 border-b border-slate-100">
-                <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Horario</span>
-                <span class="font-medium text-[#0056FB]">{{ formatBookingTime(selectedBooking()) }}</span>
-              </div>
-              <div class="flex justify-between py-1.5 border-b border-slate-100">
-                <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Teléfono</span>
-                <span class="font-mono text-slate-900">{{ selectedBooking()?.customer_phone }}</span>
-              </div>
-              <div class="flex justify-between py-1.5 border-b border-slate-100">
-                <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Valor</span>
-                <span class="font-serif italic text-slate-900 text-base font-semibold">{{ formatCents(selectedBooking()?.price_cents) }}</span>
-              </div>
-              <div class="flex justify-between py-1.5 border-b border-slate-100">
-                <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Estado</span>
-                <span class="font-mono text-[#0056FB] uppercase px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-[10px]">
-                  {{ selectedBooking()?.status }}
-                </span>
-              </div>
-            </div>
 
             <!-- WhatsApp Actions: Chatear & Confirmar Asistencia -->
             @if (selectedBooking()?.customer_phone) {
@@ -1016,6 +1127,7 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                 </div>
               </div>
             }
+          }
           </div>
         </div>
       }
@@ -1448,7 +1560,13 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   readonly confirmingDeleteBooking = signal<boolean>(false);
   readonly isUpdatingBookingStatus = signal<boolean>(false);
   readonly isDeletingBooking = signal<boolean>(false);
+  readonly isEditingBooking = signal<boolean>(false);
+  readonly isSavingBookingEdits = signal<boolean>(false);
   adminCancelReason = '';
+  editBookingCustomerName = '';
+  editBookingCustomerPhone = '';
+  editBookingCustomerEmail = '';
+  editBookingPricePesos = 0;
 
   // Live Background Sync Signals & State
   readonly isSyncing = signal<boolean>(false);
@@ -1879,14 +1997,67 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     this.confirmingCancelBooking.set(false);
     this.confirmingDeleteBooking.set(false);
     this.adminCancelReason = '';
+    this.isEditingBooking.set(false);
     this.selectedBooking.set(b);
   }
 
   closeBookingDetails(): void {
     this.confirmingCancelBooking.set(false);
     this.confirmingDeleteBooking.set(false);
+    this.isEditingBooking.set(false);
     this.adminCancelReason = '';
     this.selectedBooking.set(null);
+  }
+
+  startEditingBooking(): void {
+    const b = this.selectedBooking();
+    if (!b) return;
+    this.editBookingCustomerName = b.customer_name || '';
+    this.editBookingCustomerPhone = b.customer_phone || '';
+    this.editBookingCustomerEmail = b.customer_email || '';
+    this.editBookingPricePesos = Math.round((b.price_cents || 0) / 100);
+    this.isEditingBooking.set(true);
+  }
+
+  cancelEditingBooking(): void {
+    this.isEditingBooking.set(false);
+  }
+
+  saveBookingEdits(): void {
+    const b = this.selectedBooking();
+    const clubId = this.getActiveClubId();
+    if (!b || !clubId) return;
+
+    if (!this.editBookingCustomerName.trim() || !this.editBookingCustomerPhone.trim()) {
+      this.errorMessage.set('Nombre y teléfono son obligatorios.');
+      return;
+    }
+
+    this.isSavingBookingEdits.set(true);
+    this.errorMessage.set(null);
+
+    const priceCents = Math.round(Number(this.editBookingPricePesos || 0) * 100);
+
+    this.adminService
+      .updateBooking(clubId, b.id, {
+        customer_name: this.editBookingCustomerName.trim(),
+        customer_phone: this.editBookingCustomerPhone.trim(),
+        customer_email: this.editBookingCustomerEmail.trim() || undefined,
+        price_cents: priceCents
+      })
+      .subscribe({
+        next: (updated) => {
+          this.isSavingBookingEdits.set(false);
+          this.isEditingBooking.set(false);
+          this.selectedBooking.set(updated);
+          this.feedbackMessage.set('Reserva actualizada exitosamente.');
+          this.loadBookings(clubId);
+        },
+        error: (err) => {
+          this.isSavingBookingEdits.set(false);
+          this.errorMessage.set(this.extractErrorMessage(err));
+        }
+      });
   }
 
   openNewBlockModal(options?: { courtId?: string; hourStr?: string }): void {

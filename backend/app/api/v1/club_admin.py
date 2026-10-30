@@ -980,6 +980,14 @@ async def update_booking_status(
         booking.payment_status = data.payment_status
     if data.cancellation_reason:
         booking.cancellation_reason = data.cancellation_reason
+    if data.customer_name is not None and data.customer_name.strip():
+        booking.customer_name = data.customer_name.strip()
+    if data.customer_phone is not None and data.customer_phone.strip():
+        booking.customer_phone = data.customer_phone.strip()
+    if data.customer_email is not None and data.customer_email.strip():
+        booking.customer_email = data.customer_email.strip()
+    if data.price_cents is not None:
+        booking.price_cents = data.price_cents
 
     event = BookingEventModel(
         id=uuid6.uuid7(),
