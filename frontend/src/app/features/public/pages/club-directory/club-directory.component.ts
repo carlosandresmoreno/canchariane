@@ -725,12 +725,11 @@ export class ClubDirectoryComponent implements OnInit, AfterViewInit, OnDestroy 
     // Add minimal zoom control top-left
     L.control.zoom({ position: 'topleft' }).addTo(this.map);
 
-    // CartoDB Positron (Ultra-clean, crisp vector aesthetic - No visual noise)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    // OpenStreetMap 100% Free Tile Layer (No API Key required)
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
-      maxZoom: 20
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
     }).addTo(this.map);
 
     this.refreshMapMarkers();
