@@ -93,6 +93,7 @@ export class PublicBookingService {
     return this.http.post<CreateHoldResponse>(`${this.baseUrl}/bookings/holds`, {
       club_slug: slug,
       court_id: req.court_id,
+      group_id: req.group_id,
       start_time: req.start_time,
       duration_minutes: req.duration_minutes
     });

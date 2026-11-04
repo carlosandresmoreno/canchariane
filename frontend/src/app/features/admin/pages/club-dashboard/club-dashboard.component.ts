@@ -790,9 +790,10 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                 <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">Valor Turno (COP)</label>
                 <input
                   type="number"
-                  [(ngModel)]="modalPriceCents"
+                  [(ngModel)]="modalPricePesos"
                   name="modalPrice"
-                  step="500000"
+                  step="5000"
+                  placeholder="80000"
                   class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-mono focus:bg-white focus:outline-none focus:border-[#0056FB] transition-colors"
                 />
               </div>
@@ -1595,7 +1596,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   modalCustomerName = '';
   modalCustomerDialCode = DEFAULT_DIAL_CODE;
   modalCustomerPhone = '';
-  modalPriceCents = 8000000;
+  modalPricePesos = 80000;
 
   // Block modal form bindings
   blockModalCourtId = '';
@@ -1658,7 +1659,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
 
   readonly totalRevenueCents = computed(() => {
     return this.bookings()
-      .filter((b) => b.status !== 'cancelled')
+      .filter((b) => b.status === 'confirmed' || b.status === 'completed')
       .reduce((acc, b) => acc + (b.price_cents || 0), 0);
   });
 
@@ -1990,7 +1991,8 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
         baseHourly = match.price_cents;
       }
     }
-    this.modalPriceCents = Math.round((baseHourly * (Number(this.modalDurationMinutes) || 60)) / 60);
+    const calculatedCents = Math.round((baseHourly * (Number(this.modalDurationMinutes) || 60)) / 60);
+    this.modalPricePesos = Math.round(calculatedCents / 100);
   }
 
   openBookingDetails(b: AdminBooking): void {
@@ -2247,7 +2249,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
         duration_minutes: Number(this.modalDurationMinutes) || 60,
         customer_name: this.modalCustomerName.trim(),
         customer_phone: formattedPhone,
-        price_cents: Number(this.modalPriceCents) || 8000000,
+        price_cents: Math.round(Number(this.modalPricePesos || 0) * 100) || 8000000,
         payment_status: 'paid'
       })
       .subscribe({

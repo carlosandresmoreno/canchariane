@@ -1003,7 +1003,7 @@ export class ClubTimelineViewComponent implements OnInit {
       const bCount = allBookings.filter(b => {
         const bStart = new Date(b.period_start).getTime();
         const bEnd = new Date(b.period_end).getTime();
-        return dayStart < bEnd && dayEnd > bStart && b.status !== 'cancelled';
+        return dayStart < bEnd && dayEnd > bStart && (b.status === 'confirmed' || b.status === 'completed');
       }).length;
 
       const blkCount = allBlocks.some(blk => {
@@ -1091,7 +1091,7 @@ export class ClubTimelineViewComponent implements OnInit {
       .filter(b => {
         const bStart = new Date(b.period_start).getTime();
         const bEnd = new Date(b.period_end).getTime();
-        return dayStart < bEnd && dayEnd > bStart && b.status !== 'cancelled';
+        return dayStart < bEnd && dayEnd > bStart && (b.status === 'confirmed' || b.status === 'completed');
       })
       .reduce((acc, b) => acc + (b.price_cents || 0), 0);
   }

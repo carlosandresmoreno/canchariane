@@ -331,6 +331,7 @@ async def get_public_club_layout(
 async def get_club_availability(
     slug: str,
     target_date: Annotated[date, Query(alias="date")],
+    response: Response,
     sport: str | None = None,
     duration: Annotated[int, Query(ge=30, le=240)] = 60,
     step: Annotated[int | None, Query(ge=15, le=240)] = None,
@@ -488,6 +489,10 @@ async def get_club_availability(
         default_price=Money(cents=5000000, currency="COP"),
     )
 
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+
     return [
         SlotPublicDTO(
             court_id=s.court_id,
@@ -557,12 +562,26 @@ async def create_hold(
 
     # 3. Resolve Court (Explicit selection or Automatic Allocation)
     court = None
+    now_utc = datetime.now(UTC)
+
     if data.court_id:
         court = next((c for c in club.courts if c.id == data.court_id and c.is_active and c.deleted_at is None), None)
         if not court:
             court = await db.get(CourtModel, data.court_id)
             if not court or court.club_id != club.id or not court.is_active or court.deleted_at is not None:
                 raise HTTPException(status_code=404, detail="Cancha no encontrada o inactiva")
+
+        # Clean up any expired holds on this court so it can be re-held immediately
+        await db.execute(
+            update(BookingModel)
+            .where(
+                BookingModel.court_id == court.id,
+                BookingModel.status == "held",
+                BookingModel.expires_at < now_utc,
+                BookingModel.period.op("&&")(period_range),
+            )
+            .values(status="expired")
+        )
     else:
         # Automatic allocation: find eligible active courts
         candidate_courts = [c for c in club.courts if c.is_active and c.deleted_at is None]
@@ -574,8 +593,21 @@ async def create_hold(
         if not candidate_courts:
             raise HTTPException(status_code=404, detail="No hay canchas disponibles para esta modalidad.")
 
+        candidate_ids = [c.id for c in candidate_courts]
+
+        # Clean up any expired holds on these candidate courts before checking availability
+        await db.execute(
+            update(BookingModel)
+            .where(
+                BookingModel.court_id.in_(candidate_ids),
+                BookingModel.status == "held",
+                BookingModel.expires_at < now_utc,
+                BookingModel.period.op("&&")(period_range),
+            )
+            .values(status="expired")
+        )
+
         # Query busy bookings (confirmed OR unexpired holds)
-        now_utc = datetime.now(UTC)
         busy_bookings_query = select(BookingModel.court_id).where(
             BookingModel.club_id == club.id,
             BookingModel.court_id.in_(candidate_ids),
