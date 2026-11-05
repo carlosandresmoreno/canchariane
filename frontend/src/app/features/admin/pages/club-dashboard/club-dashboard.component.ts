@@ -130,8 +130,8 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                 type="button"
                 (click)="toggleNotificationsPanel()"
                 class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
-                [class.border-[#0056FB]]="showNotificationsPanel()"
-                [class.bg-blue-50/50]="showNotificationsPanel()"
+                [class.border-blue-600]="showNotificationsPanel()"
+                [class.bg-blue-50]="showNotificationsPanel()"
                 title="Centro de Notificaciones"
               >
                 <span class="text-base sm:text-lg">🔔</span>
@@ -193,8 +193,8 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                       @for (n of notifications(); track n.id) {
                         <div
                           (click)="handleNotificationClick(n)"
-                          class="p-3.5 hover:bg-blue-50/50 cursor-pointer transition-colors flex items-start gap-3 relative text-left"
-                          [class.bg-blue-50/30]="!n.read"
+                          class="p-3.5 hover:bg-blue-50 cursor-pointer transition-colors flex items-start gap-3 relative text-left"
+                          [class.bg-blue-50]="!n.read"
                         >
                           <!-- Icon Indicator -->
                           <div
