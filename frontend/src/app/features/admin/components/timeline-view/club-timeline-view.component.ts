@@ -408,12 +408,30 @@ export interface WeekDayItem {
                           [ngClass]="getBookingBadgeClass(booking.status)"
                         >
                           <div class="flex items-center justify-between gap-1">
-                            <span class="font-mono text-[11px] font-bold uppercase truncate text-slate-900">
-                              {{ booking.customer_name }}
+                            <span class="font-mono text-[11px] font-bold uppercase truncate text-slate-900 flex items-center gap-1 min-w-0">
+                              <span class="text-[11px] shrink-0" [title]="booking.origin === 'public' ? 'Web' : (booking.origin === 'admin' ? 'Admin' : 'Mostrador')">
+                                {{ booking.origin === 'public' ? '🌐' : (booking.origin === 'admin' ? '🏢' : '📋') }}
+                              </span>
+                              <span class="truncate">{{ booking.customer_name }}</span>
                             </span>
-                            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/90 border border-current font-semibold uppercase">
-                              {{ booking.status }}
-                            </span>
+                            <div class="flex items-center gap-1 shrink-0">
+                              @if (booking.origin === 'public') {
+                                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-semibold" title="Creada por cliente en Portal Web">
+                                  Web
+                                </span>
+                              } @else if (booking.origin === 'admin') {
+                                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 font-semibold" title="Creada por Administrador">
+                                  Admin
+                                </span>
+                              } @else {
+                                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold" title="Creada en Mostrador / Recepción">
+                                  Mostrador
+                                </span>
+                              }
+                              <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/90 border border-current font-semibold uppercase">
+                                {{ booking.status }}
+                              </span>
+                            </div>
                           </div>
                           <div class="flex items-center justify-between text-[10px] font-mono text-slate-500 mt-1">
                             <span>Cod: {{ booking.code }}</span>
@@ -565,7 +583,12 @@ export interface WeekDayItem {
                                 class="w-full h-full p-1.5 rounded-lg text-left cursor-pointer border-l-2 text-[10px] font-mono flex flex-col justify-between truncate"
                                 [ngClass]="getBookingBadgeClass(booking.status)"
                               >
-                                <span class="font-bold truncate text-slate-900">{{ booking.customer_name }}</span>
+                                <div class="flex items-center justify-between gap-0.5 truncate">
+                                  <span class="font-bold truncate text-slate-900">{{ booking.customer_name }}</span>
+                                  <span class="text-[9px]" [title]="booking.origin === 'public' ? 'Web Pública' : (booking.origin === 'admin' ? 'Admin' : 'Mostrador')">
+                                    {{ booking.origin === 'public' ? '🌐' : (booking.origin === 'admin' ? '🏢' : '📋') }}
+                                  </span>
+                                </div>
                                 <span class="text-[9px] font-semibold text-slate-600">Cod: {{ booking.code }}</span>
                               </div>
                             } @else {
@@ -641,12 +664,27 @@ export interface WeekDayItem {
                         </div>
                       </div>
 
-                      <span
-                        class="text-[10px] font-mono px-2 py-0.5 rounded-full border uppercase font-bold"
-                        [ngClass]="getBookingBadgeClass(b.status)"
-                      >
-                        {{ b.status }}
-                      </span>
+                      <div class="flex items-center gap-1.5 shrink-0">
+                        @if (b.origin === 'public') {
+                          <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-semibold" title="Creada por cliente en Portal Web">
+                            🌐 Web
+                          </span>
+                        } @else if (b.origin === 'admin') {
+                          <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 font-semibold" title="Creada por Administrador">
+                            🏢 Admin
+                          </span>
+                        } @else {
+                          <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold" title="Creada en Mostrador / Recepción">
+                            📋 Mostrador
+                          </span>
+                        }
+                        <span
+                          class="text-[10px] font-mono px-2 py-0.5 rounded-full border uppercase font-bold"
+                          [ngClass]="getBookingBadgeClass(b.status)"
+                        >
+                          {{ b.status }}
+                        </span>
+                      </div>
                     </div>
 
                     <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">

@@ -801,7 +801,7 @@ async def list_admin_bookings(
     query = (
         select(BookingModel)
         .where(BookingModel.club_id == club_id)
-        .options(selectinload(BookingModel.court))
+        .options(selectinload(BookingModel.court), selectinload(BookingModel.user))
         .order_by(BookingModel.created_at.desc())
     )
 
@@ -830,27 +830,41 @@ async def list_admin_bookings(
         query = query.where(BookingModel.period.op("&&")(search_range))
 
     records = (await db.scalars(query)).all()
-    return [
-        AdminBookingResponse(
-            id=b.id,
-            code=b.code,
-            club_id=b.club_id,
-            court_id=b.court_id,
-            court_name=b.court.name if b.court else "Cancha",
-            period_start=b.period.lower,
-            period_end=b.period.upper,
-            status=b.status,
-            customer_name=b.customer_name,
-            customer_phone=b.customer_phone,
-            customer_email=b.customer_email,
-            price_cents=b.price_cents,
-            currency=b.currency,
-            payment_status=b.payment_status,
-            cancellation_reason=b.cancellation_reason,
-            created_at=b.created_at,
+    results = []
+    for b in records:
+        b_origin = getattr(b, "origin", None) or ("public" if not b.user_id else "staff")
+        if b_origin == "public":
+            creator_name = "Cliente Web (Portal Público)"
+        elif b.user and b.user.full_name:
+            creator_name = b.user.full_name
+        elif b_origin == "admin":
+            creator_name = "Administrador"
+        else:
+            creator_name = "Recepcionista"
+
+        results.append(
+            AdminBookingResponse(
+                id=b.id,
+                code=b.code,
+                club_id=b.club_id,
+                court_id=b.court_id,
+                court_name=b.court.name if b.court else "Cancha",
+                period_start=b.period.lower,
+                period_end=b.period.upper,
+                status=b.status,
+                customer_name=b.customer_name,
+                customer_phone=b.customer_phone,
+                customer_email=b.customer_email,
+                price_cents=b.price_cents,
+                currency=b.currency,
+                payment_status=b.payment_status,
+                origin=b_origin,
+                created_by_name=creator_name,
+                cancellation_reason=b.cancellation_reason,
+                created_at=b.created_at,
+            )
         )
-        for b in records
-    ]
+    return results
 
 
 @router.post(
@@ -900,6 +914,9 @@ async def create_manual_booking(
     booking_id = uuid6.uuid7()
     code = BookingCode.generate().value
 
+    user_role = current_user.memberships.get(club_id, "staff")
+    booking_origin = "admin" if (current_user.is_superadmin or user_role in ["owner", "admin"]) else "staff"
+
     booking = BookingModel(
         id=booking_id,
         code=code,
@@ -913,6 +930,8 @@ async def create_manual_booking(
         price_cents=data.price_cents or 5000000,
         currency="COP",
         payment_status=data.payment_status,
+        origin=booking_origin,
+        user_id=current_user.id,
     )
     db.add(booking)
 
@@ -921,7 +940,7 @@ async def create_manual_booking(
         booking_id=booking_id,
         event_type="confirmed",
         actor_id=current_user.id,
-        actor_type="staff",
+        actor_type=booking_origin,
         payload={"notes": data.notes, "manual_booking": True},
     )
     db.add(event)
@@ -952,6 +971,8 @@ async def create_manual_booking(
         price_cents=booking.price_cents,
         currency=booking.currency,
         payment_status=booking.payment_status,
+        origin=booking.origin,
+        created_by_name=current_user.full_name or ("Administrador" if booking_origin == "admin" else "Recepcionista"),
         cancellation_reason=None,
         created_at=booking.created_at,
     )
@@ -968,7 +989,7 @@ async def update_booking_status(
     query = (
         select(BookingModel)
         .where(BookingModel.id == booking_id, BookingModel.club_id == club_id)
-        .options(selectinload(BookingModel.court))
+        .options(selectinload(BookingModel.court), selectinload(BookingModel.user))
     )
     booking = await db.scalar(query)
     if not booking:
@@ -1000,6 +1021,16 @@ async def update_booking_status(
     db.add(event)
     await db.commit()
 
+    b_origin = getattr(booking, "origin", None) or ("public" if not booking.user_id else "staff")
+    if b_origin == "public":
+        c_name = "Cliente Web (Portal Público)"
+    elif booking.user and booking.user.full_name:
+        c_name = booking.user.full_name
+    elif b_origin == "admin":
+        c_name = "Administrador"
+    else:
+        c_name = "Recepcionista"
+
     return AdminBookingResponse(
         id=booking.id,
         code=booking.code,
@@ -1015,6 +1046,8 @@ async def update_booking_status(
         price_cents=booking.price_cents,
         currency=booking.currency,
         payment_status=booking.payment_status,
+        origin=b_origin,
+        created_by_name=c_name,
         cancellation_reason=booking.cancellation_reason,
         created_at=booking.created_at,
     )

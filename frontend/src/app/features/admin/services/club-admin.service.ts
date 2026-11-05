@@ -52,6 +52,8 @@ export interface AdminBooking {
   price_cents: number;
   currency: string;
   payment_status: string;
+  origin?: 'public' | 'admin' | 'staff' | string;
+  created_by_name?: string;
   cancellation_reason?: string;
 }
 

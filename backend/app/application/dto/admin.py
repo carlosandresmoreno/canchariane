@@ -236,6 +236,8 @@ class AdminBookingResponse(BaseModel):
     price_cents: int
     currency: str
     payment_status: str
+    origin: str = "public"
+    created_by_name: str | None = None
     cancellation_reason: str | None
     created_at: datetime
 

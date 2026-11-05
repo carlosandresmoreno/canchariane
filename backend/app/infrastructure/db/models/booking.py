@@ -32,6 +32,7 @@ class BookingModel(Base, UUIDv7PKMixin, TimestampMixin):
     price_cents: Mapped[int] = mapped_column(Integer, nullable=False)
     currency: Mapped[str] = mapped_column(String(3), default="COP", nullable=False)
     payment_status: Mapped[str] = mapped_column(String(20), default="not_required", nullable=False)
+    origin: Mapped[str] = mapped_column(String(20), default="public", server_default="public", nullable=False)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     user_id: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True),

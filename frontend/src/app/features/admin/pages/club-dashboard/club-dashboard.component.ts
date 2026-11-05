@@ -35,6 +35,7 @@ import { ClubStaffManagerComponent } from '../../components/staff-manager/club-s
 import { ClubStatsViewComponent } from '../../components/stats-view/club-stats-view.component';
 import { ClubLocationManagerComponent } from '../../components/location-manager/club-location-manager.component';
 import { COUNTRY_DIAL_CODES, DEFAULT_DIAL_CODE } from '../../../../core/constants/country-codes';
+import { ClubNotificationService, ClubNotification } from '../../../../core/services/club-notification.service';
 
 export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'staff' | 'stats' | 'location';
 
@@ -122,6 +123,140 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
               <span class="text-sm">🔗</span>
               <span class="hidden sm:inline">Compartir Portal</span>
             </button>
+
+            <!-- Notification Bell Button & Dropdown (Facebook Style) -->
+            <div class="relative">
+              <button
+                type="button"
+                (click)="toggleNotificationsPanel()"
+                class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-700 transition-all shadow-xs active:scale-95 cursor-pointer"
+                [class.border-[#0056FB]]="showNotificationsPanel()"
+                [class.bg-blue-50/50]="showNotificationsPanel()"
+                title="Centro de Notificaciones"
+              >
+                <span class="text-base sm:text-lg">🔔</span>
+                @if (unreadNotifsCount() > 0) {
+                  <span class="absolute -top-1 -right-1 px-1.5 min-w-5 h-5 bg-rose-600 text-white rounded-full text-[10px] font-mono font-bold flex items-center justify-center shadow-md animate-pulse">
+                    {{ unreadNotifsCount() > 99 ? '99+' : unreadNotifsCount() }}
+                  </span>
+                }
+              </button>
+
+              <!-- Facebook-style Notification Dropdown Flyout -->
+              @if (showNotificationsPanel()) {
+                <!-- Transparent backdrop to close when clicking outside -->
+                <div class="fixed inset-0 z-40 cursor-default" (click)="showNotificationsPanel.set(false)"></div>
+
+                <div
+                  class="fixed inset-x-2 top-20 sm:top-12 sm:absolute sm:inset-auto sm:right-0 z-50 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[80vh] sm:max-h-[500px] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+                >
+                  <!-- Header -->
+                  <div class="p-3.5 sm:p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/90">
+                    <div class="flex items-center gap-2">
+                      <span class="text-base">🔔</span>
+                      <h3 class="font-bold text-slate-900 text-sm font-sans">Notificaciones</h3>
+                      @if (unreadNotifsCount() > 0) {
+                        <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-mono font-bold">
+                          {{ unreadNotifsCount() }} nuevas
+                        </span>
+                      }
+                    </div>
+                    <div class="flex items-center gap-2">
+                      @if (notifications().length > 0) {
+                        <button
+                          type="button"
+                          (click)="markAllNotificationsRead()"
+                          class="text-[11px] font-mono text-[#0056FB] hover:text-[#0048d6] font-medium transition-colors"
+                        >
+                          Marcar leídas
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        (click)="showNotificationsPanel.set(false)"
+                        class="text-slate-400 hover:text-slate-700 p-1 text-sm rounded-lg hover:bg-slate-100"
+                        title="Cerrar panel"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Notification List -->
+                  <div class="overflow-y-auto divide-y divide-slate-100 flex-1">
+                    @if (notifications().length === 0) {
+                      <div class="p-8 text-center text-slate-400 font-mono text-xs flex flex-col items-center gap-2">
+                        <span class="text-3xl">📭</span>
+                        <span>No tienes notificaciones recientes</span>
+                      </div>
+                    } @else {
+                      @for (n of notifications(); track n.id) {
+                        <div
+                          (click)="handleNotificationClick(n)"
+                          class="p-3.5 hover:bg-blue-50/50 cursor-pointer transition-colors flex items-start gap-3 relative text-left"
+                          [class.bg-blue-50/30]="!n.read"
+                        >
+                          <!-- Icon Indicator -->
+                          <div
+                            class="w-8 h-8 rounded-xl flex items-center justify-center text-sm shrink-0 shadow-2xs mt-0.5"
+                            [ngClass]="{
+                              'bg-blue-100 text-blue-700': n.type === 'booking_public',
+                              'bg-purple-100 text-purple-700': n.type === 'booking_admin',
+                              'bg-emerald-100 text-emerald-700': n.type === 'booking_staff',
+                              'bg-rose-100 text-rose-700': n.type === 'booking_cancelled'
+                            }"
+                          >
+                            {{ n.type === 'booking_public' ? '🌐' : (n.type === 'booking_admin' ? '🏢' : (n.type === 'booking_staff' ? '📋' : '❌')) }}
+                          </div>
+
+                          <!-- Content -->
+                          <div class="flex-1 min-w-0 pr-2">
+                            <div class="flex items-center justify-between gap-1">
+                              <span class="text-xs font-semibold text-slate-900 truncate">
+                                {{ n.title }}
+                              </span>
+                              @if (!n.read) {
+                                <span class="w-2 h-2 rounded-full bg-[#0056FB] shrink-0" title="No leída"></span>
+                              }
+                            </div>
+                            <p class="text-xs text-slate-600 font-sans mt-0.5 line-clamp-2">
+                              {{ n.message }}
+                            </p>
+                            <div class="flex items-center gap-1.5 mt-1 text-[10px] font-mono text-slate-400 flex-wrap">
+                              <span>{{ formatNotifTimeAgo(n.timestamp) }}</span>
+                              @if (n.courtName) {
+                                <span>• {{ n.courtName }}</span>
+                              }
+                              @if (n.timeStr) {
+                                <span>• {{ n.timeStr }}</span>
+                              }
+                              @if (n.origin) {
+                                <span class="uppercase tracking-wider font-semibold" [ngClass]="n.origin === 'public' ? 'text-blue-600' : 'text-slate-600'">
+                                  • {{ n.origin === 'public' ? 'Web Pública' : (n.origin === 'admin' ? 'Admin' : 'Mostrador') }}
+                                </span>
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    }
+                  </div>
+
+                  <!-- Footer -->
+                  @if (notifications().length > 0) {
+                    <div class="p-2.5 border-t border-slate-100 bg-slate-50/80 text-center">
+                      <button
+                        type="button"
+                        (click)="clearAllNotifications()"
+                        class="text-[11px] font-mono text-slate-400 hover:text-rose-600 transition-colors"
+                      >
+                        Limpiar historial
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
 
             <div class="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200">
               <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-mono font-medium text-slate-700 shadow-xs" [title]="authStore.currentUser()?.email || ''">
@@ -973,6 +1108,27 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                     {{ selectedBooking()?.status }}
                   </span>
                 </div>
+                <div class="flex justify-between items-center py-2 border-b border-slate-100 bg-slate-50/80 -mx-6 px-6">
+                  <span class="text-slate-600 font-mono uppercase text-[10px] tracking-wider font-semibold">Creada por</span>
+                  <div class="text-right">
+                    @if (selectedBooking()?.origin === 'public') {
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-100 text-[#0056FB] font-semibold text-xs border border-blue-200">
+                        <span>🌐</span>
+                        <span>Cliente Web (Portal Público)</span>
+                      </span>
+                    } @else if (selectedBooking()?.origin === 'admin') {
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-100 text-purple-700 font-semibold text-xs border border-purple-200">
+                        <span>🏢</span>
+                        <span>Admin ({{ selectedBooking()?.created_by_name || 'Administrador' }})</span>
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-semibold text-xs border border-emerald-200">
+                        <span>📋</span>
+                        <span>Recepción ({{ selectedBooking()?.created_by_name || 'Mostrador' }})</span>
+                      </span>
+                    }
+                  </div>
+                </div>
               </div>
 
             <!-- WhatsApp Actions: Chatear & Confirmar Asistencia -->
@@ -1569,6 +1725,12 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   editBookingCustomerEmail = '';
   editBookingPricePesos = 0;
 
+  // Notification Center Service (Facebook-style)
+  private readonly notifService = inject(ClubNotificationService);
+  readonly notifications = this.notifService.notifications;
+  readonly unreadNotifsCount = this.notifService.unreadCount;
+  readonly showNotificationsPanel = signal<boolean>(false);
+
   // Live Background Sync Signals & State
   readonly isSyncing = signal<boolean>(false);
   readonly newBookingAlert = signal<{ customerName: string; timeStr: string; courtName?: string } | null>(null);
@@ -1696,6 +1858,7 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     const clubId = this.getActiveClubId();
     if (clubId) {
       this.loadAllData(clubId);
+      this.notifService.loadNotifications(clubId);
       this.initSse(clubId);
       this.startBackgroundSync();
     }
@@ -1868,6 +2031,34 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
           const newOnes = incomingBookings.filter((b) => !currentIds.has(b.id) && b.status !== 'cancelled');
 
           if (newOnes.length > 0) {
+            for (const b of newOnes) {
+              const court = this.courts().find((c) => c.id === b.court_id);
+              const isPublic = b.origin === 'public' || (!b.origin && !b.created_by_name);
+              const isAdmin = b.origin === 'admin';
+              const isStaff = b.origin === 'staff';
+
+              let type: any = 'booking_public';
+              let originLabel = 'Portal Web';
+              if (isAdmin) {
+                type = 'booking_admin';
+                originLabel = 'Admin';
+              } else if (isStaff) {
+                type = 'booking_staff';
+                originLabel = 'Mostrador';
+              }
+
+              this.notifService.addNotification({
+                bookingId: b.id,
+                type,
+                title: isPublic ? `¡Nueva reserva web!` : `Reserva (${originLabel})`,
+                message: `${b.customer_name} apartó turno en ${court?.name || 'Cancha'}`,
+                customerName: b.customer_name,
+                courtName: court?.name,
+                timeStr: this.formatBookingTime(b),
+                origin: b.origin || (isPublic ? 'public' : 'staff')
+              });
+            }
+
             const latest = newOnes[0];
             const court = this.courts().find((c) => c.id === latest.court_id);
             this.triggerNewBookingAlert(latest.customer_name, latest.period_start, court?.name);
@@ -2676,6 +2867,33 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   openPublicPortal(): void {
     if (typeof window !== 'undefined') {
       window.open(this.publicPortalUrl(), '_blank');
+    }
+  }
+
+  toggleNotificationsPanel(): void {
+    this.showNotificationsPanel.update((v) => !v);
+  }
+
+  markAllNotificationsRead(): void {
+    this.notifService.markAllAsRead();
+  }
+
+  clearAllNotifications(): void {
+    this.notifService.clearAll();
+  }
+
+  formatNotifTimeAgo(isoStr: string): string {
+    return this.notifService.formatTimeAgo(isoStr);
+  }
+
+  handleNotificationClick(n: ClubNotification): void {
+    this.notifService.markAsRead(n.id);
+    if (n.bookingId) {
+      const b = this.bookings().find((item) => item.id === n.bookingId);
+      if (b) {
+        this.openBookingDetails(b);
+        this.showNotificationsPanel.set(false);
+      }
     }
   }
 

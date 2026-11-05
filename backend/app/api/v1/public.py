@@ -713,6 +713,7 @@ async def create_hold(
         price_cents=price_cents,
         currency=currency,
         payment_status="not_required",
+        origin="public",
         expires_at=expires_at,
     )
     db.add(booking)
