@@ -772,7 +772,12 @@ async def confirm_booking(
         return BookingPublicDTO(**idemp_record.response_body)
 
     # 2. Query booking hold
-    booking = await db.get(BookingModel, data.hold_id)
+    query = (
+        select(BookingModel)
+        .where(BookingModel.id == data.hold_id)
+        .options(selectinload(BookingModel.court), selectinload(BookingModel.club))
+    )
+    booking = await db.scalar(query)
     if not booking:
         raise EntityNotFoundError(entity="Reserva", identifier=str(data.hold_id))
 
@@ -807,11 +812,16 @@ async def confirm_booking(
     )
     db.add(event)
 
+    court_name = booking.court.name if booking.court else "Cancha"
+    club_name = booking.club.name if booking.club else "Club Deportivo"
+
     result_dto = BookingPublicDTO(
         id=booking.id,
         code=booking.code,
         club_id=booking.club_id,
         court_id=booking.court_id,
+        club_name=club_name,
+        court_name=court_name,
         period_start=booking.period.lower,
         period_end=booking.period.upper,
         status="confirmed",
@@ -845,7 +855,11 @@ async def get_booking_by_code(
     phone: str | None = None,
     db: Annotated[AsyncSession, Depends(get_db)] = None,
 ) -> BookingPublicDTO:
-    query = select(BookingModel).where(BookingModel.code == code.upper().strip())
+    query = (
+        select(BookingModel)
+        .where(BookingModel.code == code.upper().strip())
+        .options(selectinload(BookingModel.court), selectinload(BookingModel.club))
+    )
     booking = await db.scalar(query)
     if not booking:
         raise HTTPException(status_code=404, detail="Reserva no encontrada")
@@ -858,6 +872,8 @@ async def get_booking_by_code(
         code=booking.code,
         club_id=booking.club_id,
         court_id=booking.court_id,
+        club_name=booking.club.name if booking.club else "Club Deportivo",
+        court_name=booking.court.name if booking.court else "Cancha",
         period_start=booking.period.lower,
         period_end=booking.period.upper,
         status=booking.status,

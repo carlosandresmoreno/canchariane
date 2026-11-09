@@ -114,8 +114,8 @@ export class PublicBookingService {
         map((b) => ({
           id: b.id,
           code: b.code,
-          club_name: slug,
-          court_name: 'Cancha Reservada',
+          club_name: b.club_name || slug,
+          court_name: b.court_name || 'Cancha',
           start_time: b.period_start,
           end_time: b.period_end,
           price_cents: b.price_cents,
@@ -135,8 +135,8 @@ export class PublicBookingService {
         map((b) => ({
           id: b.id,
           code: b.code,
-          club_name: 'Club Canchariane',
-          court_name: 'Cancha Reservada',
+          club_name: b.club_name || 'Club Deportivo',
+          court_name: b.court_name || 'Cancha',
           start_time: b.period_start,
           end_time: b.period_end,
           price_cents: b.price_cents,

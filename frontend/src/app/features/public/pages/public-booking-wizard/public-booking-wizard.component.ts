@@ -1503,9 +1503,54 @@ export class PublicBookingWizardComponent implements OnInit {
   getWhatsAppShareUrl(): string {
     const b = this.confirmedBooking();
     if (!b) return '#';
-    const courtPart = this.isAutoMode() ? '' : `\nCancha: ${b.court_name}`;
+
+    const clubName = this.club()?.name || b.club_name || 'Complejo Deportivo';
+    const courtName =
+      b.court_name && b.court_name !== 'Cancha Reservada'
+        ? b.court_name
+        : (this.selectedSlot()?.court_name || 'Cancha Asignada');
+
+    const tz = this.club()?.timezone || 'America/Bogota';
+    const start = new Date(b.start_time);
+    const end = b.end_time ? new Date(b.end_time) : null;
+
+    const rawDate = start.toLocaleDateString('es-CO', {
+      timeZone: tz,
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    const fechaFormateada = rawDate.charAt(0).toUpperCase() + rawDate.slice(1);
+
+    const startTimeStr = start.toLocaleTimeString('es-CO', {
+      timeZone: tz,
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+    const endTimeStr = end
+      ? end.toLocaleTimeString('es-CO', {
+          timeZone: tz,
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        })
+      : '';
+    const horarioFormateado = endTimeStr ? `${startTimeStr} a ${endTimeStr}` : startTimeStr;
+
+    const customerName = b.customer_name || this.customerName || 'Cliente';
+    const priceStr = this.formatCents(b.price_cents);
+
     const text = encodeURIComponent(
-      `¡Hola! Confirmé mi reserva deportiva en ${b.club_name}.${courtPart}\nCódigo: ${b.code}\nFecha: ${b.start_time}`
+      `¡Hola! 👋 Confirmé mi reserva deportiva en *${clubName}*:\n\n` +
+      `📍 *Cancha:* ${courtName}\n` +
+      `📅 *Fecha:* ${fechaFormateada}\n` +
+      `⏰ *Horario:* ${horarioFormateado}\n` +
+      `🎫 *Código:* ${b.code}\n` +
+      `👤 *A nombre de:* ${customerName}\n` +
+      `💰 *Valor:* ${priceStr}\n\n` +
+      `¡Nos vemos en la cancha! ⚽🎾`
     );
     return `https://wa.me/?text=${text}`;
   }

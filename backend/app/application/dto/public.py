@@ -127,6 +127,8 @@ class BookingPublicDTO(BaseModel):
     code: str
     club_id: UUID
     court_id: UUID
+    club_name: str | None = None
+    court_name: str | None = None
     period_start: datetime
     period_end: datetime
     status: str
