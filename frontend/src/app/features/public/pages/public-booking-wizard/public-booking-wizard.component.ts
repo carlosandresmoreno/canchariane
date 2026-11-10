@@ -649,7 +649,7 @@ interface DayOption {
             <div class="flex items-center justify-between p-4 rounded-3xl bg-white/95 backdrop-blur-2xl border border-slate-200 shadow-sm">
               <div>
                 <span class="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
-                  {{ isAutoMode() ? 'Cancha Asignada' : 'Cancha Bloqueada' }}
+                  {{ isAutoMode() ? 'Cancha Asignada' : 'Cancha Apartada Temporalmente' }}
                 </span>
                 <span class="font-semibold text-slate-900 text-sm">
                   {{ hold()?.court_name || selectedSlot()?.court_name }} ({{ selectedDuration() }} min)
@@ -659,6 +659,14 @@ interface DayOption {
                 [expiresAt]="hold()?.expires_at || null"
                 (expired)="onHoldExpired()"
               />
+            </div>
+
+            <!-- Claridad en español: advertir que debe confirmar -->
+            <div class="px-4 py-3 rounded-2xl bg-blue-50/90 border border-blue-200 text-xs text-blue-900 flex items-start gap-2.5 shadow-2xs">
+              <span class="text-base shrink-0">ℹ️</span>
+              <span>
+                <strong>¡Casi listo!</strong> Tu turno está apartado temporalmente. Completa tus datos abajo y haz clic en <strong>Confirmar Reserva</strong> para asegurar tu cupo antes de que venza el tiempo.
+              </span>
             </div>
 
             <!-- Guest Form Card -->
@@ -1422,11 +1430,20 @@ export class PublicBookingWizardComponent implements OnInit {
   }
 
   cancelHoldAndGoBack(): void {
+    const current = this.hold();
+    if (current?.hold_id) {
+      this.publicService.releaseHold(current.hold_id).subscribe({ error: () => {} });
+    }
     this.currentStep.set(1);
     this.hold.set(null);
+    this.loadAvailability();
   }
 
   onHoldExpired(): void {
+    const current = this.hold();
+    if (current?.hold_id) {
+      this.publicService.releaseHold(current.hold_id).subscribe({ error: () => {} });
+    }
     alert('El tiempo de reserva de 10 minutos ha expirado. Por favor selecciona tu horario de nuevo.');
     this.currentStep.set(1);
     this.hold.set(null);

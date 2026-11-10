@@ -26,6 +26,10 @@ export class ClubNotificationService {
     return this.notifications().filter((n) => !n.read).length;
   });
 
+  readonly unreadWebCount = computed(() => {
+    return this.notifications().filter((n) => !n.read && (n.origin === 'public' || n.type === 'booking_public')).length;
+  });
+
   loadNotifications(clubId: string): void {
     if (!clubId) return;
     this.currentClubId.set(clubId);

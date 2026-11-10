@@ -101,7 +101,7 @@ import { PublicBookingResponse } from '../../models/public.models';
                 class="px-3.5 py-1.5 rounded-full text-[11px] font-mono uppercase tracking-widest border"
                 [ngClass]="booking()?.status === 'confirmed' ? 'bg-[#EFF6FF] text-[#0056FB] border-[#0056FB]/30' : 'bg-slate-100 text-slate-600 border-slate-200'"
               >
-                {{ booking()?.status }}
+                {{ getBookingStatusLabel(booking()?.status) }}
               </span>
             </div>
 
@@ -253,6 +253,26 @@ export class BookingLookupComponent implements OnInit {
   formatCents(cents?: number): string {
     if (!cents) return '$0 COP';
     return '$' + (cents / 100).toLocaleString('es-CO') + ' COP';
+  }
+
+  getBookingStatusLabel(status?: string): string {
+    if (!status) return '';
+    switch (status) {
+      case 'confirmed':
+        return 'Confirmada';
+      case 'held':
+        return 'En Proceso';
+      case 'completed':
+        return 'Finalizada';
+      case 'cancelled':
+        return 'Cancelada';
+      case 'no_show':
+        return 'No Asistió';
+      case 'expired':
+        return 'Expirada';
+      default:
+        return status;
+    }
   }
 
   formatDateTime(isoStr?: string): string {

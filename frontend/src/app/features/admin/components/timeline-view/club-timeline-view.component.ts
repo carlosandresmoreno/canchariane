@@ -429,7 +429,7 @@ export interface WeekDayItem {
                                 </span>
                               }
                               <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/90 border border-current font-semibold uppercase">
-                                {{ booking.status }}
+                                {{ getBookingStatusLabel(booking.status) }}
                               </span>
                             </div>
                           </div>
@@ -682,7 +682,7 @@ export interface WeekDayItem {
                           class="text-[10px] font-mono px-2 py-0.5 rounded-full border uppercase font-bold"
                           [ngClass]="getBookingBadgeClass(b.status)"
                         >
-                          {{ b.status }}
+                          {{ getBookingStatusLabel(b.status) }}
                         </span>
                       </div>
                     </div>
@@ -767,47 +767,292 @@ export interface WeekDayItem {
         </div>
       }
 
-      <!-- QUICK STATS STRIP (AT THE BOTTOM OF THE VIEW) -->
-      <div class="p-4 sm:p-5 rounded-3xl bg-white border border-slate-200/90 shadow-xs space-y-3">
-        <div class="flex items-center justify-between text-xs font-mono text-slate-500">
-          <span class="font-semibold uppercase tracking-wider text-[11px] text-slate-700">Resumen Rápido del Día</span>
-          <span>{{ formattedDateDisplay }}</span>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 font-mono text-xs">
-          <div class="p-2.5 rounded-2xl bg-blue-50/60 border border-blue-100/80 flex items-center gap-2.5">
-            <span class="text-base">📅</span>
-            <div>
-              <div class="text-[10px] uppercase text-blue-600 font-semibold tracking-wider">Reservas Hoy</div>
-              <div class="text-sm font-bold text-slate-900">{{ dayBookingsCount }} turno(s)</div>
-            </div>
+      <!-- SECCIÓN: REGISTRO DE RESERVAS DEL DÍA (FEED ORDENADO Y FILTRADO) -->
+      <div class="p-4 sm:p-5 rounded-3xl bg-white border border-slate-200/90 shadow-xs space-y-4">
+        <!-- Encabezado con Título, Fecha y Control de Días -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-base sm:text-lg">📋</span>
+            <h3 class="font-bold text-slate-900 text-sm sm:text-base font-sans">Reservas del Día</h3>
+            <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0056FB] border border-blue-200 text-[10px] font-mono font-semibold">
+              {{ dayAllBookings().length }} en total
+            </span>
+            <span class="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              {{ (dayRevenueCents / 100).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }) }}
+            </span>
           </div>
 
-          <div class="p-2.5 rounded-2xl bg-emerald-50/60 border border-emerald-100/80 flex items-center gap-2.5">
-            <span class="text-base">💰</span>
-            <div>
-              <div class="text-[10px] uppercase text-emerald-700 font-semibold tracking-wider">Recaudo Estimado</div>
-              <div class="text-sm font-bold text-slate-900">
-                {{ (dayRevenueCents / 100).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }) }}
+          <!-- Selector / Navegador de Fecha Rápido -->
+          <div class="flex items-center gap-1.5 self-start sm:self-auto bg-slate-50 p-1 rounded-xl border border-slate-200 text-xs font-mono">
+            <button
+              type="button"
+              (click)="dayChanged.emit(-1)"
+              class="w-7 h-7 flex items-center justify-center hover:bg-slate-200/80 active:scale-95 rounded-lg text-slate-700 transition-all font-bold shrink-0 cursor-pointer"
+              title="Día anterior"
+            >
+              ◀
+            </button>
+
+            <label
+              class="relative flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-[#0056FB] cursor-pointer transition-colors shadow-2xs select-none"
+              title="Cambiar fecha de consulta"
+            >
+              <span class="text-xs">📅</span>
+              <span class="text-xs font-semibold text-slate-900 capitalize truncate max-w-[140px] sm:max-w-none">
+                {{ formattedDateDisplay }}
+              </span>
+              <input
+                type="date"
+                [value]="currentDate"
+                (change)="onDateInputChange($event)"
+                class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                title="Seleccionar fecha"
+              />
+            </label>
+
+            <button
+              type="button"
+              (click)="dayChanged.emit(1)"
+              class="w-7 h-7 flex items-center justify-center hover:bg-slate-200/80 active:scale-95 rounded-lg text-slate-700 transition-all font-bold shrink-0 cursor-pointer"
+              title="Día siguiente"
+            >
+              ▶
+            </button>
+
+            @if (!isViewingToday()) {
+              <button
+                type="button"
+                (click)="todayClicked.emit()"
+                class="px-2 py-1 bg-blue-50 text-[#0056FB] hover:bg-blue-100 rounded-lg text-[10px] font-bold uppercase transition-colors shrink-0 cursor-pointer"
+                title="Volver al día de hoy"
+              >
+                Hoy
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Filtros (Por Defecto Web Pública, Admin, Todas) y Orden -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <!-- Pestañas de Filtro -->
+          <div class="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100/90 border border-slate-200/80 text-xs w-full sm:w-auto">
+            <button
+              type="button"
+              (click)="feedFilter.set('web')"
+              class="flex-1 sm:flex-initial py-1 px-3 rounded-lg text-xs font-sans flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              [class.bg-white]="feedFilter() === 'web'"
+              [class.text-blue-700]="feedFilter() === 'web'"
+              [class.shadow-xs]="feedFilter() === 'web'"
+              [class.font-semibold]="feedFilter() === 'web'"
+              [class.text-slate-600]="feedFilter() !== 'web'"
+            >
+              <span>🌐 Solo Web</span>
+              <span
+                class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold"
+                [ngClass]="feedFilter() === 'web' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-500'"
+              >
+                {{ dayWebBookingsCount() }}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              (click)="feedFilter.set('admin')"
+              class="flex-1 sm:flex-initial py-1 px-3 rounded-lg text-xs font-sans flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              [class.bg-white]="feedFilter() === 'admin'"
+              [class.text-slate-900]="feedFilter() === 'admin'"
+              [class.shadow-xs]="feedFilter() === 'admin'"
+              [class.font-semibold]="feedFilter() === 'admin'"
+              [class.text-slate-600]="feedFilter() !== 'admin'"
+            >
+              <span>🏢 Admin / Mostrador</span>
+              <span
+                class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold"
+                [ngClass]="feedFilter() === 'admin' ? 'bg-slate-200 text-slate-800' : 'bg-slate-200 text-slate-500'"
+              >
+                {{ dayAdminBookingsCount() }}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              (click)="feedFilter.set('all')"
+              class="flex-1 sm:flex-initial py-1 px-3 rounded-lg text-xs font-sans flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              [class.bg-white]="feedFilter() === 'all'"
+              [class.text-slate-900]="feedFilter() === 'all'"
+              [class.shadow-xs]="feedFilter() === 'all'"
+              [class.font-semibold]="feedFilter() === 'all'"
+              [class.text-slate-600]="feedFilter() !== 'all'"
+            >
+              <span>Todas</span>
+              <span
+                class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold"
+                [ngClass]="feedFilter() === 'all' ? 'bg-slate-200 text-slate-800' : 'bg-slate-200 text-slate-500'"
+              >
+                {{ dayAllBookings().length }}
+              </span>
+            </button>
+          </div>
+
+          <!-- Selector de Orden -->
+          <div class="flex items-center gap-1.5 text-xs text-slate-500 self-end sm:self-auto">
+            <span class="text-[11px] font-mono">Ordenar:</span>
+            <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-[11px] font-mono">
+              <button
+                type="button"
+                (click)="feedSort.set('recent')"
+                class="px-2 py-0.5 rounded-md transition-all cursor-pointer"
+                [class.bg-white]="feedSort() === 'recent'"
+                [class.text-slate-900]="feedSort() === 'recent'"
+                [class.font-bold]="feedSort() === 'recent'"
+                [class.shadow-xs]="feedSort() === 'recent'"
+                title="Ver primero las reservas creadas más recientemente"
+              >
+                ⚡ Más recientes
+              </button>
+              <button
+                type="button"
+                (click)="feedSort.set('schedule')"
+                class="px-2 py-0.5 rounded-md transition-all cursor-pointer"
+                [class.bg-white]="feedSort() === 'schedule'"
+                [class.text-slate-900]="feedSort() === 'schedule'"
+                [class.font-bold]="feedSort() === 'schedule'"
+                [class.shadow-xs]="feedSort() === 'schedule'"
+                title="Ordenar por horario del turno en la cancha"
+              >
+                ⏰ Por horario
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de Reservas (Cards Responsivas) -->
+        @if (filteredDayBookings().length === 0) {
+          <div class="py-10 px-4 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-200 flex flex-col items-center justify-center gap-2">
+            <span class="text-3xl">📭</span>
+            <p class="text-xs text-slate-600 font-sans max-w-sm">
+              @if (feedFilter() === 'web') {
+                No hay reservas realizadas por clientes desde el portal público para esta fecha.
+              } @else if (feedFilter() === 'admin') {
+                No hay reservas registradas manualmente por administradores o recepcionistas para esta fecha.
+              } @else {
+                No hay reservas registradas para esta fecha.
+              }
+            </p>
+            <button
+              type="button"
+              (click)="openNewBookingModal.emit()"
+              class="mt-2 px-3 py-1.5 rounded-xl bg-[#0056FB] hover:bg-[#0048d6] text-white text-xs font-mono font-semibold transition-all shadow-xs active:scale-95 cursor-pointer"
+            >
+              + Nueva Reserva
+            </button>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            @for (b of filteredDayBookings(); track b.id) {
+              <div
+                (click)="selectBooking.emit(b)"
+                class="p-3.5 rounded-2xl border border-slate-200 bg-white hover:border-blue-600 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between gap-3 text-left relative group active:scale-95"
+                [class.border-blue-300]="b.origin === 'public'"
+                [class.bg-blue-50]="b.origin === 'public'"
+              >
+                <!-- Fila Superior: Origen, Estado y Hora de Creación -->
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                  <div class="flex items-center gap-1.5">
+                    @if (b.origin === 'public') {
+                      <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-mono font-bold tracking-wider uppercase border border-blue-200 flex items-center gap-1">
+                        <span>🌐</span> Web Cliente
+                      </span>
+                    } @else if (b.origin === 'admin') {
+                      <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-mono font-bold tracking-wider uppercase border border-purple-200 flex items-center gap-1">
+                        <span>🏢</span> Admin
+                      </span>
+                    } @else {
+                      <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-mono font-bold tracking-wider uppercase border border-emerald-200 flex items-center gap-1">
+                        <span>📋</span> Mostrador
+                      </span>
+                    }
+
+                    <span
+                      class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider"
+                      [ngClass]="{
+                        'bg-emerald-50 text-emerald-700 border border-emerald-200': b.status === 'confirmed',
+                        'bg-blue-50 text-blue-700 border border-blue-200': b.status === 'completed',
+                        'bg-amber-50 text-amber-700 border border-amber-200': b.status === 'held',
+                        'bg-rose-50 text-rose-700 border border-rose-200': b.status === 'cancelled',
+                        'bg-slate-100 text-slate-600 border border-slate-200': b.status === 'no_show'
+                      }"
+                    >
+                      {{ b.status === 'confirmed' ? 'Confirmada' : (b.status === 'completed' ? 'Finalizada' : (b.status === 'held' ? 'En Espera' : (b.status === 'cancelled' ? 'Cancelada' : 'No Asistió'))) }}
+                    </span>
+                  </div>
+
+                  @if (b.created_at) {
+                    <span class="text-[10px] font-mono text-slate-400" [title]="'Creada: ' + formatCreatedAt(b.created_at)">
+                      ⏱ {{ formatRelativeCreatedAt(b.created_at) }}
+                    </span>
+                  }
+                </div>
+
+                <!-- Datos Principales: Cliente, Cancha y Horario -->
+                <div>
+                  <div class="flex items-center justify-between gap-1">
+                    <h4 class="font-bold text-slate-900 text-sm font-sans truncate group-hover:text-[#0056FB] transition-colors">
+                      {{ b.customer_name }}
+                    </h4>
+                    <span class="text-[11px] font-mono text-slate-400 shrink-0">#{{ b.code }}</span>
+                  </div>
+
+                  <div class="flex items-center gap-2 mt-1.5 text-xs text-slate-600 font-sans flex-wrap">
+                    <span class="inline-flex items-center gap-1 font-medium text-slate-700">
+                      <span>🎾</span> {{ getCourtNameById(b.court_id) }}
+                    </span>
+                    <span>•</span>
+                    <span class="inline-flex items-center gap-1 font-mono font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                      <span>⏰</span> {{ formatItemTime(b.period_start, b.period_end) }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Fila Inferior: Precio, Contacto y Acciones -->
+                <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-mono text-xs sm:text-sm font-bold text-slate-900">
+                      {{ (b.price_cents / 100).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }) }}
+                    </span>
+                    <span
+                      class="text-[9px] font-mono uppercase px-1.5 py-0.2 rounded font-semibold"
+                      [ngClass]="b.payment_status === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'"
+                    >
+                      {{ b.payment_status === 'paid' ? 'Pagado' : 'Pendiente' }}
+                    </span>
+                  </div>
+
+                  <div class="flex items-center gap-1.5">
+                    @if (b.customer_phone) {
+                      <a
+                        [href]="getWhatsAppLink(b)"
+                        target="_blank"
+                        (click)="$event.stopPropagation()"
+                        class="w-7 h-7 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center text-xs transition-colors shadow-2xs active:scale-95"
+                        title="Abrir WhatsApp para confirmar reserva"
+                      >
+                        💬
+                      </a>
+                    }
+                    <button
+                      type="button"
+                      (click)="selectBooking.emit(b); $event.stopPropagation()"
+                      class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-mono font-semibold transition-colors active:scale-95 cursor-pointer"
+                    >
+                      Detalle
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
+            }
           </div>
-
-          <div class="p-2.5 rounded-2xl bg-purple-50/60 border border-purple-100/80 flex items-center gap-2.5">
-            <span class="text-base">🔒</span>
-            <div>
-              <div class="text-[10px] uppercase text-purple-700 font-semibold tracking-wider">Bloqueos Activos</div>
-              <div class="text-sm font-bold text-slate-900">{{ todayBlocksCount }} horario(s)</div>
-            </div>
-          </div>
-
-          <div class="p-2.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center gap-2.5">
-            <span class="text-base">🎾</span>
-            <div>
-              <div class="text-[10px] uppercase text-slate-500 font-semibold tracking-wider">Canchas Club</div>
-              <div class="text-sm font-bold text-slate-900">{{ courts.length }} activa(s)</div>
-            </div>
-          </div>
-        </div>
+        }
       </div>
 
       <!-- MOBILE BOTTOM FLOATING BAR -->
@@ -909,6 +1154,51 @@ export class ClubTimelineViewComponent implements OnInit {
   // Interactive UI State
   readonly viewMode = signal<TimelineViewMode>('day');
   readonly selectedCourtFilter = signal<string>('all');
+  readonly feedFilter = signal<'web' | 'admin' | 'all'>('web');
+  readonly feedSort = signal<'recent' | 'schedule'>('recent');
+
+  readonly dayAllBookings = computed<AdminBooking[]>(() => {
+    const cur = this._currentDate();
+    if (!cur) return [];
+    const dayStart = new Date(`${cur}T00:00:00-05:00`).getTime();
+    const dayEnd = new Date(`${cur}T23:59:59-05:00`).getTime();
+
+    return this._bookings().filter((b) => {
+      const bStart = new Date(b.period_start).getTime();
+      const bEnd = new Date(b.period_end).getTime();
+      return dayStart < bEnd && dayEnd > bStart;
+    });
+  });
+
+  readonly dayWebBookingsCount = computed<number>(() => {
+    return this.dayAllBookings().filter((b) => b.origin === 'public').length;
+  });
+
+  readonly dayAdminBookingsCount = computed<number>(() => {
+    return this.dayAllBookings().filter((b) => b.origin === 'admin' || b.origin === 'staff').length;
+  });
+
+  readonly filteredDayBookings = computed<AdminBooking[]>(() => {
+    const all = this.dayAllBookings();
+    const filter = this.feedFilter();
+    let list = all;
+    if (filter === 'web') {
+      list = all.filter((b) => b.origin === 'public');
+    } else if (filter === 'admin') {
+      list = all.filter((b) => b.origin === 'admin' || b.origin === 'staff');
+    }
+
+    const sortMode = this.feedSort();
+    return [...list].sort((a, b) => {
+      if (sortMode === 'recent') {
+        const timeA = a.created_at ? new Date(a.created_at).getTime() : new Date(a.period_start).getTime();
+        const timeB = b.created_at ? new Date(b.created_at).getTime() : new Date(b.period_start).getTime();
+        return timeB - timeA;
+      } else {
+        return new Date(a.period_start).getTime() - new Date(b.period_start).getTime();
+      }
+    });
+  });
 
   readonly currentDayOperatingHours = computed<BusinessHoursAdminResponse | undefined>(() => {
     const cur = this._currentDate();
@@ -1261,12 +1551,17 @@ export class ClubTimelineViewComponent implements OnInit {
     const cellStart = new Date(`${dateStr}T${hStr}:00:00-05:00`).getTime();
     const cellEnd = cellStart + 3600000;
 
-    return bkgs.find((b) => {
+    const matching = bkgs.filter((b) => {
       if (b.court_id !== courtId) return false;
+      if (b.status === 'cancelled' || b.status === 'expired') return false;
       const bStart = new Date(b.period_start).getTime();
       const bEnd = new Date(b.period_end).getTime();
       return cellStart < bEnd && cellEnd > bStart;
     });
+
+    if (!matching.length) return undefined;
+    // Prefer confirmed/completed bookings if any, otherwise held
+    return matching.find((b) => b.status === 'confirmed' || b.status === 'completed') || matching[0];
   }
 
   getBlockIcon(kind: string): string {
@@ -1354,12 +1649,89 @@ export class ClubTimelineViewComponent implements OnInit {
         return 'bg-blue-50/90 border-blue-200 text-[#0056FB] hover:border-[#0056FB] border-l-[#0056FB]';
       case 'completed':
         return 'bg-emerald-50/90 border-emerald-200 text-emerald-800 hover:border-emerald-500 border-l-emerald-600';
+      case 'held':
+        return 'bg-amber-50/90 border-amber-300 text-amber-900 hover:border-amber-500 border-l-amber-500';
       case 'no_show':
-        return 'bg-amber-50/90 border-amber-200 text-amber-800 hover:border-amber-500 border-l-amber-500';
+        return 'bg-purple-50/90 border-purple-200 text-purple-800 hover:border-purple-500 border-l-purple-500';
       case 'cancelled':
         return 'bg-slate-50 border-slate-200 text-slate-400 line-through border-l-slate-400';
       default:
         return 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-400 border-l-slate-500';
     }
+  }
+
+  getBookingStatusLabel(status?: string): string {
+    if (!status) return '';
+    switch (status) {
+      case 'confirmed':
+        return 'Confirmada';
+      case 'held':
+        return 'En proceso...';
+      case 'completed':
+        return 'Finalizada';
+      case 'cancelled':
+        return 'Cancelada';
+      case 'no_show':
+        return 'No asistió';
+      case 'expired':
+        return 'Expirada';
+      default:
+        return status;
+    }
+  }
+
+  isViewingToday(): boolean {
+    const cur = this._currentDate();
+    const todayStr = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Bogota',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(new Date());
+    return cur === todayStr;
+  }
+
+  formatCreatedAt(isoStr?: string): string {
+    if (!isoStr) return '';
+    try {
+      const dt = new Date(isoStr);
+      return dt.toLocaleTimeString('es-CO', {
+        timeZone: 'America/Bogota',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch {
+      return '';
+    }
+  }
+
+  formatRelativeCreatedAt(isoStr?: string): string {
+    if (!isoStr) return '';
+    try {
+      const diffMs = Date.now() - new Date(isoStr).getTime();
+      const diffMin = Math.floor(diffMs / 60000);
+      if (diffMin < 1) return 'Hace un momento';
+      if (diffMin < 60) return `Hace ${diffMin} min`;
+      const diffHours = Math.floor(diffMin / 60);
+      if (diffHours < 24) return `Hace ${diffHours} h`;
+      return new Date(isoStr).toLocaleDateString('es-CO', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch {
+      return '';
+    }
+  }
+
+  getWhatsAppLink(b: AdminBooking): string {
+    if (!b.customer_phone) return '#';
+    const phone = this.cleanPhoneForWhatsApp(b.customer_phone);
+    const timeDisplay = this.formatItemTime(b.period_start, b.period_end);
+    const msg = `¡Hola ${b.customer_name}! Te saludamos del club. Confirmamos tu turno de reserva:\n📍 Cancha: ${b.court_name || 'Cancha'}\n⏰ Horario: ${timeDisplay}\n🎫 Código: ${b.code}\n¡Te esperamos!`;
+    return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   }
 }

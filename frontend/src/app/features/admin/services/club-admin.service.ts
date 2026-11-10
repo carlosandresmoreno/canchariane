@@ -45,7 +45,7 @@ export interface AdminBooking {
   court_name: string;
   period_start: string; // ISO
   period_end: string;
-  status: 'held' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
+  status: 'held' | 'confirmed' | 'completed' | 'cancelled' | 'no_show' | 'expired';
   customer_name: string;
   customer_phone: string;
   customer_email?: string;
@@ -55,6 +55,7 @@ export interface AdminBooking {
   origin?: 'public' | 'admin' | 'staff' | string;
   created_by_name?: string;
   cancellation_reason?: string;
+  created_at?: string;
 }
 
 export interface AdminUpdateBooking {

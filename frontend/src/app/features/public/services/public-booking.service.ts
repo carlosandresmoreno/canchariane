@@ -99,6 +99,10 @@ export class PublicBookingService {
     });
   }
 
+  releaseHold(holdId: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/bookings/holds/${holdId}`);
+  }
+
   confirmBooking(
     slug: string,
     idempotencyKey: string,

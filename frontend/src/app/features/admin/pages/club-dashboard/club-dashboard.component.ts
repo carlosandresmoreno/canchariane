@@ -135,8 +135,12 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                 title="Centro de Notificaciones"
               >
                 <span class="text-base sm:text-lg">🔔</span>
-                @if (unreadNotifsCount() > 0) {
-                  <span class="absolute -top-1 -right-1 px-1.5 min-w-5 h-5 bg-rose-600 text-white rounded-full text-[10px] font-mono font-bold flex items-center justify-center shadow-md animate-pulse">
+                @if (unreadWebNotifsCount() > 0) {
+                  <span class="absolute -top-1 -right-1 px-1.5 min-w-5 h-5 bg-rose-600 text-white rounded-full text-[10px] font-mono font-bold flex items-center justify-center shadow-md animate-pulse" title="Nuevas reservas web">
+                    {{ unreadWebNotifsCount() > 99 ? '99+' : unreadWebNotifsCount() }}
+                  </span>
+                } @else if (unreadNotifsCount() > 0) {
+                  <span class="absolute -top-1 -right-1 px-1.5 min-w-4 h-4 bg-slate-500 text-white rounded-full text-[9px] font-mono font-bold flex items-center justify-center shadow-xs" title="Notificaciones internas">
                     {{ unreadNotifsCount() > 99 ? '99+' : unreadNotifsCount() }}
                   </span>
                 }
@@ -155,8 +159,12 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                     <div class="flex items-center gap-2">
                       <span class="text-base">🔔</span>
                       <h3 class="font-bold text-slate-900 text-sm font-sans">Notificaciones</h3>
-                      @if (unreadNotifsCount() > 0) {
+                      @if (unreadWebNotifsCount() > 0) {
                         <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-mono font-bold">
+                          {{ unreadWebNotifsCount() }} web nuevas
+                        </span>
+                      } @else if (unreadNotifsCount() > 0) {
+                        <span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-mono font-bold">
                           {{ unreadNotifsCount() }} nuevas
                         </span>
                       }
@@ -182,15 +190,81 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                     </div>
                   </div>
 
+                  <!-- Filter Tabs: Web (Default) / Internas / Todas -->
+                  <div class="p-1.5 bg-slate-100/90 border-b border-slate-200/80 flex items-center gap-1 text-xs">
+                    <button
+                      type="button"
+                      (click)="notifFilter.set('web')"
+                      class="flex-1 py-1 px-2 rounded-lg text-xs font-sans flex items-center justify-center gap-1 transition-all cursor-pointer"
+                      [class.bg-white]="notifFilter() === 'web'"
+                      [class.text-blue-700]="notifFilter() === 'web'"
+                      [class.shadow-xs]="notifFilter() === 'web'"
+                      [class.font-semibold]="notifFilter() === 'web'"
+                      [class.text-slate-600]="notifFilter() !== 'web'"
+                    >
+                      <span>🌐 Solo Web</span>
+                      <span
+                        class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold"
+                        [ngClass]="notifFilter() === 'web' ? 'bg-blue-100 text-blue-700' : 'bg-slate-200 text-slate-500'"
+                      >
+                        {{ webNotifsCount() }}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      (click)="notifFilter.set('internal')"
+                      class="flex-1 py-1 px-2 rounded-lg text-xs font-sans flex items-center justify-center gap-1 transition-all cursor-pointer"
+                      [class.bg-white]="notifFilter() === 'internal'"
+                      [class.text-slate-900]="notifFilter() === 'internal'"
+                      [class.shadow-xs]="notifFilter() === 'internal'"
+                      [class.font-semibold]="notifFilter() === 'internal'"
+                      [class.text-slate-600]="notifFilter() !== 'internal'"
+                    >
+                      <span>🏢 Internas</span>
+                      <span
+                        class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold"
+                        [ngClass]="notifFilter() === 'internal' ? 'bg-slate-200 text-slate-800' : 'bg-slate-200 text-slate-500'"
+                      >
+                        {{ internalNotifsCount() }}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      (click)="notifFilter.set('all')"
+                      class="py-1 px-2.5 rounded-lg text-xs font-sans flex items-center justify-center gap-1 transition-all cursor-pointer"
+                      [class.bg-white]="notifFilter() === 'all'"
+                      [class.text-slate-900]="notifFilter() === 'all'"
+                      [class.shadow-xs]="notifFilter() === 'all'"
+                      [class.font-semibold]="notifFilter() === 'all'"
+                      [class.text-slate-600]="notifFilter() !== 'all'"
+                    >
+                      <span>Todas</span>
+                      <span
+                        class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold"
+                        [ngClass]="notifFilter() === 'all' ? 'bg-slate-200 text-slate-800' : 'bg-slate-200 text-slate-500'"
+                      >
+                        {{ notifications().length }}
+                      </span>
+                    </button>
+                  </div>
+
                   <!-- Notification List -->
                   <div class="overflow-y-auto divide-y divide-slate-100 flex-1">
-                    @if (notifications().length === 0) {
+                    @if (filteredNotifications().length === 0) {
                       <div class="p-8 text-center text-slate-400 font-mono text-xs flex flex-col items-center gap-2">
                         <span class="text-3xl">📭</span>
-                        <span>No tienes notificaciones recientes</span>
+                        @if (notifFilter() === 'web') {
+                          <span>No hay reservas de clientes por el portal web</span>
+                        } @else if (notifFilter() === 'internal') {
+                          <span>No hay reservas creadas internamente</span>
+                        } @else {
+                          <span>No tienes notificaciones recientes</span>
+                        }
                       </div>
                     } @else {
-                      @for (n of notifications(); track n.id) {
+                      @for (n of filteredNotifications(); track n.id) {
                         <div
                           (click)="handleNotificationClick(n)"
                           class="p-3.5 hover:bg-blue-50 cursor-pointer transition-colors flex items-start gap-3 relative text-left"
@@ -231,8 +305,11 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                                 <span>• {{ n.timeStr }}</span>
                               }
                               @if (n.origin) {
-                                <span class="uppercase tracking-wider font-semibold" [ngClass]="n.origin === 'public' ? 'text-blue-600' : 'text-slate-600'">
-                                  • {{ n.origin === 'public' ? 'Web Pública' : (n.origin === 'admin' ? 'Admin' : 'Mostrador') }}
+                                <span
+                                  class="uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded text-[9px]"
+                                  [ngClass]="n.origin === 'public' ? 'bg-blue-50 text-blue-700 border border-blue-200' : (n.origin === 'admin' ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')"
+                                >
+                                  {{ n.origin === 'public' ? 'Web Pública' : (n.origin === 'admin' ? 'Admin' : 'Mostrador') }}
                                 </span>
                               }
                             </div>
@@ -1105,7 +1182,7 @@ export type AdminDashboardTab = 'timeline' | 'courts' | 'layout' | 'hours' | 'st
                 <div class="flex justify-between py-1.5 border-b border-slate-100">
                   <span class="text-slate-500 font-mono uppercase text-[10px] tracking-wider">Estado</span>
                   <span class="font-mono text-[#0056FB] uppercase px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-[10px]">
-                    {{ selectedBooking()?.status }}
+                    {{ getBookingStatusLabel(selectedBooking()?.status) }}
                   </span>
                 </div>
                 <div class="flex justify-between items-center py-2 border-b border-slate-100 bg-slate-50/80 -mx-6 px-6">
@@ -1729,7 +1806,30 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
   private readonly notifService = inject(ClubNotificationService);
   readonly notifications = this.notifService.notifications;
   readonly unreadNotifsCount = this.notifService.unreadCount;
+  readonly unreadWebNotifsCount = this.notifService.unreadWebCount;
   readonly showNotificationsPanel = signal<boolean>(false);
+  readonly notifFilter = signal<'web' | 'internal' | 'all'>('web');
+
+  readonly webNotifsCount = computed(() =>
+    this.notifications().filter((n) => n.origin === 'public' || n.type === 'booking_public').length
+  );
+  readonly internalNotifsCount = computed(() =>
+    this.notifications().filter((n) => n.origin === 'admin' || n.origin === 'staff' || (n.type !== 'booking_public' && n.origin !== 'public')).length
+  );
+
+  readonly filteredNotifications = computed(() => {
+    const filter = this.notifFilter();
+    const list = this.notifications();
+    if (filter === 'web') {
+      return list.filter((n) => n.origin === 'public' || n.type === 'booking_public');
+    }
+    if (filter === 'internal') {
+      return list.filter((n) => n.origin === 'admin' || n.origin === 'staff' || (n.type !== 'booking_public' && n.origin !== 'public'));
+    }
+    return list;
+  });
+
+  private locallyCreatedBookingIds = new Set<string>();
 
   // Live Background Sync Signals & State
   readonly isSyncing = signal<boolean>(false);
@@ -2027,21 +2127,31 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
         const currentBookings = this.bookings();
 
         if (currentBookings.length > 0) {
-          const currentIds = new Set(currentBookings.map((b) => b.id));
-          const newOnes = incomingBookings.filter((b) => !currentIds.has(b.id) && b.status !== 'cancelled');
+          const currentMap = new Map(currentBookings.map((b) => [b.id, b]));
+          const newOnes = incomingBookings.filter((b) => {
+            if (this.locallyCreatedBookingIds.has(b.id)) return false;
+            if (b.status !== 'confirmed' && b.status !== 'completed') return false;
+
+            const existing = currentMap.get(b.id);
+            if (!existing) {
+              return true;
+            }
+            // Existing booking that was previously 'held' and has now been confirmed!
+            return existing.status === 'held';
+          });
 
           if (newOnes.length > 0) {
             for (const b of newOnes) {
               const court = this.courts().find((c) => c.id === b.court_id);
-              const isPublic = b.origin === 'public' || (!b.origin && !b.created_by_name);
+              const isPublic = b.origin === 'public';
               const isAdmin = b.origin === 'admin';
               const isStaff = b.origin === 'staff';
 
-              let type: any = 'booking_public';
+              let type: 'booking_public' | 'booking_admin' | 'booking_staff' = 'booking_public';
               let originLabel = 'Portal Web';
               if (isAdmin) {
                 type = 'booking_admin';
-                originLabel = 'Admin';
+                originLabel = 'Administrador';
               } else if (isStaff) {
                 type = 'booking_staff';
                 originLabel = 'Mostrador';
@@ -2059,9 +2169,12 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
               });
             }
 
-            const latest = newOnes[0];
-            const court = this.courts().find((c) => c.id === latest.court_id);
-            this.triggerNewBookingAlert(latest.customer_name, latest.period_start, court?.name);
+            const publicNew = newOnes.filter((b) => b.origin === 'public');
+            if (publicNew.length > 0) {
+              const latest = publicNew[0];
+              const court = this.courts().find((c) => c.id === latest.court_id);
+              this.triggerNewBookingAlert(latest.customer_name, latest.period_start, court?.name);
+            }
           }
         }
 
@@ -2444,7 +2557,10 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
         payment_status: 'paid'
       })
       .subscribe({
-        next: () => {
+        next: (created) => {
+          if (created?.id) {
+            this.locallyCreatedBookingIds.add(created.id);
+          }
           this.isSubmitting.set(false);
           this.showCreateBookingModal.set(false);
           this.feedbackMessage.set('Reserva creada exitosamente.');
@@ -2794,6 +2910,26 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  getBookingStatusLabel(status?: string): string {
+    if (!status) return '';
+    switch (status) {
+      case 'confirmed':
+        return 'Confirmada';
+      case 'held':
+        return 'En Proceso...';
+      case 'completed':
+        return 'Finalizada';
+      case 'cancelled':
+        return 'Cancelada';
+      case 'no_show':
+        return 'No Asistió';
+      case 'expired':
+        return 'Expirada';
+      default:
+        return status;
+    }
+  }
+
   openShareModal(): void {
     this.hasCopiedLink.set(false);
     this.hasCopiedMessage.set(false);
@@ -2891,6 +3027,10 @@ export class ClubDashboardComponent implements OnInit, OnDestroy {
     if (n.bookingId) {
       const b = this.bookings().find((item) => item.id === n.bookingId);
       if (b) {
+        const bDate = b.period_start.split('T')[0];
+        if (bDate && bDate !== this.currentDate()) {
+          this.currentDate.set(bDate);
+        }
         this.openBookingDetails(b);
         this.showNotificationsPanel.set(false);
       }

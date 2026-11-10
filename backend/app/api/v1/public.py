@@ -2,6 +2,7 @@ import hashlib
 import json
 from datetime import UTC, date, datetime, timedelta
 from typing import Annotated, Any
+from uuid import UUID
 from zoneinfo import ZoneInfo
 
 import asyncpg
@@ -421,6 +422,18 @@ async def get_club_availability(
 
     # Active bookings: confirmed bookings OR unexpired held bookings
     now_utc = datetime.now(UTC)
+    # Auto-expire any outdated holds in DB so slots are freed immediately
+    await db.execute(
+        update(BookingModel)
+        .where(
+            BookingModel.club_id == club.id,
+            BookingModel.status == "held",
+            BookingModel.expires_at < now_utc,
+        )
+        .values(status="expired")
+    )
+    await db.commit()
+
     bookings_query = select(BookingModel).where(
         BookingModel.club_id == club.id,
         or_(
@@ -707,7 +720,7 @@ async def create_hold(
         court_id=court.id,
         period=period_range,
         status="held",
-        customer_name="Invitado (Hold)",
+        customer_name="Apartando turno...",
         customer_phone="",
         customer_email="",
         price_cents=price_cents,
@@ -751,6 +764,19 @@ async def create_hold(
         currency=currency,
         expires_at=expires_at,
     )
+
+
+@router.delete("/bookings/holds/{hold_id}", status_code=status.HTTP_200_OK)
+async def release_hold(
+    hold_id: UUID,
+    db: Annotated[AsyncSession, Depends(get_db)] = None,
+) -> dict[str, str]:
+    """Releases a temporary hold immediately when user cancels or navigates back."""
+    booking = await db.get(BookingModel, hold_id)
+    if booking and booking.status == "held":
+        booking.status = "expired"
+        await db.commit()
+    return {"status": "released"}
 
 
 @router.post("/bookings", response_model=BookingPublicDTO)

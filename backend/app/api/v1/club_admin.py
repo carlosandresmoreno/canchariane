@@ -9,7 +9,7 @@ import asyncpg
 import uuid6
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fastapi.responses import StreamingResponse
-from sqlalchemy import delete, func, or_, select
+from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -89,7 +89,7 @@ async def get_club_dashboard(
         "latitude": (club.settings or {}).get("latitude"),
         "longitude": (club.settings or {}).get("longitude"),
         "city": (club.settings or {}).get("city", "Pereira"),
-        "role": user_ctx.memberships.get(str(club_id), "staff"),
+        "role": user_ctx.memberships.get(club_id) or user_ctx.memberships.get(str(club_id), "staff"),
         "timezone": club.timezone,
     }
 
@@ -798,9 +798,25 @@ async def list_admin_bookings(
     club = await db.get(ClubModel, club_id)
     club_tz = ZoneInfo(club.timezone if (club and club.timezone) else "America/Bogota")
 
+    now_utc = datetime.now(UTC)
+    # Auto-expire any outdated holds for this club so GiST exclusion is released immediately
+    await db.execute(
+        update(BookingModel)
+        .where(
+            BookingModel.club_id == club_id,
+            BookingModel.status == "held",
+            BookingModel.expires_at < now_utc,
+        )
+        .values(status="expired")
+    )
+    await db.commit()
+
     query = (
         select(BookingModel)
-        .where(BookingModel.club_id == club_id)
+        .where(
+            BookingModel.club_id == club_id,
+            BookingModel.status != "expired",
+        )
         .options(selectinload(BookingModel.court), selectinload(BookingModel.user))
         .order_by(BookingModel.created_at.desc())
     )
@@ -832,15 +848,24 @@ async def list_admin_bookings(
     records = (await db.scalars(query)).all()
     results = []
     for b in records:
-        b_origin = getattr(b, "origin", None) or ("public" if not b.user_id else "staff")
-        if b_origin == "public":
-            creator_name = "Cliente Web (Portal Público)"
-        elif b.user and b.user.full_name:
-            creator_name = b.user.full_name
-        elif b_origin == "admin":
-            creator_name = "Administrador"
+        if b.user_id:
+            # Internal booking created by logged-in staff or admin
+            if b.origin in ("admin", "staff"):
+                b_origin = b.origin
+            else:
+                user_is_super = bool(b.user and getattr(b.user, "is_superadmin", False))
+                b_origin = "admin" if user_is_super else "staff"
+
+            if b.user and b.user.full_name:
+                creator_name = b.user.full_name
+            elif b_origin == "admin":
+                creator_name = "Administrador"
+            else:
+                creator_name = "Recepcionista (Mostrador)"
         else:
-            creator_name = "Recepcionista"
+            # Public booking created by guest client on the web portal
+            b_origin = "public"
+            creator_name = "Cliente Web (Portal Público)"
 
         results.append(
             AdminBookingResponse(
@@ -896,6 +921,19 @@ async def create_manual_booking(
     period_end = period_start + timedelta(minutes=data.duration_minutes)
     period_range = asyncpg.Range(period_start, period_end, lower_inc=True, upper_inc=False)
 
+    # Clean up expired holds on this court and period so GiST exclusion allows the manual booking
+    now_utc = datetime.now(UTC)
+    await db.execute(
+        update(BookingModel)
+        .where(
+            BookingModel.court_id == court.id,
+            BookingModel.status == "held",
+            BookingModel.expires_at < now_utc,
+            BookingModel.period.op("&&")(period_range),
+        )
+        .values(status="expired")
+    )
+
     # Check if court is blocked by maintenance, tournament, etc.
     block_conflict = await db.scalar(
         select(BlockModel).where(
@@ -914,7 +952,12 @@ async def create_manual_booking(
     booking_id = uuid6.uuid7()
     code = BookingCode.generate().value
 
-    user_role = current_user.memberships.get(club_id, "staff")
+    user_role = current_user.memberships.get(club_id)
+    if not user_role:
+        try:
+            user_role = current_user.memberships.get(UUID(str(club_id)), "staff")
+        except Exception:
+            user_role = "staff"
     booking_origin = "admin" if (current_user.is_superadmin or user_role in ["owner", "admin"]) else "staff"
 
     booking = BookingModel(
@@ -1021,15 +1064,22 @@ async def update_booking_status(
     db.add(event)
     await db.commit()
 
-    b_origin = getattr(booking, "origin", None) or ("public" if not booking.user_id else "staff")
-    if b_origin == "public":
-        c_name = "Cliente Web (Portal Público)"
-    elif booking.user and booking.user.full_name:
-        c_name = booking.user.full_name
-    elif b_origin == "admin":
-        c_name = "Administrador"
+    if booking.user_id:
+        if booking.origin in ("admin", "staff"):
+            b_origin = booking.origin
+        else:
+            user_is_super = bool(booking.user and getattr(booking.user, "is_superadmin", False))
+            b_origin = "admin" if user_is_super else "staff"
+
+        if booking.user and booking.user.full_name:
+            c_name = booking.user.full_name
+        elif b_origin == "admin":
+            c_name = "Administrador"
+        else:
+            c_name = "Recepcionista (Mostrador)"
     else:
-        c_name = "Recepcionista"
+        b_origin = "public"
+        c_name = "Cliente Web (Portal Público)"
 
     return AdminBookingResponse(
         id=booking.id,

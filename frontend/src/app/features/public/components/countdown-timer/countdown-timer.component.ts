@@ -32,7 +32,7 @@ import { CommonModule } from '@angular/common';
       </div>
 
       <div class="flex items-baseline gap-2">
-        <span class="text-[10px] uppercase font-mono tracking-widest text-slate-500 font-medium">Hold Activo:</span>
+        <span class="text-[10px] uppercase font-mono tracking-widest text-slate-500 font-medium">Tiempo para confirmar:</span>
         <span class="font-mono font-semibold text-sm tracking-wider" [ngClass]="textClass()">{{ formattedTime() }}</span>
       </div>
 
